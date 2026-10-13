@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "id": "new-suite",
+  "documents": [
+    {
+      "id": "doc-1",
+      "title": "سند نمونه",
+      "text": "متن سند آزمون",
+      "synthetic": true
+    }
+  ],
+  "cases": [
+    {
+      "id": "case-1",
+      "question": "پرسش آزمون چیست؟",
+      "reference_answer": "پاسخ مرجع",
+      "expected_document_ids": [
+        "doc-1"
+      ],
+      "request": {},
+      "review_guidance": "معیار بررسی دستی"
+    }
+  ]
+}

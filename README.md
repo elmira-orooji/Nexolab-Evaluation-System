@@ -1,0 +1,37 @@
+# NexoLab
+
+نسخهٔ اول پرسش‌های فارسی را اجرا می‌کند و پاسخ، منابع، ارجاع‌ها، زمان اجرا، خطا و تنظیمات را برای بررسی دستی ذخیره می‌کند. داشبورد و امتیازدهی با مدل زبانی ندارد. اجرای fixture فقط سلامت مسیر اجرای آزمون و گزارش را نشان می‌دهد و کیفیت RAG را اندازه نمی‌گیرد.
+
+Python 3.11 یا جدیدتر لازم است. وابستگی زمان اجرا فقط کتابخانهٔ استاندارد Python است.
+
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+python -m pip install -e .
+python -m unittest discover -s tests -v
+nexolab --suite datasets/persian.synthetic.json --config configs/fixture.json --output runs
+```
+
+روی Linux فعال‌سازی محیط با `source .venv/bin/activate` انجام می‌شود. دستور `python -m nexolab` نیز همان CLI را اجرا می‌کند.
+
+هر اجرا در پوشه‌ای با UUID مستقل، `report.json` و `report.csv` تولید می‌کند. CSV با UTF-8 BOM برای خواندن فارسی نوشته می‌شود. ستون‌های answer_correct، sources_correct و notes برای ارزیاب خالی‌اند؛ true/false و توضیح را دستی وارد کنید. JSON نسخهٔ دقیق پاسخ و مجموعهٔ آزمون را نگه می‌دارد. برای جلوگیری از اجرای فرمول در spreadsheet، رشته‌های خطرناک در CSV با آپاستروف آغاز می‌شوند.
+
+پنج نمونهٔ فارسی و متن اسناد آن‌ها در `datasets/persian.synthetic.json` قرار دارند. تمام اطلاعات ساختگی است. `datasets/template.json` قالب یک مجموعهٔ جدید است. `expected_document_ids` شناسهٔ محلی سند برای ارزیاب است و به API فرستاده نمی‌شود. `request` هر مورد تنظیمات عمومی را بازنویسی می‌کند.
+
+برای اتصال واقعی، قرارداد تأییدشده در [docs/nexora-contract.md](docs/nexora-contract.md) آمده است:
+
+```powershell
+Copy-Item configs/nexora.example.json configs/nexora.local.json
+# NEXORA_TOKEN را در محیط نشست، خارج از کد و فایل تنظیمات، تنظیم کنید.
+nexolab --suite datasets/persian.synthetic.json --config configs/nexora.local.json --output runs
+```
+
+پیش از اجرا، اسناد آزمون باید در Nexora بارگذاری و نمایه‌سازی شده باشند. بارگذاری خودکار در این نسخه وجود ندارد. شناسهٔ مجموعهٔ واقعی را در `request.document_set_id` یا UUID اسناد را در `request.document_ids` ثبت کنید. شناسه‌های محلی مجموعهٔ آزمون را با UUIDهای Nexora اشتباه نگیرید. برای جداسازی آزمون از دانش دیگر، محدودهٔ اسناد را صریح مشخص کنید.
+
+در تنظیمات، base_url فقط origin سرویس است. endpoint طبق کد Nexora ثابت است. برای سرویس دوردست HTTPS لازم است. system_revision و corpus_revision باید با commit سرویس و نسخهٔ نمایه جایگزین شوند. گزارش نسخهٔ NexoLab، snapshot مجموعه، SHA-256، درخواست مؤثر هر مورد و زمان UTC را ثبت می‌کند. تکرار ورودی‌ها ممکن است در سرویس دارای مدل مولد پاسخ متفاوتی بدهد؛ این اطلاعات امکان مقایسه و پیگیری اجراها را فراهم می‌کند.
+
+کد خروج ۰ یعنی تمام درخواست‌ها موفق بوده‌اند؛ ۱ یعنی حداقل یک خطای مورد ثبت شده و ۲ یعنی ورودی یا تنظیمات نامعتبر است. پس از هر مورد JSON checkpoint نوشته می‌شود؛ CSV و زمان پایان فقط پس از پایان اجرا موجودند. آزمون‌ها پس از خطای HTTP، timeout یا پاسخ نامعتبر ادامه پیدا می‌کنند.
+
+توکن فقط از محیط خوانده می‌شود. فایل‌های `.env`، تنظیمات محلی و `runs/` در Git نادیده گرفته می‌شوند. گزارش‌ها ممکن است متن خصوصی اسناد و پاسخ‌ها را داشته باشند؛ پیش از اشتراک‌گذاری بررسی شوند. اعتبارنامه نباید در سؤال، متن سند، revision یا filters قرار گیرد. این ابزار پالایش عمومی اطلاعات محرمانهٔ متن نیست.
+
+CI روی Python 3.11 تا 3.14 تست‌ها و اجرای fixture را بدون دسترسی به Nexora انجام می‌دهد.
