@@ -9,7 +9,9 @@ from http.client import IncompleteRead
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from unittest.mock import patch
 
-from nexolab.adapters import AdapterError, NexoraAdapter
+from nexolab.domain.errors import AdapterError
+from nexolab.domain.models import TestCase
+from nexolab.adapters.rag.nexora import NexoraAdapter
 from nexolab.runner import load_json, run, validate_suite
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -57,11 +59,11 @@ class Tests(unittest.TestCase):
         worker.start()
         try:
             with patch.dict(os.environ, {'NEXORA_TOKEN':'test-only-token'}):
-                adapter = NexoraAdapter({'base_url':f'http://127.0.0.1:{server.server_port}', 'request':{'limit':5}})
-                self.assertEqual(adapter.answer({'question':'پرسش', 'request':{'limit':2}})['answer'], 'پاسخ')
+                adapter = NexoraAdapter(f'http://127.0.0.1:{server.server_port}', 'test-only-token')
+                self.assertEqual(adapter.answer(TestCase('a', 'پرسش', '', ()), {'question':'پرسش', 'limit':2}).answer, 'پاسخ')
                 self.assertEqual(captured[0], ('/api/v1/rag/answer', 'Bearer test-only-token', {'limit':2, 'question':'پرسش'}))
                 with self.assertRaises(AdapterError) as context:
-                    adapter.answer({'question':'خطا'})
+                    adapter.answer(TestCase('a', 'خطا', '', ()), {'question':'خطا'})
                 self.assertEqual(context.exception.status, 401)
                 self.assertNotIn('secret', str(context.exception))
         finally:
@@ -71,7 +73,7 @@ class Tests(unittest.TestCase):
 
     def test_continue_after_case_error(self):
         with tempfile.TemporaryDirectory() as directory:
-            with patch('nexolab.runner.FixtureAdapter.answer', side_effect=AdapterError('transport_error')):
+            with patch('nexolab.bootstrap.FixtureAdapter.answer', side_effect=AdapterError('transport_error')):
                 output, errors = run(ROOT / 'datasets/persian.synthetic.json', ROOT / 'configs/fixture.json', directory)
             self.assertEqual(errors, 5)
             self.assertEqual(len(load_json(output / 'report.json')['results']), 5)
@@ -85,18 +87,18 @@ class Tests(unittest.TestCase):
 
     def test_invalid_response(self):
         with patch.dict(os.environ, {'NEXORA_TOKEN':'test-only-token'}):
-            adapter = NexoraAdapter({'base_url':'http://localhost:8000'})
+            adapter = NexoraAdapter('http://localhost:8000', 'test-only-token')
             with patch.object(adapter.opener, 'open') as mock:
                 mock.return_value.__enter__.return_value.read.return_value = b'{"answer":"x"}'
                 with self.assertRaises(AdapterError):
-                    adapter.answer({'question':'پرسش'})
+                    adapter.answer(TestCase('a', 'پرسش', '', ()), {'question':'پرسش'})
 
     def test_incomplete_response(self):
         with patch.dict(os.environ, {'NEXORA_TOKEN':'test-only-token'}):
-            adapter = NexoraAdapter({'base_url':'http://localhost:8000'})
+            adapter = NexoraAdapter('http://localhost:8000', 'test-only-token')
             with patch.object(adapter.opener, 'open', side_effect=IncompleteRead(b'partial')):
                 with self.assertRaises(AdapterError) as context:
-                    adapter.answer({'question':'پرسش'})
+                    adapter.answer(TestCase('a', 'پرسش', '', ()), {'question':'پرسش'})
                 self.assertEqual(context.exception.kind, 'transport_error')
 
     def test_invalid_suite_shapes(self):

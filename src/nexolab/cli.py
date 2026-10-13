@@ -1,7 +1,7 @@
 import argparse
 import json
 import sys
-from .runner import run
+from .bootstrap import run
 
 
 def main():
