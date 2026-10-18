@@ -12,7 +12,21 @@
       <section class="sidebar-recent"><div class="recent-heading"><h2 class="sidebar-label">اجراهای اخیر</h2><span id="recent-count" class="muted"></span></div><div id="sidebar-runs" class="sidebar-runs"></div></section>
     </aside>
     <main class="main-shell" dir="rtl">
-      <header class="topbar"><button id="sidebar-open" class="icon-button mobile-only" aria-label="بازکردن منو"><svg class="ui-icon"><use href="#icon-menu"/></svg></button><div class="mobile-brand"><img src="assets/nexolab-symbol.svg" width="28" height="28" alt=""><b>Nexolab</b></div><div class="breadcrumb"><span>فضای ارزیابی</span><span class="slash">/</span><strong id="breadcrumb-title">داشبورد</strong></div><div class="topbar-actions"><span id="adapter-label" class="adapter-badge">در حال اتصال</span><button id="theme" class="secondary theme-toggle" aria-label="تغییر تم" title="حالت تیره" aria-pressed="false"><svg class="ui-icon" aria-hidden="true"><use href="#icon-theme"/></svg><span id="theme-label">حالت تیره</span></button><button id="export" class="secondary" disabled>دریافت ارزیابی‌ها</button></div></header>
+      <header class="topbar">
+        <div class="topbar-search">
+          <button id="sidebar-open" class="icon-button mobile-only" aria-label="بازکردن منو"><svg class="ui-icon"><use href="#icon-menu"/></svg></button>
+          <div class="global-search-wrap">
+            <label class="global-searchbox" for="global-search"><svg class="ui-icon" aria-hidden="true"><use href="#icon-search"/></svg><input id="global-search" type="search" placeholder="جست‌وجوی پرسش یا اجرا" autocomplete="off" aria-controls="global-search-results" aria-expanded="false"><kbd dir="ltr">Ctrl K</kbd></label>
+            <div id="global-search-results" class="global-search-results" role="listbox" aria-label="نتایج جست‌وجو" hidden></div>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <button id="theme" class="topbar-icon" aria-label="تغییر تم" title="حالت تیره" aria-pressed="false"><svg class="ui-icon" aria-hidden="true"><use href="#icon-theme"/></svg></button>
+          <button id="latest-run" class="topbar-icon" aria-label="آخرین اجرا" title="آخرین اجرا" disabled><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7M10 20h4"/></svg></button>
+          <span id="adapter-label" class="adapter-badge">در حال اتصال</span>
+          <button id="export" class="topbar-icon" aria-label="دریافت ارزیابی‌ها" title="دریافت ارزیابی‌ها" disabled><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 17v3h16v-3"/></svg></button>
+        </div>
+      </header>
       <div class="content-scroll">
         <section id="dashboard-view" class="view-section">
           <section class="page-heading"><div><p class="eyebrow">NEXOLAB · RAG EVALUATION</p><h1>داشبورد ارزیابی</h1><p class="muted">وضعیت اجرای آزمون و بازبینی پاسخ‌های مجموعهٔ فارسی</p></div><button id="dashboard-run" class="primary dashboard-run"><svg class="ui-icon" aria-hidden="true"><use href="#icon-plus"/></svg>اجرای آزمون</button></section>

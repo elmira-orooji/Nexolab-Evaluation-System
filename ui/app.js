@@ -59,11 +59,55 @@ function showView(name) {
   const titles = { dashboard: 'داشبورد', review: 'ارزیابی دستی', runs: 'اجراها' };
   document.querySelectorAll('.view-section').forEach((view) => { view.hidden = view.id !== `${name}-view`; });
   document.querySelectorAll('.nav-item[data-view]').forEach((item) => { item.classList.toggle('is-active', item.dataset.view === name); item.setAttribute('aria-current', item.dataset.view === name ? 'page' : 'false'); });
-  $('#breadcrumb-title').textContent = titles[name] || titles.dashboard;
+  document.title = `${titles[name] || titles.dashboard} | Nexolab`;
   $('#sidebar').classList.remove('is-open'); $('#sidebar-backdrop').classList.remove('is-open');
   if (name === 'review' && suite) choose(selected);
 }
 function runLabel(item) { return `${new Date(item.started_at).toLocaleString('fa-IR', { dateStyle: 'short', timeStyle: 'short' })} · ${item.run_id.slice(0, 8)}`; }
+function closeGlobalSearch() {
+  $('#global-search-results').hidden = true;
+  $('#global-search').setAttribute('aria-expanded', 'false');
+}
+function normalizeSearchText(value) {
+  return String(value ?? '').normalize('NFKC').replace(/[يى]/g, 'ی').replace(/ك/g, 'ک').toLocaleLowerCase('fa-IR');
+}
+function renderGlobalSearch() {
+  const input = $('#global-search'), results = $('#global-search-results'), query = normalizeSearchText(input.value.trim());
+  results.replaceChildren();
+  if (!query) { closeGlobalSearch(); return; }
+
+  const groups = [
+    { label: 'پرسش‌ها', items: (suite?.cases || []).filter((item) => normalizeSearchText(`${item.id} ${item.question}`).includes(query)).slice(0, 5).map((item) => ({
+      title: item.question, meta: item.id, activate: () => {
+        const index = suite.cases.findIndex((candidate) => candidate.id === item.id);
+        closeGlobalSearch(); input.value = ''; showView('review'); choose(index);
+      },
+    })) },
+    { label: 'اجراها', items: runs.filter((item) => normalizeSearchText(`${runLabel(item)} ${item.run_id} ${item.adapter} ${item.state}`).includes(query)).slice(0, 5).map((item) => ({
+      title: runLabel(item), meta: `${item.adapter === 'fixture' ? 'Fixture محلی' : 'Nexora'} · ${item.run_id.slice(0, 12)}`, activate: () => {
+        closeGlobalSearch(); input.value = '';
+        void openRun(item.run_id).then(() => showView('review')).catch((error) => message(error.message));
+      },
+    })) },
+  ].filter((group) => group.items.length);
+
+  if (!groups.length) {
+    const empty = document.createElement('p'); empty.className = 'global-search-empty'; empty.textContent = 'نتیجه‌ای برای این جست‌وجو پیدا نشد.'; results.append(empty);
+  } else {
+    for (const group of groups) {
+      const section = document.createElement('section'); section.className = 'global-search-group'; section.setAttribute('role', 'group'); section.setAttribute('aria-label', group.label);
+      const heading = document.createElement('p'); heading.className = 'global-search-heading'; heading.textContent = group.label; section.append(heading);
+      for (const item of group.items) {
+        const button = document.createElement('button'); button.type = 'button'; button.className = 'global-search-result'; button.setAttribute('role', 'option'); button.setAttribute('aria-selected', 'false');
+        const title = document.createElement('span'); title.className = 'global-search-result-title'; title.textContent = item.title;
+        const meta = document.createElement('small'); meta.textContent = item.meta;
+        button.append(title, meta); button.onclick = item.activate; section.append(button);
+      }
+      results.append(section);
+    }
+  }
+  results.hidden = false; input.setAttribute('aria-expanded', 'true');
+}
 function renderRuns() {
   const fill = (container, limit = runs.length) => {
     container.replaceChildren();
@@ -82,6 +126,8 @@ function renderRuns() {
   fill($('#sidebar-runs'), 8); fill($('#dashboard-runs'), 5); fill($('#runs-list'));
   $('#recent-count').textContent = number(runs.length); $('#runs-total').textContent = `${number(runs.length)} اجرا`;
   $('#stat-runs').textContent = number(runs.length);
+  $('#latest-run').disabled = !runs.length || saving || loadingRun;
+  $('#latest-run').title = runs.length ? `آخرین اجرا · ${runLabel(runs[0])}` : 'هنوز اجرایی ثبت نشده است';
 }
 function renderDashboard() {
   if (!suite) return;
@@ -195,7 +241,19 @@ $('#previous').onclick = () => { if (!saving && !loadingRun) choose(Math.max(0, 
 $('#next').onclick = () => { if (!saving && !loadingRun) choose(Math.min(suite.cases.length - 1, selected + 1)); };
 $('#search').oninput = renderList;
 $('#clear').onclick = () => confirmAction({ title: 'پاک‌کردن ارزیابی', description: `نظر ثبت‌شده برای پرسش ${suite.cases[selected].id} حذف شود؟`, confirm: 'پاک‌کردن ارزیابی', danger: true, run: () => saveReview(null) });
-$('#theme').onclick = () => { const dark = document.documentElement.classList.toggle('dark'); $('#theme-label').textContent = dark ? 'حالت روشن' : 'حالت تیره'; $('#theme').setAttribute('aria-pressed', String(dark)); $('#theme').setAttribute('aria-label', dark ? 'حالت روشن' : 'حالت تیره'); $('#theme').title = dark ? 'حالت روشن' : 'حالت تیره'; };
+$('#theme').onclick = () => { const dark = document.documentElement.classList.toggle('dark'); $('#theme').setAttribute('aria-pressed', String(dark)); $('#theme').setAttribute('aria-label', dark ? 'تغییر به حالت روشن' : 'تغییر به حالت تیره'); $('#theme').title = dark ? 'تغییر به حالت روشن' : 'تغییر به حالت تیره'; };
+$('#latest-run').onclick = () => {
+  if (!runs.length || saving || loadingRun) return;
+  void openRun(runs[0].run_id).then(() => showView('review')).catch((error) => message(error.message));
+};
+const globalSearch = $('#global-search');
+globalSearch.addEventListener('input', renderGlobalSearch);
+globalSearch.addEventListener('focus', renderGlobalSearch);
+globalSearch.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeGlobalSearch(); });
+document.addEventListener('click', (event) => { if (!event.target.closest('.global-search-wrap')) closeGlobalSearch(); });
+document.addEventListener('keydown', (event) => {
+  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); globalSearch.focus(); globalSearch.select(); }
+});
 $('#export').onclick = async () => { if (!runId) { message('ابتدا یک اجرا انتخاب کن.'); return; } try { download(await api(`${runUrl()}/reviews.json`), `${runId}-reviews.json`); } catch (error) { message(error.message); } };
 $('#export-review').onclick = $('#export').onclick;
 function confirmAction({ title, description, confirm, danger, run }) {
