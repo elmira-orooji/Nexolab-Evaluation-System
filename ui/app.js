@@ -1,10 +1,12 @@
 import { api, download } from './client.js';
+import { mountDashboardMetrics } from './components.js';
 const $ = (selector) => document.querySelector(selector);
 const number = (value) => new Intl.NumberFormat('fa-IR').format(value);
 let suite, selected = 0, runId = '', report = null, reviews = {}, drafts = {}, polling = null, saving = false, runs = [];
 let reviewRevision = 0;
 let loadingRun = false;
 let runRequest = 0;
+mountDashboardMetrics($('#dashboard-stats'));
 const message = (text) => { $('#message').textContent = text; };
 const currentResult = () => report?.results.find((result) => result.case_id === suite.cases[selected].id);
 const runUrl = () => `/api/runs/${runId}`;
