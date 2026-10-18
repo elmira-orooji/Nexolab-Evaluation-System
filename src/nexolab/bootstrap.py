@@ -2,6 +2,7 @@
 import hashlib
 import json
 import uuid
+from dataclasses import dataclass
 from pathlib import Path
 
 from . import __version__
@@ -16,7 +17,20 @@ from .config import RunConfig, nexora_token
 from .domain.models import EvaluationRun
 
 
-def run(suite_path, config_path, output_root):
+@dataclass
+class PreparedRun:
+    evaluation: EvaluationRun
+    runner: EvaluationRunner
+    exporter: CsvExporter
+    output: Path
+
+    def execute(self):
+        self.runner.execute(self.evaluation)
+        self.exporter.export(self.evaluation)
+        return self.output, self.evaluation.error_count
+
+
+def prepare_run(suite_path, config_path, output_root):
     suite = load_suite(suite_path)
     settings = RunConfig.load(config_path).settings
     if settings["adapter"] == "fixture":
@@ -31,6 +45,10 @@ def run(suite_path, config_path, output_root):
     output.mkdir(parents=True, exist_ok=False)
     canonical = json.dumps(suite.snapshot, ensure_ascii=False, sort_keys=True).encode("utf-8")
     evaluation = EvaluationRun(run_id, utc_now(), __version__, hashlib.sha256(canonical).hexdigest(), settings, suite)
-    EvaluationRunner(adapter, JsonRunStore(output / "report.json")).execute(evaluation)
-    CsvExporter(output / "report.csv").export(evaluation)
-    return output, evaluation.error_count
+    store = JsonRunStore(output / "report.json")
+    store.save(evaluation)
+    return PreparedRun(evaluation, EvaluationRunner(adapter, store), CsvExporter(output / "report.csv"), output)
+
+
+def run(suite_path, config_path, output_root):
+    return prepare_run(suite_path, config_path, output_root).execute()

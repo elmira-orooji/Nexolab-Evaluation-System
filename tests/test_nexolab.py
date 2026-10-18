@@ -101,6 +101,14 @@ class Tests(unittest.TestCase):
                     adapter.answer(TestCase('a', 'پرسش', '', ()), {'question':'پرسش'})
                 self.assertEqual(context.exception.kind, 'transport_error')
 
+    def test_invalid_source_items(self):
+        adapter = NexoraAdapter('http://localhost:8000', 'test-only-token')
+        with patch.object(adapter.opener, 'open') as mock:
+            mock.return_value.__enter__.return_value.read.return_value = b'{"answer":"x","sources":[null],"citations":[],"grounded":true}'
+            with self.assertRaises(AdapterError) as context:
+                adapter.answer(TestCase('a', 'question', '', ()), {'question': 'question'})
+            self.assertEqual(context.exception.kind, 'invalid_response')
+
     def test_invalid_suite_shapes(self):
         for suite in (None, [], {'schema_version':1, 'cases':['bad']}, {'schema_version':1, 'cases':[{'id':'a'}], 'documents':['bad']}):
             with self.assertRaises(ValueError):

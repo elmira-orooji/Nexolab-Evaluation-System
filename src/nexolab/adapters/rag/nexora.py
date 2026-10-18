@@ -38,11 +38,15 @@ class NexoraAdapter:
                 data = json.load(response)
         except HTTPError as exc:
             # Do not persist remote error bodies or request headers: they may echo secrets.
-            raise AdapterError("http_error", exc.code) from None
+            status = exc.code
+            exc.close()
+            raise AdapterError("http_error", status) from None
         except (URLError, TimeoutError, OSError, HTTPException):
             raise AdapterError("transport_error") from None
         except (ValueError, UnicodeError):
             raise AdapterError("invalid_json") from None
         if not isinstance(data, dict) or not isinstance(data.get("answer"), str) or not isinstance(data.get("sources"), list) or not isinstance(data.get("citations"), list) or not isinstance(data.get("grounded"), bool):
+            raise AdapterError("invalid_response")
+        if not all(isinstance(item, dict) for item in data["sources"] + data["citations"]):
             raise AdapterError("invalid_response")
         return RagResponse(data["answer"], data["sources"], data["citations"], data["grounded"], data)
