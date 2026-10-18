@@ -36,6 +36,8 @@ body{background:var(--app-background);min-height:100vh}.app-shell{display:flex;m
 main.main-shell{max-width:none;min-height:0;margin:0;padding:0}
 .app-shell{direction:rtl}.sidebar{border-left:0;border-right:1px solid var(--border)}
 @media(max-width:767px){.sidebar{inset:0 0 0 auto;transform:translateX(105%)}}
+.topbar{padding-inline:max(clamp(16px,3vw,36px),calc((100% - 1440px)/2))}.content-scroll{padding-inline:clamp(16px,3vw,36px)}
+@media(max-width:767px){.topbar{padding-inline:12px}.content-scroll{padding-inline:14px}}
 .icon-library{position:absolute;width:0;height:0;overflow:hidden}.ui-icon{display:block;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}.nav-icon{width:19px;height:19px;stroke:currentColor;stroke-width:1.7;fill:none;stroke-linecap:round;stroke-linejoin:round;flex:0 0 19px}.sidebar-new .ui-icon{width:18px;height:18px;color:var(--brand)}.dashboard-run{display:inline-flex;align-items:center;justify-content:center;gap:8px}.dashboard-run .ui-icon{width:17px;height:17px}.icon-button .ui-icon{width:19px;height:19px}.dialog-icon .ui-icon{width:21px;height:21px}.stat-card__icon{width:32px;height:32px;padding:7px;stroke:currentColor;stroke-width:1.7;fill:none;stroke-linecap:round;stroke-linejoin:round}
 
 
