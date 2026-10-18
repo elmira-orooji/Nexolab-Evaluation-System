@@ -7,6 +7,16 @@ let reviewRevision = 0;
 let loadingRun = false;
 let runRequest = 0;
 mountDashboardMetrics($('#dashboard-stats'));
+const appShell = $('.app-shell');
+const sidebarToggle = $('#sidebar-toggle');
+function setSidebarCollapsed(collapsed) {
+  appShell.classList.toggle('sidebar-collapsed', collapsed);
+  sidebarToggle.setAttribute('aria-pressed', String(collapsed));
+  sidebarToggle.setAttribute('aria-label', collapsed ? 'بازکردن سایدبار' : 'جمع‌کردن سایدبار');
+  sidebarToggle.title = collapsed ? 'بازکردن سایدبار' : 'جمع‌کردن سایدبار';
+}
+try { setSidebarCollapsed(localStorage.getItem('nexolab-sidebar-collapsed') === 'true'); }
+catch { setSidebarCollapsed(false); }
 const message = (text) => { $('#message').textContent = text; };
 const currentResult = () => report?.results.find((result) => result.case_id === suite.cases[selected].id);
 const runUrl = () => `/api/runs/${runId}`;
@@ -197,6 +207,11 @@ document.querySelectorAll('.dialog-close').forEach((button) => button.onclick = 
 document.querySelectorAll('.dialog-cancel').forEach((button) => button.onclick = () => button.closest('dialog').close());
 document.querySelectorAll('dialog').forEach((dialog) => dialog.addEventListener('click', (event) => { if (event.target === dialog) dialog.close(); }));
 document.querySelectorAll('[data-view]').forEach((button) => button.onclick = () => showView(button.dataset.view));
+sidebarToggle.onclick = () => {
+  const collapsed = !appShell.classList.contains('sidebar-collapsed');
+  setSidebarCollapsed(collapsed);
+  try { localStorage.setItem('nexolab-sidebar-collapsed', String(collapsed)); } catch { /* Keep the current layout for this session. */ }
+};
 $('#sidebar-open').onclick = () => { $('#sidebar').classList.add('is-open'); $('#sidebar-backdrop').classList.add('is-open'); };
 $('#sidebar-close').onclick = () => showView(document.querySelector('.nav-item.is-active')?.dataset.view || 'dashboard');
 $('#sidebar-backdrop').onclick = () => showView(document.querySelector('.nav-item.is-active')?.dataset.view || 'dashboard');
