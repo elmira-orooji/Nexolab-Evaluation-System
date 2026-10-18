@@ -11,12 +11,12 @@ const appShell = $('.app-shell');
 const sidebarToggle = $('#sidebar-toggle');
 function setSidebarCollapsed(collapsed) {
   appShell.classList.toggle('sidebar-collapsed', collapsed);
-  sidebarToggle.setAttribute('aria-pressed', String(collapsed));
+  sidebarToggle.setAttribute('aria-expanded', String(!collapsed));
   sidebarToggle.setAttribute('aria-label', collapsed ? 'بازکردن سایدبار' : 'جمع‌کردن سایدبار');
   sidebarToggle.title = collapsed ? 'بازکردن سایدبار' : 'جمع‌کردن سایدبار';
+  sidebarToggle.querySelector('use').setAttribute('href', collapsed ? '#icon-sidebar-open' : '#icon-sidebar');
 }
-try { setSidebarCollapsed(localStorage.getItem('nexolab-sidebar-collapsed') === 'true'); }
-catch { setSidebarCollapsed(false); }
+setSidebarCollapsed(false);
 const message = (text) => { $('#message').textContent = text; };
 const currentResult = () => report?.results.find((result) => result.case_id === suite.cases[selected].id);
 const runUrl = () => `/api/runs/${runId}`;
@@ -195,7 +195,7 @@ $('#previous').onclick = () => { if (!saving && !loadingRun) choose(Math.max(0, 
 $('#next').onclick = () => { if (!saving && !loadingRun) choose(Math.min(suite.cases.length - 1, selected + 1)); };
 $('#search').oninput = renderList;
 $('#clear').onclick = () => confirmAction({ title: 'پاک‌کردن ارزیابی', description: `نظر ثبت‌شده برای پرسش ${suite.cases[selected].id} حذف شود؟`, confirm: 'پاک‌کردن ارزیابی', danger: true, run: () => saveReview(null) });
-$('#theme').onclick = () => { const dark = document.documentElement.classList.toggle('dark'); $('#theme').textContent = dark ? 'حالت روشن' : 'حالت تیره'; $('#theme').setAttribute('aria-pressed', String(dark)); };
+$('#theme').onclick = () => { const dark = document.documentElement.classList.toggle('dark'); $('#theme-label').textContent = dark ? 'حالت روشن' : 'حالت تیره'; $('#theme').setAttribute('aria-pressed', String(dark)); $('#theme').setAttribute('aria-label', dark ? 'حالت روشن' : 'حالت تیره'); $('#theme').title = dark ? 'حالت روشن' : 'حالت تیره'; };
 $('#export').onclick = async () => { if (!runId) { message('ابتدا یک اجرا انتخاب کن.'); return; } try { download(await api(`${runUrl()}/reviews.json`), `${runId}-reviews.json`); } catch (error) { message(error.message); } };
 $('#export-review').onclick = $('#export').onclick;
 function confirmAction({ title, description, confirm, danger, run }) {
@@ -210,7 +210,6 @@ document.querySelectorAll('[data-view]').forEach((button) => button.onclick = ()
 sidebarToggle.onclick = () => {
   const collapsed = !appShell.classList.contains('sidebar-collapsed');
   setSidebarCollapsed(collapsed);
-  try { localStorage.setItem('nexolab-sidebar-collapsed', String(collapsed)); } catch { /* Keep the current layout for this session. */ }
 };
 $('#sidebar-open').onclick = () => { $('#sidebar').classList.add('is-open'); $('#sidebar-backdrop').classList.add('is-open'); };
 $('#sidebar-close').onclick = () => showView(document.querySelector('.nav-item.is-active')?.dataset.view || 'dashboard');
