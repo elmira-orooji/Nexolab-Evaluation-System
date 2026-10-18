@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="NexoLab">
+<defs><linearGradient id="nexolab-tech" x1="34" y1="24" x2="108" y2="104" gradientUnits="userSpaceOnUse"><stop stop-color="#C7B5FF"/><stop offset=".6" stop-color="#B8A0EE"/><stop offset="1" stop-color="#77C5CE"/></linearGradient></defs>
+<g fill="none" stroke="url(#nexolab-tech)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+<path d="M43 24h28M48 24v23L24 87c-5 8 0 17 10 17h38M66 24v23l14 21h17"/>
+<path d="M45 92h52"/>
+<circle cx="104" cy="68" r="7"/><circle cx="104" cy="92" r="7"/>
+</g></svg>

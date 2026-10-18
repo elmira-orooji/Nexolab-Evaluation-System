@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="NexoLab">
+  <defs>
+    <linearGradient id="nexolab-gradient" x1="24" y1="20" x2="106" y2="108" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#9B86E1"/>
+      <stop offset=".42" stop-color="#7950BB"/>
+      <stop offset="1" stop-color="#32127A"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#nexolab-gradient)" fill-rule="evenodd" d="M20 108V36l16-16h8l42 52V20h22v72l-16 16h-8L42 56v52H20Zm44-57L51 64l13 13 13-13-13-13Z"/>
+  <path fill="#18C7F4" d="m64 59 5 5-5 5-5-5 5-5Z"/>
+</svg>
