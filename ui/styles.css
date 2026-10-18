@@ -34,6 +34,8 @@ body{background:var(--app-background);min-height:100vh}.app-shell{display:flex;m
 .app-shell{direction:ltr}.sidebar,.main-shell{direction:rtl}.danger-action{color:var(--status-danger)!important;border-color:color-mix(in srgb,var(--status-danger) 30%,var(--border))!important;background:color-mix(in srgb,var(--status-danger) 10%,transparent)!important;box-shadow:none!important}.danger-action:hover{background:color-mix(in srgb,var(--status-danger) 16%,transparent)!important}
 @media(max-width:767px){.sidebar{inset:0 auto 0 0;transform:translateX(-105%)}}
 main.main-shell{max-width:none;min-height:0;margin:0;padding:0}
+.app-shell{direction:rtl}.sidebar{border-left:0;border-right:1px solid var(--border)}
+@media(max-width:767px){.sidebar{inset:0 0 0 auto;transform:translateX(105%)}}
 
 
 /* Native 21st.dev and CrossUI-inspired controls, cards, and dialogs. */
