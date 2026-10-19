@@ -14,6 +14,9 @@ export async function api(url, options = {}) {
   try { data = await response.json(); } catch { throw new Error('پاسخ معتبر نیست؛ رابط را با nexolab --serve باز کن.'); }
   if (!response.ok) {
     const details = [...(data.errors || []), ...(data.warnings || [])].map((item) => `${item.path}: ${item.message}`).join('\n');
+    if (response.status === 404 && url.startsWith('/api/suites')) {
+      throw new Error('API مدیریت مجموعه‌ها در سرور فعلی وجود ندارد؛ سرور قدیمی است. آن را متوقف کن و با نسخهٔ فعلی NexoLab دوباره اجرا کن.');
+    }
     throw new Error(details || errors[data.error] || 'درخواست ناموفق بود. تنظیمات سرور را بررسی کن.');
   }
   return data;

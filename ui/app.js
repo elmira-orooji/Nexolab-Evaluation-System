@@ -17,7 +17,7 @@ function setSidebarCollapsed(collapsed) {
   sidebarToggle.querySelector('use').setAttribute('href', collapsed ? '#icon-sidebar-open' : '#icon-sidebar');
 }
 setSidebarCollapsed(false);
-const message = (text) => { $('#message').textContent = text; };
+const message = (text) => { const status = $('#message'); status.textContent = text; status.hidden = !text; };
 const currentResult = () => report?.results.find((result) => result.case_id === suite.cases[selected].id);
 const runUrl = () => `/api/runs/${runId}`;
 
@@ -445,4 +445,11 @@ try {
   for (const selector of ['#start-run', '#dashboard-run', '#export', '#export-review', '#run-history', '#search', '#category-filter', '#difficulty-filter', '#suite-details', '#create-suite']) $(selector).disabled = false;
   $('#suite-select').disabled = false; $('#edit-suite').disabled = !activeSuiteKey; $('#validate-suite').disabled = !activeSuiteKey;
   showView('dashboard');
-} catch (error) { message(error.message); document.querySelectorAll('button').forEach((button) => { button.disabled = true; }); }
+} catch (error) {
+  if (suite) renderDashboard();
+  message(error.message);
+  for (const selector of ['#start-run', '#dashboard-run', '#suite-select', '#create-suite', '#edit-suite', '#validate-suite', '#run-history', '#export', '#export-review', '#previous', '#next', '#search', '#category-filter', '#difficulty-filter', '#dashboard-reviews', '#open-latest', '#suite-details', '#confirm-run']) {
+    const control = $(selector); if (control) control.disabled = true;
+  }
+  document.querySelectorAll('[data-open-run-dialog]').forEach((button) => { button.disabled = true; });
+}
