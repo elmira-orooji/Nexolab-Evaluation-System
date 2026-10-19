@@ -4,7 +4,16 @@
 
 ساختار پروژه بر معماری پورت و آداپتر بنا شده است. مدل‌های دامنه، هماهنگ‌کنندهٔ اجرا، اتصال Nexora و گزارش‌ها مسئولیت‌های جدا دارند. توضیح مرزها و روش افزودن آداپتر در [معماری](docs/architecture.md) آمده است.
 
-رابط ارزیابی دستی اکنون از API محلی به هستهٔ Python متصل است. از ریشهٔ مخزن اجرا کنید:
+رابط ارزیابی دستی با React ساخته شده و خروجی build آن در `ui/` قرار دارد تا سرور Python فایل‌ها را از همان origin ارائه کند. برای توسعهٔ رابط:
+
+```powershell
+cd frontend
+npm ci
+npm run build
+cd ..
+```
+
+ساخت رابط فقط هنگام تغییر frontend لازم است؛ استفاده از بستهٔ Python به Node نیاز ندارد. سپس از ریشهٔ مخزن اجرا کنید:
 
 ```powershell
 nexolab --serve --suite datasets/persian.synthetic.json --config configs/fixture.json --output runs --port 8013

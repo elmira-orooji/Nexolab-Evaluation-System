@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="NexoLab">
+  <defs>
+    <linearGradient id="nexolab-gradient" x1="23" y1="16" x2="105" y2="116" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#C43CFF"/>
+      <stop offset=".52" stop-color="#7C27FF"/>
+      <stop offset="1" stop-color="#18C7F4"/>
+    </linearGradient>
+    <mask id="nexolab-cutout">
+      <path fill="#fff" d="M43 12h42v12h-8v25l30 43c7 11 0 24-13 24H34c-13 0-20-13-13-24l30-43V24h-8V12Z"/>
+      <path fill="#000" d="M61 24h6v28l-9 13h-7l10-16V24Z"/>
+      <path fill="none" stroke="#000" stroke-width="11" stroke-linecap="square" stroke-linejoin="miter" d="m43 88 14 14 28-30"/>
+    </mask>
+  </defs>
+  <path fill="url(#nexolab-gradient)" mask="url(#nexolab-cutout)" d="M0 0h128v128H0z"/>
+</svg>
