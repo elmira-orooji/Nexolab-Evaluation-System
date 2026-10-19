@@ -67,16 +67,26 @@ class WebTests(unittest.TestCase):
         self.assertEqual(len(result["report"]["results"]), 5)
         report_file = Path(self.temporary.name) / "runs" / run_id / "report.json"
         original = report_file.read_bytes()
-        review = {"answer_correct": True, "sources_correct": False, "notes": "بررسی دستی"}
-        self.request(f"/api/runs/{run_id}/reviews/fa-001", review, "PUT")
+        review = {"correctness": 4, "relevance": 3, "source_adequacy": 2,
+                  "citation_quality": 1, "reviewer": "ارزیاب یک", "notes": "بررسی دستی"}
+        saved = json.loads(self.request(f"/api/runs/{run_id}/reviews/fa-001", review, "PUT")[1])
         self.assertEqual(report_file.read_bytes(), original)
         reloaded = EvaluationService(Path(self.temporary.name) / "runs", self.service.prepare)
         self.assertEqual(reloaded.read(run_id)["reviews"]["fa-001"]["notes"], "بررسی دستی")
+        self.assertEqual(len(reloaded.read(run_id)["review_history"]["fa-001"]), 1)
+        self.assertEqual(saved["reviews"]["fa-001"]["reviewer"], "ارزیاب یک")
+        self.request(f"/api/runs/{run_id}/reviews/fa-001", {**review, "correctness": 2}, "PUT")
         _, body = self.request(f"/api/runs/{run_id}/reviews.json")
         self.assertEqual(json.loads(body)["run_id"], run_id)
+        self.assertEqual(len(json.loads(body)["history"]["fa-001"]), 2)
+        self.assertEqual([event["revision"] for event in json.loads(body)["history"]["fa-001"]], [1, 2])
         self.assertIn(b'case_id', self.request(f"/api/runs/{run_id}/report.csv")[1])
         self.request(f"/api/runs/{run_id}/reviews/fa-001", None, "PUT")
         self.assertEqual(self.service.read(run_id)["reviews"], {})
+        events = self.service.read(run_id)["review_history"]["fa-001"]
+        self.assertEqual(len(events), 3)
+        self.assertEqual(events[-1]["action"], "cleared")
+        self.assertEqual(events[-1]["revision"], 3)
         self.assertEqual(len(json.loads(self.request('/api/runs')[1])), 1)
         second_id = self.service.start()
         second = self.wait_run(second_id)
@@ -160,8 +170,19 @@ class WebTests(unittest.TestCase):
         second = self.service.start(); self.wait_run(second)
         with self.assertRaises(ValueError):
             self.service.save_review(first, 'fa-001', {"answer_correct": "true"})
-        self.service.save_review(first, 'fa-001', {"answer_correct": True, "sources_correct": True, "notes": ""})
+        valid = {"correctness": 4, "relevance": 4, "source_adequacy": 3,
+                 "citation_quality": 2, "reviewer": "ارزیاب", "notes": ""}
+        self.service.save_review(first, 'fa-001', valid)
         self.assertEqual(self.service.read(second)["reviews"], {})
+
+    def test_review_dimensions_and_reviewer_are_validated(self):
+        run_id = self.service.start(); self.wait_run(run_id)
+        valid = {"correctness": 4, "relevance": 4, "source_adequacy": 3,
+                 "citation_quality": 2, "reviewer": "ارزیاب", "notes": ""}
+        for key, value in (("correctness", 5), ("relevance", True), ("source_adequacy", 0),
+                           ("citation_quality", "4"), ("reviewer", "  ")):
+            with self.subTest(key=key, value=value), self.assertRaises(ValueError):
+                self.service.save_review(run_id, 'fa-001', {**valid, key: value})
 
     def test_worker_failure_and_busy_state(self):
         gate = threading.Event()

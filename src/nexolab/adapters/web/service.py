@@ -128,8 +128,9 @@ class EvaluationService:
                     or not isinstance(report.get("suite"), dict)):
                 raise ValueError("Invalid report")
             default = "completed" if report.get("finished_at") and (directory / "report.csv").exists() else "interrupted"
+            reviews, review_history = self._review_state(directory)
             return {"state": self.states.get(run_id, default), "report": report,
-                    "reviews": self._reviews(directory)}
+                    "reviews": reviews, "review_history": review_history}
 
     def list_runs(self):
         items = []
@@ -152,29 +153,44 @@ class EvaluationService:
             raise ValueError("Only completed runs can be compared")
         return compare_reports(baseline["report"], candidate["report"])
 
-    def _reviews(self, directory):
+    def _review_state(self, directory):
         path = directory / "reviews.json"
-        return json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+        if not path.exists():
+            return {}, {}
+        saved = json.loads(path.read_text(encoding="utf-8"))
+        if isinstance(saved, dict) and saved.get("schema_version") == 2:
+            return saved.get("reviews", {}), saved.get("history", {})
+        # Read existing v1 review files without losing their current assessments.
+        return saved, {case_id: [{**review, "action": "reviewed"}]
+                       for case_id, review in saved.items() if isinstance(review, dict)}
 
     def save_review(self, run_id, case_id, review):
         with self.lock:
             data = self.read(run_id)
             if case_id not in {result["case_id"] for result in data["report"]["results"]}:
                 raise ValueError("Case has no result")
+            reviews, history = data["reviews"], data["review_history"]
             if review is not None:
-                if (not isinstance(review, dict) or set(review) != {"answer_correct", "sources_correct", "notes"}
-                        or type(review["answer_correct"]) is not bool
-                        or type(review["sources_correct"]) is not bool
+                required = {"correctness", "relevance", "source_adequacy", "citation_quality", "reviewer", "notes"}
+                ratings = {"correctness", "relevance", "source_adequacy", "citation_quality"}
+                if (not isinstance(review, dict) or set(review) != required
+                        or any(type(review[key]) is not int or review[key] not in (1, 2, 3, 4) for key in ratings)
+                        or not isinstance(review["reviewer"], str) or not review["reviewer"].strip()
+                        or len(review["reviewer"].strip()) > 120
                         or not isinstance(review["notes"], str) or len(review["notes"]) > 10000):
                     raise ValueError("Invalid review")
-                review = {**review, "reviewed_at": utc_now()}
-            reviews = data["reviews"]
-            if review is None:
-                reviews.pop(case_id, None)
-            else:
+                review = {**review, "reviewer": review["reviewer"].strip(),
+                          "reviewed_at": utc_now(), "action": "reviewed"}
                 reviews[case_id] = review
+            else:
+                review = {"reviewed_at": utc_now(), "action": "cleared"}
+                reviews.pop(case_id, None)
+            case_history = history.setdefault(case_id, [])
+            review["revision"] = len(case_history) + 1
+            case_history.append(review)
             directory = self.directory(run_id)
             temporary = directory / "reviews.json.tmp"
-            temporary.write_text(json.dumps(reviews, ensure_ascii=False, indent=2), encoding="utf-8")
+            saved = {"schema_version": 2, "reviews": reviews, "history": history}
+            temporary.write_text(json.dumps(saved, ensure_ascii=False, indent=2), encoding="utf-8")
             temporary.replace(directory / "reviews.json")
             return reviews

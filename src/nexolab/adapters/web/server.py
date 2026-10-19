@@ -91,7 +91,9 @@ def make_server(service, suite, adapter_name, ui_directory, port=8013):
                         return self.reply(200, data)
                     filename = parts[3]
                     if filename == "reviews.json":
-                        return self.reply(200, {"schema_version": 1, "run_id": run_id, "reviews": data["reviews"]})
+                        return self.reply(200, {"schema_version": 2, "run_id": run_id,
+                                                "reviews": data["reviews"],
+                                                "history": data["review_history"]})
                     if filename not in {"report.json", "report.csv"}:
                         raise FileNotFoundError()
                     if filename == "report.csv" and data["state"] != "completed":
@@ -174,7 +176,10 @@ def make_server(service, suite, adapter_name, ui_directory, port=8013):
                     return self.reply(200, {"suite_key": service.update_suite(suite_key, snapshot)})
                 if len(parts) != 5 or parts[:2] != ["api", "runs"] or parts[3] != "reviews":
                     return self.reply(404, {"error": "not_found"})
-                self.reply(200, service.save_review(parts[2], unquote(parts[4]), self.body()))
+                service.save_review(parts[2], unquote(parts[4]), self.body())
+                saved = service.read(parts[2])
+                self.reply(200, {"reviews": saved["reviews"],
+                                 "review_history": saved["review_history"]})
             except FileNotFoundError:
                 self.reply(404, {"error": "not_found"})
             except SuiteValidationError as exc:
