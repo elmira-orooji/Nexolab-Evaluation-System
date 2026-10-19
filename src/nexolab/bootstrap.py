@@ -56,9 +56,11 @@ def prepare_run(suite_path, config_path, output_root):
     }
     evaluation = EvaluationRun(run_id, utc_now(), __version__, hashlib.sha256(canonical).hexdigest(), settings, suite,
                                provenance=provenance)
-    store = JsonRunStore(output / "report.json")
+    redact = getattr(adapter, "redact", None)
+    store = JsonRunStore(output / "report.json", redact=redact)
     store.save(evaluation)
-    return PreparedRun(evaluation, EvaluationRunner(adapter, store), CsvExporter(output / "report.csv"), output)
+    return PreparedRun(evaluation, EvaluationRunner(adapter, store),
+                       CsvExporter(output / "report.csv", redact=redact), output)
 
 
 def run(suite_path, config_path, output_root):

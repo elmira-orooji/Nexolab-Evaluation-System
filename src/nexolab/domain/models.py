@@ -35,6 +35,7 @@ class RagResponse:
 class CaseError:
     kind: str
     http_status: int | None
+    retry_after_seconds: float | None = None
 
 
 @dataclass(frozen=True)
@@ -58,7 +59,8 @@ class CaseResult:
                 "citations": self.response.citations, "grounded": self.response.grounded,
             } if self.response else None,
             "raw_response": self.response.raw if self.response else None,
-            "error": {"kind": self.error.kind, "http_status": self.error.http_status} if self.error else None,
+            "error": {"kind": self.error.kind, "http_status": self.error.http_status,
+                      "retry_after_seconds": self.error.retry_after_seconds} if self.error else None,
             "manual_review": {"answer_correct": None, "sources_correct": None, "notes": ""},
         }
 

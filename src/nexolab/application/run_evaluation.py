@@ -32,7 +32,7 @@ class EvaluationRunner:
             try:
                 response = self.adapter.answer(case, request)
             except AdapterError as exc:
-                error = CaseError(exc.kind, exc.status)
+                error = CaseError(exc.kind, exc.status, exc.retry_after_seconds)
             duration = round((self.timer() - start) * 1000, 3)
             run.results.append(CaseResult(case.id, case.question, started_at, request, duration, response, error))
             # Storage failures propagate: they are failures of the run, not the RAG service.

@@ -15,8 +15,9 @@ def spreadsheet_safe(value):
 
 
 class CsvExporter:
-    def __init__(self, path: Path):
+    def __init__(self, path: Path, redact=None):
         self.path = path
+        self.redact = redact
 
     def export(self, run: EvaluationRun) -> None:
         cases = {case.id: case for case in run.suite.cases}
@@ -37,4 +38,6 @@ class CsvExporter:
                           "error": result.to_record()["error"],
                           "settings": {**run.settings, "effective_request": result.request}}
                 row.update({key: json.dumps(value, ensure_ascii=False) for key, value in values.items()})
+                if self.redact is not None:
+                    row = self.redact(row)
                 writer.writerow({key: spreadsheet_safe(value) for key, value in row.items()})

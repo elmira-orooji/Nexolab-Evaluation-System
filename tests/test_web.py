@@ -205,6 +205,10 @@ class WebTests(unittest.TestCase):
 
     def test_nexora_contract_through_web_execution(self):
         requests = []
+        suite_path = self.suite_root / SUITE.name
+        suite = json.loads(suite_path.read_text(encoding="utf-8"))
+        suite["cases"][0]["question"] = "پرسش محرمانه test-session-secret برای ماسک"
+        suite_path.write_text(json.dumps(suite, ensure_ascii=False), encoding="utf-8")
         class Nexora(BaseHTTPRequestHandler):
             def log_message(self, *args):
                 pass
@@ -213,7 +217,14 @@ class WebTests(unittest.TestCase):
                 requests.append((self.path, self.headers['Authorization'], payload))
                 self.send_response(200)
                 self.end_headers()
-                self.wfile.write(json.dumps({'answer': 'actual upstream answer', 'sources': [{'filename': 'source.txt', 'content': 'evidence'}], 'citations': [], 'grounded': True}).encode())
+                chunk_id = 'a8599eb2-0474-4317-b2ad-77011f071bf5'
+                response = {'response_id': chunk_id, 'question': payload['question'],
+                            'answer': 'actual upstream answer test-session-secret', 'answer_basis': 'sources',
+                            'sources': [{'chunk_id': chunk_id, 'document_id': chunk_id,
+                                         'filename': 'source.txt', 'chunk_index': 0,
+                                         'content': 'evidence', 'score': 0.9}],
+                            'citations': [], 'grounded': True}
+                self.wfile.write(json.dumps(response).encode())
         upstream = HTTPServer(('127.0.0.1', 0), Nexora)
         thread = threading.Thread(target=upstream.serve_forever, daemon=True); thread.start()
         config = Path(self.temporary.name) / 'nexora.json'
@@ -229,6 +240,10 @@ class WebTests(unittest.TestCase):
             self.assertEqual(requests[0][2]['limit'], 2)
             self.assertEqual(result['report']['results'][0]['response']['sources'][0]['content'], 'evidence')
             self.assertNotIn('test-session-secret', json.dumps(result))
+            self.assertIn('[REDACTED]', json.dumps(result['report']))
+            csv_report = self.request(f"/api/runs/{run_id}/report.csv")[1]
+            self.assertNotIn(b'test-session-secret', csv_report)
+            self.assertIn(b'[REDACTED]', csv_report)
             self.assertEqual(len(result['report']['provenance']['config_sha256']), 64)
             self.assertNotIn('test-session-secret', json.dumps(result['report']['provenance']))
         finally:

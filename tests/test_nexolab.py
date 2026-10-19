@@ -10,11 +10,25 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from unittest.mock import patch
 
 from nexolab.domain.errors import AdapterError
-from nexolab.domain.models import TestCase
+from nexolab.domain.models import CaseError, CaseResult, TestCase
 from nexolab.adapters.rag.nexora import NexoraAdapter
 from nexolab.runner import load_json, run, validate_suite
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def valid_nexora_response(question="پرسش", answer="پاسخ"):
+    chunk_id = "a8599eb2-0474-4317-b2ad-77011f071bf5"
+    return {
+        "response_id": chunk_id, "question": question, "answer": answer,
+        "answer_basis": "sources", "grounded": True,
+        "sources": [{"chunk_id": chunk_id, "document_id": chunk_id,
+                     "filename": "policy.pdf", "chunk_index": 0,
+                     "content": "شاهد", "score": 0.9}],
+        "citations": [{"id": 1, "chunk_id": chunk_id, "document_id": chunk_id,
+                       "filename": "policy.pdf", "chunk_index": 0,
+                       "excerpt": "شاهد", "score": 0.9}],
+    }
 
 
 class Tests(unittest.TestCase):
@@ -67,10 +81,18 @@ class Tests(unittest.TestCase):
                     self.send_response(401)
                     self.end_headers()
                     self.wfile.write(b'secret-echo')
+                elif payload['question'] == 'دسترسی':
+                    self.send_response(403)
+                    self.end_headers()
+                elif payload['question'] == 'محدودیت':
+                    self.send_response(429)
+                    self.send_header('Retry-After', '17')
+                    self.end_headers()
                 else:
                     self.send_response(200)
                     self.end_headers()
-                    self.wfile.write(json.dumps({'answer':'پاسخ', 'sources':[{'content':'متن'}], 'citations':[], 'grounded':True}).encode())
+                    answer = 'token=test-only-token' if payload['question'] == 'محرمانه' else 'پاسخ'
+                    self.wfile.write(json.dumps(valid_nexora_response(payload['question'], answer)).encode())
         server = HTTPServer(('127.0.0.1', 0), Handler)
         worker = threading.Thread(target=server.serve_forever, daemon=True)
         worker.start()
@@ -81,8 +103,19 @@ class Tests(unittest.TestCase):
                 self.assertEqual(captured[0], ('/api/v1/rag/answer', 'Bearer test-only-token', {'limit':2, 'question':'پرسش'}))
                 with self.assertRaises(AdapterError) as context:
                     adapter.answer(TestCase('a', 'خطا', '', ()), {'question':'خطا'})
+                self.assertEqual(context.exception.kind, 'authentication_error')
                 self.assertEqual(context.exception.status, 401)
                 self.assertNotIn('secret', str(context.exception))
+                with self.assertRaises(AdapterError) as context:
+                    adapter.answer(TestCase('a', 'دسترسی', '', ()), {'question':'دسترسی'})
+                self.assertEqual(context.exception.kind, 'authorization_error')
+                with self.assertRaises(AdapterError) as context:
+                    adapter.answer(TestCase('a', 'محدودیت', '', ()), {'question':'محدودیت'})
+                self.assertEqual((context.exception.kind, context.exception.status,
+                                  context.exception.retry_after_seconds), ('rate_limited', 429, 17.0))
+                redacted = adapter.answer(TestCase('a', 'محرمانه', '', ()), {'question':'محرمانه'})
+                self.assertNotIn('test-only-token', json.dumps(redacted.raw))
+                self.assertIn('[REDACTED]', redacted.answer)
         finally:
             server.shutdown()
             server.server_close()
@@ -116,7 +149,34 @@ class Tests(unittest.TestCase):
             with patch.object(adapter.opener, 'open', side_effect=IncompleteRead(b'partial')):
                 with self.assertRaises(AdapterError) as context:
                     adapter.answer(TestCase('a', 'پرسش', '', ()), {'question':'پرسش'})
-                self.assertEqual(context.exception.kind, 'transport_error')
+                self.assertEqual(context.exception.kind, 'incomplete_response')
+
+    def test_timeout_is_a_safe_case_error(self):
+        adapter = NexoraAdapter('http://localhost:8000', 'test-only-token')
+        with patch.object(adapter.opener, 'open', side_effect=TimeoutError('secret timeout detail')):
+            with self.assertRaises(AdapterError) as context:
+                adapter.answer(TestCase('a', 'پرسش', '', ()), {'question': 'پرسش'})
+        self.assertEqual(context.exception.kind, 'timeout_error')
+        self.assertNotIn('secret timeout detail', str(context.exception))
+
+    def test_rate_limit_wait_hint_is_saved_in_the_report_record(self):
+        result = CaseResult('a', 'پرسش', '2026-01-01T00:00:00+00:00', {}, 123.0,
+                            None, CaseError('rate_limited', 429, 17.0))
+        self.assertEqual(result.to_record()['error'], {
+            'kind': 'rate_limited', 'http_status': 429, 'retry_after_seconds': 17.0,
+        })
+
+    def test_incomplete_contract_fields_are_rejected(self):
+        adapter = NexoraAdapter('http://localhost:8000', 'test-only-token')
+        for changes in ({'response_id': None}, {'answer_basis': 'unknown'},
+                        {'sources': [{'filename': 'missing required fields'}]},
+                        {'citations': [None]}):
+            payload = {**valid_nexora_response(), **changes}
+            with patch.object(adapter.opener, 'open') as mock:
+                mock.return_value.__enter__.return_value.read.return_value = json.dumps(payload).encode()
+                with self.subTest(changes=changes), self.assertRaises(AdapterError) as context:
+                    adapter.answer(TestCase('a', 'پرسش', '', ()), {'question': 'پرسش'})
+            self.assertEqual(context.exception.kind, 'invalid_response')
 
     def test_invalid_source_items(self):
         adapter = NexoraAdapter('http://localhost:8000', 'test-only-token')
