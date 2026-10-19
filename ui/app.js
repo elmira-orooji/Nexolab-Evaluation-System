@@ -251,9 +251,6 @@ globalSearch.addEventListener('input', renderGlobalSearch);
 globalSearch.addEventListener('focus', renderGlobalSearch);
 globalSearch.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeGlobalSearch(); });
 document.addEventListener('click', (event) => { if (!event.target.closest('.global-search-wrap')) closeGlobalSearch(); });
-document.addEventListener('keydown', (event) => {
-  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); globalSearch.focus(); globalSearch.select(); }
-});
 $('#export').onclick = async () => { if (!runId) { message('ابتدا یک اجرا انتخاب کن.'); return; } try { download(await api(`${runUrl()}/reviews.json`), `${runId}-reviews.json`); } catch (error) { message(error.message); } };
 $('#export-review').onclick = $('#export').onclick;
 function confirmAction({ title, description, confirm, danger, run }) {

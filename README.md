@@ -36,6 +36,8 @@ Copy-Item configs/nexora.example.json configs/nexora.local.json
 nexolab --suite datasets/persian.synthetic.json --config configs/nexora.local.json --output runs
 ```
 
+در ویندوز می‌توانید به‌جای واردکردن دستی متغیر محیطی، `scripts/start-nexora.ps1` را اجرا کنید. توکن فقط بار اول پرسیده می‌شود و با DPAPI ویندوز، مخصوص حساب کاربری فعلی، در `%LOCALAPPDATA%\NexoLab\nexora-token.dpapi` رمزگذاری می‌شود؛ فایل در مخزن نیست و متن خام توکن را نگه نمی‌دارد. برای جایگزینی توکن از `scripts/start-nexora.ps1 -ResetToken` و برای حذف نسخهٔ ذخیره‌شده از `scripts/start-nexora.ps1 -ForgetToken` استفاده کنید. اجرای دستی CLI همچنان به متغیر محیطی `NEXORA_TOKEN` نیاز دارد.
+
 پیش از اجرا، اسناد آزمون باید در Nexora بارگذاری و نمایه‌سازی شده باشند. بارگذاری خودکار در این نسخه وجود ندارد. شناسهٔ مجموعهٔ واقعی را در `request.document_set_id` یا UUID اسناد را در `request.document_ids` ثبت کنید. شناسه‌های محلی مجموعهٔ آزمون را با UUIDهای Nexora اشتباه نگیرید. برای جداسازی آزمون از دانش دیگر، محدودهٔ اسناد را صریح مشخص کنید.
 
 در تنظیمات، base_url فقط origin سرویس است. endpoint طبق کد Nexora ثابت است. برای سرویس دوردست HTTPS لازم است. system_revision و corpus_revision باید با commit سرویس و نسخهٔ نمایه جایگزین شوند. گزارش نسخهٔ NexoLab، snapshot مجموعه، SHA-256، درخواست مؤثر هر مورد و زمان UTC را ثبت می‌کند. تکرار ورودی‌ها ممکن است در سرویس دارای مدل مولد پاسخ متفاوتی بدهد؛ این اطلاعات امکان مقایسه و پیگیری اجراها را فراهم می‌کند.
