@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 from ...domain.models import EvaluationRun
 
-FIELDS = ["case_id", "question", "reference_answer", "expected_document_ids", "answer",
+FIELDS = ["case_id", "category", "difficulty", "tags", "question", "reference_answer", "expected_document_ids", "answer",
           "sources", "citations", "duration_ms", "error", "settings",
           "answer_correct", "sources_correct", "notes"]
 
@@ -26,7 +26,9 @@ class CsvExporter:
             for result in run.results:
                 case = cases[result.case_id]
                 response = result.response
-                row = {"case_id": case.id, "question": case.question,
+                row = {"case_id": case.id, "category": case.category, "difficulty": case.difficulty,
+                       "tags": json.dumps(case.tags, ensure_ascii=False),
+                       "question": case.question,
                        "reference_answer": case.reference_answer,
                        "answer": response.answer if response else "", "duration_ms": result.duration_ms}
                 values = {"expected_document_ids": case.expected_document_ids,

@@ -11,6 +11,9 @@ class TestCase:
     reference_answer: str
     expected_document_ids: tuple[str, ...]
     request: JsonObject = field(default_factory=dict)
+    category: str = "عمومی"
+    difficulty: str = "medium"
+    tags: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)

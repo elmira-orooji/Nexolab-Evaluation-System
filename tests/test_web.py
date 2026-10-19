@@ -5,6 +5,7 @@ import threading
 import time
 import unittest
 import os
+import shutil
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
@@ -13,6 +14,7 @@ from unittest.mock import patch
 from nexolab.adapters.web.server import make_server
 from nexolab.adapters.web.service import EvaluationService, RunBusyError
 from nexolab.adapters.datasets.json_loader import load_suite
+from nexolab.adapters.datasets.json_repository import JsonSuiteRepository
 from nexolab.bootstrap import prepare_run
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -23,7 +25,13 @@ CONFIG = ROOT / "configs/fixture.json"
 class WebTests(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()
-        self.service = EvaluationService(Path(self.temporary.name), lambda: prepare_run(SUITE, CONFIG, self.temporary.name))
+        self.suite_root = Path(self.temporary.name) / "datasets"
+        self.suite_root.mkdir()
+        shutil.copyfile(SUITE, self.suite_root / SUITE.name)
+        repository = JsonSuiteRepository(self.suite_root)
+        self.service = EvaluationService(Path(self.temporary.name) / "runs",
+                                         lambda selected_path: prepare_run(selected_path, CONFIG, Path(self.temporary.name) / "runs"),
+                                         repository, SUITE.stem)
         self.server = make_server(self.service, load_suite(SUITE).snapshot, "fixture", ROOT / "ui", 0)
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
         self.thread.start()
@@ -57,12 +65,12 @@ class WebTests(unittest.TestCase):
         result = self.wait_run(run_id)
         self.assertEqual(result["state"], "completed")
         self.assertEqual(len(result["report"]["results"]), 5)
-        report_file = Path(self.temporary.name) / run_id / "report.json"
+        report_file = Path(self.temporary.name) / "runs" / run_id / "report.json"
         original = report_file.read_bytes()
         review = {"answer_correct": True, "sources_correct": False, "notes": "بررسی دستی"}
         self.request(f"/api/runs/{run_id}/reviews/fa-001", review, "PUT")
         self.assertEqual(report_file.read_bytes(), original)
-        reloaded = EvaluationService(Path(self.temporary.name), self.service.prepare)
+        reloaded = EvaluationService(Path(self.temporary.name) / "runs", self.service.prepare)
         self.assertEqual(reloaded.read(run_id)["reviews"]["fa-001"]["notes"], "بررسی دستی")
         _, body = self.request(f"/api/runs/{run_id}/reviews.json")
         self.assertEqual(json.loads(body)["run_id"], run_id)
@@ -86,6 +94,49 @@ class WebTests(unittest.TestCase):
         self.assertEqual(self.wait_run(run_id)["state"], "completed")
         with self.assertRaises(ValueError):
             self.service.compare(run_id, "not-a-uuid")
+
+    def test_suite_validation_and_crud_select_the_next_run(self):
+        listed = json.loads(self.request("/api/suites")[1])
+        self.assertTrue(any(item["suite_key"] == SUITE.stem and item["active"] for item in listed))
+        source = json.loads(SUITE.read_text(encoding="utf-8"))
+        invalid = json.loads(json.dumps(source))
+        invalid["cases"][1]["id"] = invalid["cases"][0]["id"]
+        invalid["cases"][1]["question"] = " "
+        diagnostics = json.loads(self.request("/api/suites/validate", invalid, "POST")[1])
+        codes = {item["code"] for item in diagnostics["errors"]}
+        self.assertFalse(diagnostics["valid"])
+        self.assertIn("duplicate_case_id", codes)
+        self.assertIn("invalid_question", codes)
+
+        created = json.loads(json.dumps(source))
+        created["id"] = "managed-suite"
+        created["version"] = "1.1.0"
+        status, body = self.request("/api/suites", created, "POST")
+        self.assertEqual(status, 201)
+        self.assertEqual(json.loads(body)["suite_key"], "managed-suite")
+        saved = json.loads(self.request("/api/suites/managed-suite")[1])
+        self.assertEqual(saved["version"], "1.1.0")
+        saved["description"] = "ویرایش‌شده"
+        self.assertEqual(self.request("/api/suites/managed-suite", saved, "PUT")[0], 200)
+        selected = json.loads(self.request("/api/suites/select", {"suite_key": "managed-suite"}, "POST")[1])
+        self.assertEqual(selected["suite"]["description"], "ویرایش‌شده")
+        run_id = json.loads(self.request("/api/runs", {}, "POST")[1])["run_id"]
+        run = self.wait_run(run_id)["report"]
+        self.assertEqual(run["suite"]["id"], "managed-suite")
+        self.assertEqual(run["suite"]["version"], "1.1.0")
+
+    def test_duplicate_suite_ids_across_files_are_reported_and_unselectable(self):
+        alias = self.suite_root / "alias.json"
+        shutil.copyfile(SUITE, alias)
+        listed = json.loads(self.request("/api/suites")[1])
+        duplicates = [item for item in listed if item["id"] == "persian-synthetic-v1"]
+        self.assertEqual(len(duplicates), 2)
+        self.assertTrue(all(not item["valid"] for item in duplicates))
+        self.assertTrue(all(any(error["code"] == "duplicate_suite_id" for error in item["errors"]) for item in duplicates))
+        with self.assertRaises(HTTPError) as context:
+            self.request("/api/suites/select", {"suite_key": SUITE.stem}, "POST")
+        self.assertEqual(context.exception.code, 422)
+        context.exception.close()
 
     def test_cross_origin_and_unmarked_mutation_rejected(self):
         for headers in ({"Content-Type": "application/json"},
@@ -115,8 +166,8 @@ class WebTests(unittest.TestCase):
     def test_worker_failure_and_busy_state(self):
         gate = threading.Event()
         original = self.service.prepare
-        def prepare():
-            prepared = original()
+        def prepare(suite_path):
+            prepared = original(suite_path)
             def fail():
                 gate.wait(2)
                 raise OSError("private-token-value")
@@ -146,7 +197,7 @@ class WebTests(unittest.TestCase):
         thread = threading.Thread(target=upstream.serve_forever, daemon=True); thread.start()
         config = Path(self.temporary.name) / 'nexora.json'
         config.write_text(json.dumps({'adapter': 'nexora', 'base_url': f'http://127.0.0.1:{upstream.server_port}', 'request': {'limit': 2}}))
-        self.service.prepare = lambda: prepare_run(SUITE, config, self.temporary.name)
+        self.service.prepare = lambda suite_path: prepare_run(suite_path, config, Path(self.temporary.name) / "runs")
         try:
             with patch.dict(os.environ, {'NEXORA_TOKEN': 'test-session-secret'}):
                 run_id = json.loads(self.request('/api/runs', {}, 'POST')[1])['run_id']

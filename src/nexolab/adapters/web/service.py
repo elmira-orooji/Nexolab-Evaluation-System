@@ -26,9 +26,11 @@ class LockedRunStore:
 
 
 class EvaluationService:
-    def __init__(self, output_root: Path, prepare: Callable):
+    def __init__(self, output_root: Path, prepare: Callable, suite_repository=None, active_suite_key=None):
         self.output_root = Path(output_root)
         self.prepare = prepare
+        self.suite_repository = suite_repository
+        self.active_suite_key = active_suite_key
         self.lock = threading.RLock()
         self.active_id = None
         self.states = {}
@@ -45,13 +47,64 @@ class EvaluationService:
         with self.lock:
             if self.active_id:
                 raise RunBusyError()
-            prepared = self.prepare()
+            if self.suite_repository is None:
+                prepared = self.prepare()
+            else:
+                suite_path = self.suite_repository.path_for(self.active_suite_key)
+                prepared = self.prepare(suite_path)
             prepared.runner.store = LockedRunStore(prepared.runner.store, self.lock)
             run_id = prepared.evaluation.run_id
             self.active_id = run_id
             self.states[run_id] = "running"
             threading.Thread(target=self._execute, args=(prepared,), daemon=True).start()
             return run_id
+
+    def list_suites(self):
+        if self.suite_repository is None:
+            return []
+        with self.lock:
+            return [{**item, "active": item["suite_key"] == self.active_suite_key}
+                    for item in self.suite_repository.list()]
+
+    def suite_snapshot(self):
+        if self.suite_repository is None:
+            return None
+        with self.lock:
+            return {"suite_key": self.active_suite_key,
+                    "suite": self.suite_repository.get(self.active_suite_key)}
+
+    def select_suite(self, suite_key):
+        if self.suite_repository is None:
+            raise ValueError("Suite management is unavailable")
+        with self.lock:
+            snapshot = self.suite_repository.get(suite_key)
+            self.active_suite_key = suite_key
+            return {"suite_key": suite_key, "suite": snapshot}
+
+    def validate_suite(self, snapshot):
+        if self.suite_repository is None:
+            raise ValueError("Suite management is unavailable")
+        return self.suite_repository.validate(snapshot)
+
+    def create_suite(self, snapshot):
+        if self.suite_repository is None:
+            raise ValueError("Suite management is unavailable")
+        with self.lock:
+            return self.suite_repository.create(snapshot)
+
+    def update_suite(self, suite_key, snapshot):
+        if self.suite_repository is None:
+            raise ValueError("Suite management is unavailable")
+        with self.lock:
+            new_key = self.suite_repository.update(suite_key, snapshot)
+            if self.active_suite_key == suite_key:
+                self.active_suite_key = new_key
+            return new_key
+
+    def read_suite(self, suite_key):
+        if self.suite_repository is None:
+            raise ValueError("Suite management is unavailable")
+        return self.suite_repository.get(suite_key)
 
     def _execute(self, prepared):
         run_id = prepared.evaluation.run_id

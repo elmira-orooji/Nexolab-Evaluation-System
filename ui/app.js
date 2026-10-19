@@ -2,7 +2,7 @@ import { api, download } from './client.js';
 import { mountDashboardMetrics } from './components.js';
 const $ = (selector) => document.querySelector(selector);
 const number = (value) => new Intl.NumberFormat('fa-IR').format(value);
-let suite, selected = 0, runId = '', report = null, reviews = {}, drafts = {}, polling = null, saving = false, runs = [];
+let suite, activeSuite, activeSuiteKey = '', editorSuiteKey = null, suiteCatalog = [], selected = 0, runId = '', report = null, reviews = {}, drafts = {}, polling = null, saving = false, runs = [];
 let reviewRevision = 0;
 let loadingRun = false;
 let runRequest = 0;
@@ -22,9 +22,10 @@ const currentResult = () => report?.results.find((result) => result.case_id === 
 const runUrl = () => `/api/runs/${runId}`;
 
 function renderList() {
-  const query = $('#search').value.trim(), list = $('#case-list'); list.replaceChildren();
+  const query = $('#search').value.trim(), category = $('#category-filter').value, difficulty = $('#difficulty-filter').value, list = $('#case-list'); list.replaceChildren();
   suite.cases.forEach((item, index) => {
-    if (query && !item.question.includes(query)) return;
+    if ((query && !item.question.includes(query)) || (category && (item.category || 'عمومی') !== category)
+        || (difficulty && (item.difficulty || 'medium') !== difficulty)) return;
     const button = document.createElement('button'); button.className = `case-item${index === selected ? ' active' : ''}`;
     button.setAttribute('aria-current', String(index === selected));
     const top = document.createElement('span'); top.className = 'case-top';
@@ -33,7 +34,9 @@ function renderList() {
     const state = document.createElement('span'); state.textContent = reviews[item.id] ? 'بررسی شده' : result?.error ? 'خطای اجرا' : result ? 'آمادهٔ بررسی' : 'در انتظار';
     if (reviews[item.id]) state.className = 'done';
     const question = document.createElement('p'); question.textContent = item.question;
-    top.append(id, state); button.append(top, question); button.onclick = () => { if (!saving && !loadingRun) choose(index); }; list.append(button);
+    const metadata = document.createElement('small'); metadata.className = 'case-meta';
+    for (const label of [item.category || 'عمومی', ({ easy: 'آسان', medium: 'متوسط', hard: 'دشوار' }[item.difficulty] || 'متوسط')]) { const tag = document.createElement('span'); tag.textContent = label; metadata.append(tag); }
+    top.append(id, state); button.append(top, question, metadata); button.onclick = () => { if (!saving && !loadingRun) choose(index); }; list.append(button);
   });
   if (!list.children.length) list.textContent = 'پرسشی پیدا نشد.';
   const done = suite.cases.filter((item) => reviews[item.id]).length;
@@ -129,10 +132,82 @@ function renderRuns() {
   $('#latest-run').disabled = !runs.length || saving || loadingRun;
   $('#latest-run').title = runs.length ? `آخرین اجرا · ${runLabel(runs[0])}` : 'هنوز اجرایی ثبت نشده است';
 }
+function populateCaseFilters() {
+  const control = $('#category-filter'), selectedCategory = control.value;
+  const categories = [...new Set((suite?.cases || []).map((item) => item.category || 'عمومی'))].sort((a, b) => a.localeCompare(b, 'fa'));
+  control.replaceChildren(new Option('همهٔ موضوع‌ها', ''));
+  for (const category of categories) control.append(new Option(category, category));
+  control.value = categories.includes(selectedCategory) ? selectedCategory : '';
+}
+function updateSuiteHeader() {
+  if (!activeSuite) return;
+  $('#dashboard-suite-name').textContent = activeSuite.id;
+  $('#dashboard-suite-description').textContent = `${activeSuite.description || 'بدون توضیح'} · ${number(activeSuite.documents.length)} سند · ${number(activeSuite.cases.length)} پرسش`;
+  $('#suite-version').textContent = `نسخهٔ ${activeSuite.version || 'ثبت‌نشده'}`;
+  $('#dialog-suite').textContent = activeSuite.id;
+}
+function renderSuiteCatalog(items) {
+  suiteCatalog = items;
+  const control = $('#suite-select'); control.replaceChildren();
+  for (const item of items) {
+    const label = `${item.id || item.suite_key} · ${item.version || 'بدون نسخه'} · ${number(item.case_count)} پرسش${item.valid ? '' : ' · نیازمند اصلاح'}`;
+    const option = new Option(label, item.suite_key); option.disabled = !item.valid; control.append(option);
+  }
+  control.value = activeSuiteKey;
+  $('#suite-select').disabled = !activeSuiteKey;
+  $('#edit-suite').disabled = !activeSuiteKey;
+  $('#validate-suite').disabled = !activeSuiteKey;
+  $('#create-suite').disabled = false;
+  const issues = items.filter((item) => !item.valid).flatMap((item) => item.errors.map((error) => `${item.suite_key} · ${error.path}: ${error.message}`));
+  const activeWarnings = items.find((item) => item.suite_key === activeSuiteKey)?.warnings || [];
+  const container = $('#suite-diagnostics'); container.replaceChildren();
+  container.classList.toggle('has-errors', issues.length > 0); container.classList.toggle('has-warnings', !issues.length && activeWarnings.length > 0);
+  if (issues.length) { const text = document.createElement('p'); text.textContent = `مجموعه‌های نامعتبر ذخیره‌شده:\n${issues.join('\n')}`; container.append(text); }
+  if (activeWarnings.length) { const text = document.createElement('p'); text.textContent = `هشدارهای مجموعهٔ فعال:\n${activeWarnings.map((item) => `${item.path}: ${item.message}`).join('\n')}`; container.append(text); }
+}
+async function reloadSuiteCatalog() { renderSuiteCatalog(await api('/api/suites')); }
+function renderSuiteDiagnostics(container, result) {
+  container.replaceChildren(); container.classList.toggle('has-errors', !result.valid);
+  container.classList.toggle('has-warnings', result.valid && result.warnings.length > 0);
+  const summary = document.createElement('p'); summary.textContent = result.valid ? 'ساختار مجموعه معتبر است.' : `اعتبارسنجی ناموفق بود: ${number(result.errors.length)} خطا.`; container.append(summary);
+  for (const item of [...result.errors, ...result.warnings]) { const line = document.createElement('p'); line.textContent = `${item.path} · ${item.message}`; container.append(line); }
+}
+async function validateEditor() {
+  $('#suite-editor-save').disabled = true;
+  try {
+    const snapshot = JSON.parse($('#suite-json-editor').value);
+    const result = await api('/api/suites/validate', { method: 'POST', body: snapshot });
+    renderSuiteDiagnostics($('#suite-editor-diagnostics'), result);
+    $('#suite-editor-save').disabled = !result.valid;
+    return result;
+  } catch (error) {
+    renderSuiteDiagnostics($('#suite-editor-diagnostics'), { valid: false, errors: [{ path: '$', message: error instanceof SyntaxError ? 'ساختار JSON قابل‌خواندن نیست.' : error.message }], warnings: [] });
+    return null;
+  }
+}
+async function openSuiteEditor(create) {
+  try {
+    editorSuiteKey = create ? null : activeSuiteKey;
+    const snapshot = create ? await api('/api/suites/template') : await api(`/api/suites/${encodeURIComponent(activeSuiteKey)}`);
+    if (create) snapshot.id = `suite-${Date.now()}`;
+    $('#suite-editor-title').textContent = create ? 'ساخت مجموعهٔ آزمون' : `ویرایش مجموعهٔ ${snapshot.id}`;
+    $('#suite-json-editor').value = JSON.stringify(snapshot, null, 2);
+    renderSuiteDiagnostics($('#suite-editor-diagnostics'), { valid: false, errors: [{ path: '$', message: 'ابتدا اعتبارسنجی را اجرا کن.' }], warnings: [] });
+    $('#suite-editor-save').disabled = true; $('#suite-editor-dialog').showModal();
+  } catch (error) { message(error.message); }
+}
+async function activateSuite(suiteKey) {
+  const selection = await api('/api/suites/select', { method: 'POST', body: { suite_key: suiteKey } });
+  activeSuiteKey = selection.suite_key; activeSuite = selection.suite; suite = selection.suite; runId = ''; report = null; reviews = {}; drafts = {}; selected = 0;
+  clearTimeout(polling); polling = null; populateCaseFilters(); updateSuiteHeader(); choose(0); await reloadSuiteCatalog(); await history(); renderDashboard();
+  showView('dashboard'); message(`مجموعهٔ ${suite.id} برای اجرا انتخاب شد.`);
+}
 function renderDashboard() {
   if (!suite) return;
   $('#stat-cases').textContent = number(suite.cases.length); $('#stat-suite').textContent = suite.id;
-  $('#dashboard-suite-name').textContent = suite.id; $('#dashboard-suite-description').textContent = suite.description || `${number(suite.documents.length)} سند ساختگی · ${number(suite.cases.length)} پرسش`;
+  const displayedSuite = activeSuite || suite;
+  $('#dashboard-suite-name').textContent = displayedSuite.id; $('#dashboard-suite-description').textContent = `${displayedSuite.description || 'بدون توضیح'} · ${number(displayedSuite.documents.length)} سند · ${number(displayedSuite.cases.length)} پرسش`;
+  $('#suite-version').textContent = `نسخهٔ ${displayedSuite.version || 'ثبت‌نشده'}`;
   $('#stat-reviewed').textContent = number(Object.keys(reviews).length); $('#stat-reviewed-caption').textContent = `از ${number(suite.cases.length)} پرسش اجرای انتخاب‌شده`;
   const done = Object.keys(reviews).length, total = suite.cases.length, percent = total ? Math.round(done / total * 100) : 0;
   $('#review-donut').style.setProperty('--progress', `${percent}%`); $('#review-percent').textContent = `${number(percent)}٪`;
@@ -249,7 +324,7 @@ async function refresh(id) {
     polling = setTimeout(() => refresh(id).catch((error) => message(error.message)), 800);
     return;
   }
-  report = data.report; suite = report.suite; reviews = data.reviews;
+  report = data.report; suite = report.suite; reviews = data.reviews; populateCaseFilters();
   const states = { running: 'در حال اجرا', completed: 'اجرا پایان یافت', failed: 'اجرا متوقف شد؛ خطای داخلی یا ذخیره‌سازی', interrupted: 'اجرای ناتمام از نشست قبلی' };
   $('#run-status').textContent = `${states[data.state]} · ${number(report.results.length)} از ${number(suite.cases.length)}`;
   $('#suite-label').textContent = suite.id; $('#adapter-label').textContent = report.settings.adapter === 'fixture' ? 'اجرای محلی fixture' : 'Nexora';
@@ -275,6 +350,30 @@ $('#dashboard-run').onclick = () => $('#run-dialog').showModal();
 document.querySelectorAll('[data-open-run-dialog]').forEach((button) => button.onclick = () => $('#run-dialog').showModal());
 $('#confirm-run').onclick = () => void startRun();
 $('#run-history').onchange = async (event) => { if (event.target.value) try { await openRun(event.target.value); renderRuns(); renderDashboard(); } catch (error) { message(error.message); } };
+$('#category-filter').onchange = renderList; $('#difficulty-filter').onchange = renderList;
+$('#suite-select').onchange = async (event) => { if (event.target.value && event.target.value !== activeSuiteKey) try { await activateSuite(event.target.value); } catch (error) { message(error.message); event.target.value = activeSuiteKey; } };
+$('#create-suite').onclick = () => void openSuiteEditor(true);
+$('#edit-suite').onclick = () => void openSuiteEditor(false);
+$('#validate-suite').onclick = async () => {
+  try { const snapshot = await api(`/api/suites/${encodeURIComponent(activeSuiteKey)}`); const result = await api('/api/suites/validate', { method: 'POST', body: snapshot }); renderSuiteDiagnostics($('#suite-diagnostics'), result); }
+  catch (error) { message(error.message); }
+};
+$('#suite-editor-validate').onclick = () => void validateEditor();
+$('#suite-json-editor').addEventListener('input', () => {
+  $('#suite-editor-save').disabled = true;
+  $('#suite-editor-diagnostics').textContent = 'محتوا تغییر کرده است؛ برای بررسی دوباره اعتبارسنجی را اجرا کن.';
+  $('#suite-editor-diagnostics').classList.remove('has-errors', 'has-warnings');
+});
+$('#suite-editor-save').onclick = async () => {
+  const diagnostics = await validateEditor(); if (!diagnostics?.valid) return;
+  const snapshot = JSON.parse($('#suite-json-editor').value);
+  try {
+    const saved = editorSuiteKey
+      ? await api(`/api/suites/${encodeURIComponent(editorSuiteKey)}`, { method: 'PUT', body: snapshot })
+      : await api('/api/suites', { method: 'POST', body: snapshot });
+    $('#suite-editor-dialog').close(); await activateSuite(saved.suite_key); message(`مجموعهٔ ${snapshot.id} ذخیره و انتخاب شد.`);
+  } catch (error) { renderSuiteDiagnostics($('#suite-editor-diagnostics'), { valid: false, errors: [{ path: '$', message: error.message }], warnings: [] }); }
+};
 async function saveReview(review) {
   if (!runId || saving || loadingRun || report?.run_id !== runId) return; const caseId = suite.cases[selected].id, id = runId;
   reviewRevision += 1;
@@ -332,17 +431,18 @@ $('#sidebar-close').onclick = () => showView(document.querySelector('.nav-item.i
 $('#sidebar-backdrop').onclick = () => showView(document.querySelector('.nav-item.is-active')?.dataset.view || 'dashboard');
 $('#open-latest').onclick = () => showView('review');
 $('#dashboard-reviews').onclick = () => showView('review');
-$('#suite-details').onclick = () => showDetail(suite?.id || 'مجموعهٔ آزمون', `${suite?.description || ''}\n\n${suite?.documents.length || 0} سند ساختگی\n${suite?.cases.length || 0} پرسش\n\nشناسهٔ اسناد: ${suite?.documents.map((item) => item.id).join('، ')}`, 'اطلاعات بارگذاری‌شده از تنظیمات فعلی سرور');
-for (const selector of ['#export', '#export-review', '#previous', '#next', '#run-history', '#search', '#dashboard-run', '#dashboard-reviews', '#open-latest', '#suite-details']) $(selector).disabled = true;
+$('#suite-details').onclick = () => { const selectedSuite = activeSuite || suite; showDetail(selectedSuite?.id || 'مجموعهٔ آزمون', `${selectedSuite?.description || ''}\n\nنسخه: ${selectedSuite?.version || 'ثبت‌نشده'}\n${selectedSuite?.documents.length || 0} سند\n${selectedSuite?.cases.length || 0} پرسش\n\nشناسهٔ اسناد: ${selectedSuite?.documents.map((item) => item.id).join('، ')}`, 'مجموعهٔ انتخاب‌شده برای اجرای بعدی'); };
+for (const selector of ['#export', '#export-review', '#previous', '#next', '#run-history', '#search', '#category-filter', '#difficulty-filter', '#dashboard-run', '#dashboard-reviews', '#open-latest', '#suite-details', '#suite-select', '#edit-suite', '#validate-suite', '#create-suite']) $(selector).disabled = true;
 $('#review-form').querySelectorAll('input, textarea, button').forEach((control) => { control.disabled = true; });
 try {
-  const info = await api('/api/info'); suite = info.suite;
+  const info = await api('/api/info'); suite = info.suite; activeSuite = info.suite; activeSuiteKey = info.suite_key || '';
   $('#adapter-label').textContent = info.adapter === 'fixture' ? 'اجرای محلی fixture' : 'Nexora'; $('#suite-label').textContent = suite.id;
-  $('#dialog-suite').textContent = suite.id; $('#dashboard-suite-name').textContent = suite.id;
+  updateSuiteHeader(); populateCaseFilters(); await reloadSuiteCatalog();
   $('#dialog-adapter').textContent = info.adapter === 'fixture' ? 'Fixture محلی · پاسخ ساختگی' : 'Nexora · API متصل';
   choose(0); await history();
   if (runs[0]) await openRun(runs[0].run_id);
   renderDashboard();
-  for (const selector of ['#start-run', '#dashboard-run', '#export', '#export-review', '#run-history', '#search', '#suite-details']) $(selector).disabled = false;
+  for (const selector of ['#start-run', '#dashboard-run', '#export', '#export-review', '#run-history', '#search', '#category-filter', '#difficulty-filter', '#suite-details', '#create-suite']) $(selector).disabled = false;
+  $('#suite-select').disabled = false; $('#edit-suite').disabled = !activeSuiteKey; $('#validate-suite').disabled = !activeSuiteKey;
   showView('dashboard');
 } catch (error) { message(error.message); document.querySelectorAll('button').forEach((button) => { button.disabled = true; }); }

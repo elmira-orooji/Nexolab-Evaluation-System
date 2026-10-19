@@ -1,6 +1,7 @@
 {
   "schema_version": 1,
   "id": "persian-synthetic-v1",
+  "version": "1.0.0",
   "description": "تمام نام‌ها، قوانین و ارقام این مجموعه ساختگی هستند.",
   "documents": [
     {
@@ -37,6 +38,9 @@
   "cases": [
     {
       "id": "fa-001",
+      "category": "منابع انسانی",
+      "difficulty": "easy",
+      "tags": ["استخراج مستقیم", "سیاست سازمانی"],
       "question": "سقف انتقال مرخصی به سال بعد چند روز است؟",
       "reference_answer": "حداکثر ۵ روز.",
       "expected_document_ids": [
@@ -47,6 +51,9 @@
     },
     {
       "id": "fa-002",
+      "category": "لجستیک و ارسال",
+      "difficulty": "easy",
+      "tags": ["عدد", "هزینه"],
       "question": "هزینهٔ ارسال در شهر سرو چقدر است؟",
       "reference_answer": "۴۰ هزار تومان.",
       "expected_document_ids": [
@@ -57,6 +64,9 @@
     },
     {
       "id": "fa-003",
+      "category": "کتابخانه و امانت",
+      "difficulty": "medium",
+      "tags": ["ترکیبی", "چند واقعیت"],
       "question": "مدت امانت و تمدید کتاب در کتابخانهٔ باران چقدر است؟",
       "reference_answer": "مدت امانت ۱۴ روز است و یک تمدید ۷روزه مجاز است.",
       "expected_document_ids": [
@@ -67,6 +77,9 @@
     },
     {
       "id": "fa-004",
+      "category": "پشتیبانی مشتریان",
+      "difficulty": "medium",
+      "tags": ["پاسخ منفی", "زمان‌بندی"],
       "question": "پشتیبانی آبان پنجشنبه فعال است؟",
       "reference_answer": "خیر، پنجشنبه تعطیل است.",
       "expected_document_ids": [
@@ -77,6 +90,9 @@
     },
     {
       "id": "fa-005",
+      "category": "پرسش خارج از دامنه",
+      "difficulty": "hard",
+      "tags": ["نبود شواهد", "امتناع"],
       "question": "مدیرعامل شرکت سپید چه کسی است؟",
       "reference_answer": "نام مدیرعامل در اسناد موجود ذکر نشده است.",
       "expected_document_ids": [],

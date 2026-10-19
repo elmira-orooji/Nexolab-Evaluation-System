@@ -4,6 +4,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlsplit
 
+from ..datasets.json_loader import SuiteValidationError
 from .service import RunBusyError
 
 
@@ -60,7 +61,21 @@ def make_server(service, suite, adapter_name, ui_directory, port=8013):
             path = urlsplit(self.path).path
             try:
                 if path == "/api/info":
-                    return self.reply(200, {"suite": suite, "adapter": adapter_name})
+                    current = service.suite_snapshot()
+                    return self.reply(200, {"suite": current["suite"] if current else suite,
+                                            "suite_key": current["suite_key"] if current else None,
+                                            "adapter": adapter_name})
+                if path == "/api/suites":
+                    return self.reply(200, service.list_suites())
+                if path == "/api/suites/template":
+                    if service.suite_repository is None:
+                        raise FileNotFoundError()
+                    return self.reply(200, service.suite_repository.template())
+                if path.startswith("/api/suites/"):
+                    suite_key = unquote(path[len("/api/suites/"):])
+                    if not suite_key or "/" in suite_key or "\\" in suite_key or suite_key == "select":
+                        raise FileNotFoundError()
+                    return self.reply(200, service.read_suite(suite_key))
                 if path == "/api/runs":
                     return self.reply(200, service.list_runs())
                 if path == "/api/compare":
@@ -105,9 +120,9 @@ def make_server(service, suite, adapter_name, ui_directory, port=8013):
             except OSError:
                 self.reply(500, {"error": "storage_error"})
 
-        def body(self):
+        def body(self, max_size=65536):
             length = int(self.headers.get("Content-Length", "0"))
-            if length <= 0 or length > 65536 or self.headers.get_content_type() != "application/json":
+            if length <= 0 or length > max_size or self.headers.get_content_type() != "application/json":
                 raise ValueError("Invalid body")
             return json.loads(self.rfile.read(length))
 
@@ -115,6 +130,20 @@ def make_server(service, suite, adapter_name, ui_directory, port=8013):
             if not self.allowed(mutation=True):
                 return
             try:
+                if self.path == "/api/suites/validate":
+                    return self.reply(200, service.validate_suite(self.body(2_000_000)))
+                if self.path == "/api/suites/select":
+                    body = self.body()
+                    if not isinstance(body, dict) or set(body) != {"suite_key"}:
+                        raise ValueError("Invalid suite selection")
+                    return self.reply(200, service.select_suite(body["suite_key"]))
+                if self.path == "/api/suites":
+                    snapshot = self.body(2_000_000)
+                    diagnostics = service.validate_suite(snapshot)
+                    if not diagnostics["valid"]:
+                        return self.reply(422, diagnostics)
+                    key = service.create_suite(snapshot)
+                    return self.reply(201, {"suite_key": key})
                 if self.path != "/api/runs":
                     return self.reply(404, {"error": "not_found"})
                 if self.body() != {}:
@@ -122,6 +151,10 @@ def make_server(service, suite, adapter_name, ui_directory, port=8013):
                 self.reply(202, {"run_id": service.start()})
             except RunBusyError:
                 self.reply(409, {"error": "run_in_progress"})
+            except FileExistsError:
+                self.reply(409, {"error": "suite_already_exists"})
+            except SuiteValidationError as exc:
+                self.reply(422, {"valid": False, "errors": exc.errors, "warnings": exc.warnings})
             except (ValueError, KeyError, TypeError):
                 self.reply(400, {"error": "invalid_configuration_or_request"})
             except OSError:
@@ -132,11 +165,20 @@ def make_server(service, suite, adapter_name, ui_directory, port=8013):
                 return
             try:
                 parts = self.path.strip("/").split("/")
+                if len(parts) == 3 and parts[:2] == ["api", "suites"]:
+                    suite_key = unquote(parts[2])
+                    snapshot = self.body(2_000_000)
+                    diagnostics = service.validate_suite(snapshot)
+                    if not diagnostics["valid"]:
+                        return self.reply(422, diagnostics)
+                    return self.reply(200, {"suite_key": service.update_suite(suite_key, snapshot)})
                 if len(parts) != 5 or parts[:2] != ["api", "runs"] or parts[3] != "reviews":
                     return self.reply(404, {"error": "not_found"})
                 self.reply(200, service.save_review(parts[2], unquote(parts[4]), self.body()))
             except FileNotFoundError:
                 self.reply(404, {"error": "not_found"})
+            except SuiteValidationError as exc:
+                self.reply(422, {"valid": False, "errors": exc.errors, "warnings": exc.warnings})
             except (ValueError, KeyError, TypeError):
                 self.reply(400, {"error": "invalid_review"})
             except OSError:

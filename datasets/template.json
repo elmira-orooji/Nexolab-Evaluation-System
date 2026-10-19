@@ -1,6 +1,8 @@
 {
   "schema_version": 1,
   "id": "new-suite",
+  "version": "1.0.0",
+  "description": "توضیح کوتاه دربارهٔ دامنهٔ اسناد و هدف ارزیابی.",
   "documents": [
     {
       "id": "doc-1",
@@ -12,6 +14,9 @@
   "cases": [
     {
       "id": "case-1",
+      "category": "موضوع پرسش",
+      "difficulty": "medium",
+      "tags": [],
       "question": "پرسش آزمون چیست؟",
       "reference_answer": "پاسخ مرجع",
       "expected_document_ids": [

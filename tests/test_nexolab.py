@@ -30,6 +30,9 @@ class Tests(unittest.TestCase):
                 rows = list(csv.DictReader(handle))
             self.assertEqual(len(rows), 5)
             self.assertEqual(rows[0]['answer'], report['results'][0]['response']['answer'])
+            self.assertEqual(rows[0]['category'], 'منابع انسانی')
+            self.assertEqual(rows[0]['difficulty'], 'easy')
+            self.assertIn('استخراج مستقیم', rows[0]['tags'])
             self.assertEqual(rows[0]['answer_correct'], '')
 
     def test_validation(self):
@@ -37,6 +40,20 @@ class Tests(unittest.TestCase):
         suite['cases'][0]['expected_document_ids'] = ['absent']
         with self.assertRaises(ValueError):
             validate_suite(suite)
+
+    def test_suite_inspection_collects_duplicate_and_incomplete_items(self):
+        suite = load_json(ROOT / 'datasets/persian.synthetic.json')
+        suite['cases'][1]['id'] = suite['cases'][0]['id']
+        suite['cases'][1]['question'] = suite['cases'][0]['question']
+        suite['cases'][2]['reference_answer'] = ''
+        from nexolab.adapters.datasets.json_loader import inspect_suite
+        diagnostics = inspect_suite(suite)
+        errors = {item['code'] for item in diagnostics['errors']}
+        warnings = {item['code'] for item in diagnostics['warnings']}
+        self.assertFalse(diagnostics['valid'])
+        self.assertIn('duplicate_case_id', errors)
+        self.assertIn('missing_reference_answer', errors)
+        self.assertIn('duplicate_question', warnings)
 
     def test_http_contract_and_errors(self):
         captured = []
