@@ -179,8 +179,69 @@ function choose(index) {
 async function history() {
   runs = await api('/api/runs'); const select = $('#run-history'); select.replaceChildren(new Option('انتخاب اجرا', ''));
   for (const item of runs) select.append(new Option(`${item.started_at.slice(0, 19)} · ${item.adapter} · ${item.run_id.slice(0, 8)}`, item.run_id));
+  const baseline = $('#compare-baseline'), candidate = $('#compare-candidate');
+  const previousBaseline = baseline.value, previousCandidate = candidate.value;
+  for (const control of [baseline, candidate]) {
+    control.replaceChildren(new Option('انتخاب اجرا', ''));
+    for (const item of runs) {
+      const option = new Option(`${item.started_at.slice(0, 19)} · ${item.adapter} · ${item.run_id.slice(0, 8)} · ${item.state === 'completed' ? 'پایان‌یافته' : 'ناتمام'}`, item.run_id);
+      option.disabled = item.state !== 'completed'; control.append(option);
+    }
+  }
+  baseline.value = runs.some((item) => item.run_id === previousBaseline) ? previousBaseline : (runs[1]?.run_id || '');
+  candidate.value = runs.some((item) => item.run_id === previousCandidate) ? previousCandidate : (runs[0]?.run_id || '');
+  updateCompareButton();
   select.value = runId; renderRuns(); renderDashboard();
 }
+function updateCompareButton() {
+  $('#compare-button').disabled = !$('#compare-baseline').value || !$('#compare-candidate').value
+    || $('#compare-baseline').value === $('#compare-candidate').value;
+}
+function appendCell(row, value, className = '') {
+  const cell = document.createElement('td'); if (className) cell.className = className;
+  cell.textContent = value == null || value === '' ? '—' : String(value); row.append(cell); return cell;
+}
+function renderComparison(result) {
+  const container = $('#compare-result'); container.replaceChildren();
+  const meta = document.createElement('div'); meta.className = 'compare-meta';
+  for (const label of [`مبنا: ${result.baseline_run_id.slice(0, 8)}`, `جدید: ${result.candidate_run_id.slice(0, 8)}`, `مجموعه یکسان: ${result.same_suite ? 'بله' : 'خیر'}`, `پیکربندی یکسان: ${result.same_config ? 'بله' : 'خیر'}`]) {
+    const tag = document.createElement('span'); tag.textContent = label; meta.append(tag);
+  }
+  container.append(meta);
+  if (!result.same_suite || !result.same_config) {
+    const warning = document.createElement('p'); warning.className = 'compare-warning';
+    warning.textContent = `هشدار: ${!result.same_suite ? 'هش مجموعه‌ها متفاوت است. ' : ''}${!result.same_config ? 'هش پیکربندی‌ها متفاوت است.' : ''} revision سامانه: ${result.baseline_system_revision || 'ثبت‌نشده'} ← ${result.candidate_system_revision || 'ثبت‌نشده'}؛ revision پیکره: ${result.baseline_corpus_revision || 'ثبت‌نشده'} ← ${result.candidate_corpus_revision || 'ثبت‌نشده'}`;
+    container.append(warning);
+  }
+  const summary = document.createElement('p'); summary.className = 'compare-summary';
+  summary.textContent = `${number(result.shared_case_count)} پرسش مشترک · ${number(result.answer_changes)} پاسخ تغییرکرده · ${number(result.source_changes)} منبع تغییرکرده · ${number(result.error_changes)} تغییر در خطا · خطاها ${number(result.baseline_errors)} ← ${number(result.candidate_errors)}`;
+  container.append(summary);
+  if (!result.cases.length) { const empty = document.createElement('p'); empty.className = 'muted'; empty.textContent = 'پرسش مشترکی برای مقایسه وجود ندارد.'; container.append(empty); return; }
+  const wrap = document.createElement('div'); wrap.className = 'compare-table-wrap';
+  const table = document.createElement('table'); table.className = 'compare-table';
+  const head = document.createElement('thead'), header = document.createElement('tr');
+  for (const title of ['شناسه', 'پاسخ اجرا مبنا', 'پاسخ اجرای جدید', 'منابع مبنا ← جدید', 'خطا مبنا ← جدید', 'اختلاف زمان (ms)']) { const cell = document.createElement('th'); cell.textContent = title; header.append(cell); }
+  head.append(header); table.append(head); const body = document.createElement('tbody');
+  for (const item of result.cases) {
+    const row = document.createElement('tr'); appendCell(row, item.case_id);
+    appendCell(row, item.baseline.answer, `compare-answer${item.answer_changed ? ' compare-change' : ''}`);
+    appendCell(row, item.candidate.answer, `compare-answer${item.answer_changed ? ' compare-change' : ''}`);
+    appendCell(row, `${number(item.baseline.source_count)} ← ${number(item.candidate.source_count)}${item.sources_changed ? ' · تغییر' : ''}`, item.sources_changed ? 'compare-change' : '');
+    const errorLabel = (error) => error ? `${error.kind}${error.http_status ? ` (${error.http_status})` : ''}` : 'ندارد';
+    appendCell(row, `${errorLabel(item.baseline.error)} ← ${errorLabel(item.candidate.error)}`, item.error_changed ? 'compare-error' : '');
+    appendCell(row, `${item.duration_delta_ms > 0 ? '+' : ''}${number(item.duration_delta_ms)}`); body.append(row);
+  }
+  table.append(body); wrap.append(table); container.append(wrap);
+}
+$('#compare-baseline').onchange = updateCompareButton; $('#compare-candidate').onchange = updateCompareButton;
+$('#compare-button').onclick = async () => {
+  const baseline = $('#compare-baseline').value, candidate = $('#compare-candidate').value;
+  if (!baseline || !candidate || baseline === candidate) return;
+  const button = $('#compare-button'); button.disabled = true; button.textContent = 'در حال مقایسه…';
+  try { renderComparison(await api(`/api/compare?baseline=${encodeURIComponent(baseline)}&candidate=${encodeURIComponent(candidate)}`)); }
+  catch (error) { message(error.message); }
+  finally { button.textContent = 'مقایسه'; updateCompareButton(); }
+};
 async function refresh(id) {
   const revision = reviewRevision;
   const data = await api(`/api/runs/${id}`); if (id !== runId) return;

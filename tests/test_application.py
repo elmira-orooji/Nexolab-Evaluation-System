@@ -1,6 +1,7 @@
 import unittest
 
 from nexolab.application.run_evaluation import EvaluationRunner
+from nexolab.application.compare_runs import compare_reports
 from nexolab.domain.errors import AdapterError
 from nexolab.domain.models import CaseResult, EvaluationRun, EvaluationSuite, RagResponse, TestCase
 from nexolab.domain.validation import validate_request
@@ -33,6 +34,24 @@ def evaluation():
 
 
 class ApplicationTests(unittest.TestCase):
+    def test_compare_reports_detects_output_and_latency_changes(self):
+        baseline = {"run_id": "a", "suite_sha256": "suite", "provenance": {"config_sha256": "config"},
+                    "settings": {"system_revision": "model-a"},
+                    "results": [{"case_id": "one", "response": {"answer": "old", "sources": [{"document_id": "d1"}], "citations": []}, "error": None, "duration_ms": 20},
+                                {"case_id": "two", "response": None, "error": {"kind": "http_error", "http_status": 503}, "duration_ms": 40}]}
+        candidate = {"run_id": "b", "suite_sha256": "suite", "provenance": {"config_sha256": "config-b"},
+                     "settings": {"system_revision": "model-b"},
+                     "results": [{"case_id": "one", "response": {"answer": "new", "sources": [{"document_id": "d2"}], "citations": []}, "error": None, "duration_ms": 25},
+                                 {"case_id": "two", "response": {"answer": "recovered", "sources": [], "citations": []}, "error": None, "duration_ms": 30}]}
+        comparison = compare_reports(baseline, candidate)
+        self.assertTrue(comparison["same_suite"])
+        self.assertFalse(comparison["same_config"])
+        self.assertEqual(comparison["answer_changes"], 2)
+        self.assertEqual(comparison["source_changes"], 1)
+        self.assertEqual(comparison["error_changes"], 1)
+        self.assertEqual(comparison["cases"][0]["duration_delta_ms"], 5)
+        self.assertEqual(comparison["baseline_system_revision"], "model-a")
+
     def test_normalized_response_preserves_original_payload(self):
         response = RagResponse("normalized", [], [], False, {"text": "original"})
         result = CaseResult("id", "question", "start", {}, 0, response, None)

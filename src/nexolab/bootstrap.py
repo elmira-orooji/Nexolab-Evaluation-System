@@ -1,6 +1,9 @@
 """Composition root: the only module choosing concrete infrastructure."""
 import hashlib
 import json
+import os
+import platform
+import sys
 import uuid
 from dataclasses import dataclass
 from pathlib import Path
@@ -44,7 +47,15 @@ def prepare_run(suite_path, config_path, output_root):
     output = Path(output_root) / run_id
     output.mkdir(parents=True, exist_ok=False)
     canonical = json.dumps(suite.snapshot, ensure_ascii=False, sort_keys=True).encode("utf-8")
-    evaluation = EvaluationRun(run_id, utc_now(), __version__, hashlib.sha256(canonical).hexdigest(), settings, suite)
+    config_canonical = json.dumps(settings, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    provenance = {
+        "config_sha256": hashlib.sha256(config_canonical).hexdigest(),
+        "python_version": platform.python_version(),
+        "platform": sys.platform,
+        "source_revision": os.environ.get("NEXOLAB_REVISION") or None,
+    }
+    evaluation = EvaluationRun(run_id, utc_now(), __version__, hashlib.sha256(canonical).hexdigest(), settings, suite,
+                               provenance=provenance)
     store = JsonRunStore(output / "report.json")
     store.save(evaluation)
     return PreparedRun(evaluation, EvaluationRunner(adapter, store), CsvExporter(output / "report.csv"), output)

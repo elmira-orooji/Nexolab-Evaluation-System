@@ -6,6 +6,7 @@ from pathlib import Path
 from collections.abc import Callable
 
 from ...application.run_evaluation import utc_now
+from ...application.compare_runs import compare_reports
 
 
 class RunBusyError(Exception):
@@ -90,6 +91,13 @@ class EvaluationService:
             items.append({"run_id": report["run_id"], "started_at": report["started_at"],
                           "state": data["state"], "adapter": report["settings"]["adapter"]})
         return sorted(items, key=lambda item: item["started_at"], reverse=True)
+
+    def compare(self, baseline_id, candidate_id):
+        baseline = self.read(baseline_id)
+        candidate = self.read(candidate_id)
+        if baseline["state"] != "completed" or candidate["state"] != "completed":
+            raise ValueError("Only completed runs can be compared")
+        return compare_reports(baseline["report"], candidate["report"])
 
     def _reviews(self, directory):
         path = directory / "reviews.json"

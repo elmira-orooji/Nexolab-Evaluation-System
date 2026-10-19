@@ -70,6 +70,22 @@ class WebTests(unittest.TestCase):
         self.request(f"/api/runs/{run_id}/reviews/fa-001", None, "PUT")
         self.assertEqual(self.service.read(run_id)["reviews"], {})
         self.assertEqual(len(json.loads(self.request('/api/runs')[1])), 1)
+        second_id = self.service.start()
+        second = self.wait_run(second_id)
+        self.assertEqual(second["state"], "completed")
+        comparison = json.loads(self.request(f"/api/compare?baseline={run_id}&candidate={second_id}")[1])
+        self.assertTrue(comparison["same_suite"])
+        self.assertTrue(comparison["same_config"])
+        self.assertEqual(comparison["shared_case_count"], 5)
+        self.assertEqual(len(comparison["cases"]), 5)
+
+    def test_compare_requires_two_valid_completed_runs(self):
+        with self.assertRaises(ValueError):
+            self.service.compare("not-a-uuid", "also-invalid")
+        run_id = self.service.start()
+        self.assertEqual(self.wait_run(run_id)["state"], "completed")
+        with self.assertRaises(ValueError):
+            self.service.compare(run_id, "not-a-uuid")
 
     def test_cross_origin_and_unmarked_mutation_rejected(self):
         for headers in ({"Content-Type": "application/json"},
@@ -141,5 +157,7 @@ class WebTests(unittest.TestCase):
             self.assertEqual(requests[0][2]['limit'], 2)
             self.assertEqual(result['report']['results'][0]['response']['sources'][0]['content'], 'evidence')
             self.assertNotIn('test-session-secret', json.dumps(result))
+            self.assertEqual(len(result['report']['provenance']['config_sha256']), 64)
+            self.assertNotIn('test-session-secret', json.dumps(result['report']['provenance']))
         finally:
             upstream.shutdown(); upstream.server_close(); thread.join()

@@ -44,3 +44,6 @@ class BoundaryTests(unittest.TestCase):
             report = json.loads((output / "report.json").read_text(encoding="utf-8"))
             self.assertEqual(len(report["results"]), 5)
             self.assertIn("raw_response", report["results"][0])
+            self.assertEqual(len(report["suite_sha256"]), 64)
+            self.assertEqual(len(report["provenance"]["config_sha256"]), 64)
+            self.assertNotIn("token", json.dumps(report).lower())

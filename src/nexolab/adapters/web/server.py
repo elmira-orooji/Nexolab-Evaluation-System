@@ -2,7 +2,7 @@
 import json
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import unquote, urlsplit
+from urllib.parse import parse_qs, unquote, urlsplit
 
 from .service import RunBusyError
 
@@ -63,6 +63,11 @@ def make_server(service, suite, adapter_name, ui_directory, port=8013):
                     return self.reply(200, {"suite": suite, "adapter": adapter_name})
                 if path == "/api/runs":
                     return self.reply(200, service.list_runs())
+                if path == "/api/compare":
+                    query = parse_qs(urlsplit(self.path).query, keep_blank_values=True, strict_parsing=True)
+                    if set(query) != {"baseline", "candidate"} or any(len(value) != 1 or not value[0] for value in query.values()):
+                        raise ValueError("Invalid comparison parameters")
+                    return self.reply(200, service.compare(query["baseline"][0], query["candidate"][0]))
                 parts = path.strip("/").split("/")
                 if len(parts) in (3, 4) and parts[:2] == ["api", "runs"]:
                     run_id = parts[2]

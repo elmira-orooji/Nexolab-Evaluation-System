@@ -70,6 +70,7 @@ class EvaluationRun:
     suite: EvaluationSuite
     results: list[CaseResult] = field(default_factory=list)
     finished_at: str | None = None
+    provenance: JsonObject = field(default_factory=dict)
 
     @property
     def error_count(self) -> int:
@@ -80,6 +81,7 @@ class EvaluationRun:
             "schema_version": 1, "run_id": self.run_id, "started_at": self.started_at,
             "nexolab_version": self.nexolab_version, "suite_sha256": self.suite_sha256,
             "settings": self.settings, "suite": self.suite.snapshot,
+            "provenance": self.provenance,
             "results": [result.to_record() for result in self.results],
         }
         if self.finished_at is not None:
