@@ -8,12 +8,29 @@ from unittest.mock import patch
 
 from nexolab.adapters.rag.nexora_validation import validate_request
 from nexolab.adapters.reports.json_store import JsonRunStore
+from nexolab.bootstrap import PreparedRun
 from nexolab.domain.models import EvaluationRun, EvaluationSuite
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
 class BoundaryTests(unittest.TestCase):
+    def test_readable_report_skips_malformed_historical_reports(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            malformed = ("[]", "null", '{"settings":null,"results":[]}',
+                         '{"settings":{},"results":[null]}',
+                         '{"settings":{},"results":[{"case_id":[]}]}')
+            for index, content in enumerate(malformed):
+                candidate = root / str(index)
+                candidate.mkdir()
+                (candidate / "report.json").write_text(content, encoding="utf-8")
+                (candidate / "report.csv").write_text("case_id\n", encoding="utf-8")
+            prepared = PreparedRun(None, None, None, root / "current")
+            current = {"started_at": "2026-10-20T12:00:00+00:00", "suite_sha256": "suite",
+                       "settings": {"adapter": "fixture"}}
+            self.assertIsNone(prepared._previous_report(current))
+
     def test_nexora_rejects_invalid_service_options(self):
         for request in ({"limit": 9}, {"top_k": 5}, {"document_id": 123}, {"document_ids": [123]}):
             with self.assertRaises(ValueError):

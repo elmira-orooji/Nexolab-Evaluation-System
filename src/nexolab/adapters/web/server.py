@@ -94,7 +94,7 @@ def make_server(service, suite, adapter_name, ui_directory, port=8013):
                         return self.reply(200, {"schema_version": 2, "run_id": run_id,
                                                 "reviews": data["reviews"],
                                                 "history": data["review_history"]})
-                    if filename not in {"report.json", "report.csv"}:
+                    if filename not in {"report.json", "report.csv", "report.md"}:
                         raise FileNotFoundError()
                     if filename == "report.csv" and data["state"] != "completed":
                         raise FileNotFoundError()
@@ -102,7 +102,10 @@ def make_server(service, suite, adapter_name, ui_directory, port=8013):
                     with service.lock:
                         body = file.read_bytes()
                     self.send_response(200)
-                    self.send_header("Content-Type", "application/json" if filename.endswith("json") else "text/csv; charset=utf-8")
+                    content_type = ("application/json" if filename.endswith("json") else
+                                    "text/markdown; charset=utf-8" if filename.endswith("md") else
+                                    "text/csv; charset=utf-8")
+                    self.send_header("Content-Type", content_type)
                     self.send_header("Content-Disposition", f'attachment; filename="{run_id}-{filename}"')
                     self.send_header("Content-Length", str(len(body)))
                     self.end_headers()

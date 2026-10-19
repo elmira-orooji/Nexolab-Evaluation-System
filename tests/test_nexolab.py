@@ -39,6 +39,11 @@ class Tests(unittest.TestCase):
             self.assertEqual(errors, 0)
             self.assertEqual(len(report['results']), 5)
             self.assertIn('finished_at', report)
+            readable = (output / 'report.md').read_text(encoding='utf-8')
+            self.assertIn('موفق: 5', readable)
+            self.assertIn('زمان پاسخ (میلی‌ثانیه)', readable)
+            self.assertIn('report.json', readable)
+            self.assertIn('اجرای قبلیِ کامل', readable)
             self.assertTrue(all(r['duration_ms'] >= 0 for r in report['results']))
             with (output / 'report.csv').open(encoding='utf-8-sig', newline='') as handle:
                 rows = list(csv.DictReader(handle))

@@ -2,6 +2,7 @@ import unittest
 
 from nexolab.application.run_evaluation import EvaluationRunner
 from nexolab.application.compare_runs import compare_reports
+from nexolab.application.readable_report import render_markdown, summarize
 from nexolab.domain.errors import AdapterError
 from nexolab.domain.models import CaseResult, EvaluationRun, EvaluationSuite, RagResponse, TestCase
 from nexolab.domain.validation import validate_request
@@ -34,6 +35,21 @@ def evaluation():
 
 
 class ApplicationTests(unittest.TestCase):
+    def test_readable_report_summarizes_failures_sources_and_latency(self):
+        report = {"run_id": "run", "started_at": "start", "finished_at": "finish",
+                  "settings": {"adapter": "fixture"}, "suite": {"id": "sample"},
+                  "results": [
+                      {"case_id": "answered", "response": {"sources": [{"id": "doc"}], "citations": []}, "error": None, "duration_ms": 10},
+                      {"case_id": "empty", "response": {"sources": [], "citations": []}, "error": None, "duration_ms": 30},
+                      {"case_id": "failed", "response": None, "error": {"kind": "timeout_error"}, "duration_ms": 50},
+                  ]}
+        summary = summarize(report)
+        self.assertEqual((summary["successful"], summary["failed"], summary["without_sources"]), (2, 1, 1))
+        self.assertEqual(summary["latency_ms"]["mean"], 30)
+        text = render_markdown(report)
+        self.assertIn("`timeout_error`: 1", text)
+        self.assertIn("`empty`: پاسخ بدون منبع", text)
+
     def test_compare_reports_detects_output_and_latency_changes(self):
         baseline = {"run_id": "a", "suite_sha256": "suite", "provenance": {"config_sha256": "config"},
                     "settings": {"system_revision": "model-a"},

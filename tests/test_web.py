@@ -65,6 +65,9 @@ class WebTests(unittest.TestCase):
         result = self.wait_run(run_id)
         self.assertEqual(result["state"], "completed")
         self.assertEqual(len(result["report"]["results"]), 5)
+        readable = self.request(f"/api/runs/{run_id}/report.md")[1].decode("utf-8")
+        self.assertIn("گزارش اجرای ارزیابی", readable)
+        self.assertIn("بدون منبع یا استناد", readable)
         report_file = Path(self.temporary.name) / "runs" / run_id / "report.json"
         original = report_file.read_bytes()
         review = {"correctness": 4, "relevance": 3, "source_adequacy": 2,
@@ -91,6 +94,9 @@ class WebTests(unittest.TestCase):
         second_id = self.service.start()
         second = self.wait_run(second_id)
         self.assertEqual(second["state"], "completed")
+        second_summary = (Path(self.temporary.name) / "runs" / second_id / "report.md").read_text(encoding="utf-8")
+        self.assertIn(run_id, second_summary)
+        self.assertIn("پاسخ‌های تغییرکرده", second_summary)
         comparison = json.loads(self.request(f"/api/compare?baseline={run_id}&candidate={second_id}")[1])
         self.assertTrue(comparison["same_suite"])
         self.assertTrue(comparison["same_config"])
