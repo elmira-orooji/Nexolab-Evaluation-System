@@ -1,26 +1,13 @@
 import React from 'react';
+import { Plus, PanelRightClose, PanelRightOpen, Sun, LayoutDashboard, CheckCheck, Clock3, Menu, X, Play, Info, Search, Download, Bell, LibraryBig, GitCompareArrows, Settings2, BookOpen } from 'lucide-react';
 
-const paths = {
-  plus: <path d="M12 5v14M5 12h14" />,
-  sidebar: <><rect x="3.5" y="4" width="17" height="16" rx="2" /><path d="M9 4v16m7-11-3 3 3 3" /></>,
-  sidebarOpen: <><rect x="3.5" y="4" width="17" height="16" rx="2" /><path d="M9 4v16m4-11 3 3-3 3" /></>,
-  theme: <><circle cx="12" cy="12" r="4" /><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" /></>,
-  dashboard: <><rect x="3.5" y="3.5" width="7" height="7" rx="1.5" /><rect x="13.5" y="3.5" width="7" height="7" rx="1.5" /><rect x="3.5" y="13.5" width="7" height="7" rx="1.5" /><rect x="13.5" y="13.5" width="7" height="7" rx="1.5" /></>,
-  review: <path d="m5 12.5 4.2 4.2L19 7" />,
-  clock: <><circle cx="12" cy="12" r="8.5" /><path d="M12 7v5l3.5 2" /></>,
-  menu: <path d="M4 7h16M4 12h16M4 17h16" />,
-  close: <path d="m6 6 12 12M18 6 6 18" />,
-  play: <path d="m9 6 10 6-10 6z" />,
-  info: <><circle cx="12" cy="12" r="9" /><path d="M12 11v5M12 8h.01" /></>,
-  search: <><circle cx="10.8" cy="10.8" r="6.8" /><path d="m16 16 4.5 4.5" /></>,
-  download: <path d="M12 3v12m-5-5 5 5 5-5M4 17v3h16v-3" />,
-  bell: <path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7M10 20h4" />,
-};
+// Lucide is available in the 21st.dev icon catalog; distributed under the ISC license.
+const icons = { plus: Plus, sidebar: PanelRightClose, sidebarOpen: PanelRightOpen, theme: Sun, dashboard: LayoutDashboard, review: CheckCheck, clock: Clock3, menu: Menu, close: X, play: Play, info: Info, search: Search, download: Download, bell: Bell, suites: LibraryBig, compare: GitCompareArrows, settings: Settings2, guide: BookOpen };
 
 export function Icon({ name, className = 'ui-icon', ...props }) {
-  return <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>{paths[name] || paths.info}</svg>;
+  const Component = icons[name] || Info;
+  return <Component className={className} strokeWidth={1.8} aria-hidden="true" {...props} />;
 }
-
 export function Modal({ open, onClose, title, subtitle, icon = 'info', children, footer, className = '' }) {
   React.useEffect(() => {
     if (!open) return undefined;
