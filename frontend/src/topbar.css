@@ -9,6 +9,7 @@
   height: var(--workspace-header-height);
   min-height: var(--workspace-header-height);
   padding-inline: var(--workspace-inline-inset);
+  background: var(--canvas);
 }
 
 .topbar-page-title {
