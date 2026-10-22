@@ -2,6 +2,59 @@
   margin-bottom: 18px;
 }
 
+/* Restrained analytics surfaces and lavender chart treatments from the video. */
+.dashboard-visual-grid .panel {
+  border-color: color-mix(in srgb, var(--border) 65%, var(--panel));
+  border-radius: 16px;
+  box-shadow: none;
+}
+.dashboard-visual-grid .panel-title {
+  border-bottom-color: color-mix(in srgb, var(--border) 55%, transparent);
+}
+.dashboard-response-metrics {
+  padding-block: 8px;
+}
+.dashboard-response-metric + .dashboard-response-metric {
+  padding-inline-start: 12px;
+  border-inline-start: 1px solid var(--border);
+}
+.dashboard-response-metric .response-metric-icon {
+  background: var(--raised);
+  border-color: transparent;
+  border-radius: 10px;
+}
+.dashboard-latency-row {
+  padding: 8px;
+  border-radius: 10px;
+  transition: background-color 160ms ease;
+}
+.dashboard-latency-row:hover {
+  background: var(--raised);
+}
+.dashboard-latency-row .dashboard-latency-track {
+  height: 12px;
+  background: color-mix(in srgb, var(--brand) 9%, var(--panel));
+}
+.dashboard-latency-row .dashboard-latency-track i {
+  background: color-mix(in srgb, var(--brand) 65%, var(--panel));
+  transition: background-color 160ms ease;
+}
+.dashboard-latency-row:hover .dashboard-latency-track i {
+  background: var(--brand);
+}
+.dashboard-latency-row .dashboard-latency-track i.is-error {
+  background: var(--status-danger);
+}
+.dashboard-human-card .dashboard-card-note {
+  padding: 10px 12px;
+  border-radius: 9px;
+  background: var(--soft);
+}
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-latency-row,
+  .dashboard-latency-row .dashboard-latency-track i { transition: none; }
+}
+
 .dashboard-heading h1 {
   font-size: 25px;
 }
