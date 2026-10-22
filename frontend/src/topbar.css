@@ -50,6 +50,8 @@
 }
 
 .global-searchbox input {
+  margin: 0;
+  padding-block: 0;
   padding-inline: 34px;
   text-align: center;
 }
