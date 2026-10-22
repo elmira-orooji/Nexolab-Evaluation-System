@@ -1,0 +1,6 @@
+/* فقط import. تم در dig-theme.css (مالِ دیگ) و برند در brand.css (مالِ
+   پروژه) است؛ ترتیب مهم است: برند بعد از تم می‌آید تا برنده باشد. */
+@import "./dig-theme.css";
+@import "../../brand.css";
+.dig-surface { --muted: var(--dig-slate-100); } .dark .dig-surface { --muted: var(--neutral-800); }
+:root { --muted: #566177; } html.dark { --muted: #b3bfd2; }
