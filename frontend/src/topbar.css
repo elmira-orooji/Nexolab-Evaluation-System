@@ -5,6 +5,9 @@
 
 .topbar {
   display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  align-items: center;
+  padding-block: 0;
   grid-template-columns: minmax(92px, 1fr) minmax(0, min(560px, 60vw)) minmax(92px, 1fr);
   height: var(--workspace-header-height);
   min-height: var(--workspace-header-height);
@@ -14,6 +17,8 @@
 
 .topbar-search {
   grid-column: 2;
+  grid-row: 1;
+  align-self: center;
   min-width: 0;
   width: 100%;
   justify-content: center;
@@ -26,6 +31,8 @@
 
 .topbar-actions {
   grid-column: 1;
+  grid-row: 1;
+  align-self: center;
   justify-self: start;
   min-width: 0;
   gap: 8px;
