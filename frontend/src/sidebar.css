@@ -4,6 +4,28 @@
   padding-block: 0;
 }
 
+.sidebar-tools { padding: 18px 14px 22px; }
+.sidebar-new {
+  min-height: 44px;
+  border-color: color-mix(in srgb, var(--brand) 18%, var(--border));
+  background: color-mix(in srgb, var(--panel) 50%, var(--raised));
+  border-radius: 12px;
+  font-size: 12px;
+  box-shadow: 0 2px 4px color-mix(in srgb, var(--text) 3%, transparent);
+}
+.sidebar-new:hover { background: var(--soft); }
+.sidebar-recent { margin: 24px 14px 12px; padding-top: 18px; }
+.recent-heading { padding-inline: 10px; margin-bottom: 8px; }
+.recent-heading .sidebar-label { padding: 0; font-size: 11px; }
+.recent-heading > .muted { font-size: 10px; }
+.sidebar-runs { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+.recent-run { min-height: 62px; gap: 10px; padding: 11px 10px; border: 1px solid transparent; border-radius: 10px; }
+.recent-run.is-active { border-color: color-mix(in srgb, var(--brand) 14%, transparent); background: var(--soft); }
+.recent-run-copy { flex: 1; min-width: 0; }
+.recent-run-copy strong { font-size: 10px; font-weight: 500; line-height: 1.9; }
+.recent-run-copy small { font-size: 9px; line-height: 1.9; }
+.recent-run .run-dot { width: 6px; height: 6px; flex-basis: 6px; }
+
 @media (min-width: 768px) {
   .sidebar-collapsed .sidebar-brand {
     height: var(--workspace-header-height, 76px);
@@ -16,7 +38,7 @@
   display: flex;
   flex: 0 0 auto;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
   padding: 5px 12px 0;
 }
 
@@ -36,11 +58,11 @@
 
 .sidebar-nav .nav-item {
   position: relative;
-  min-height: 42px;
+  min-height: 44px;
   margin: 0;
   padding: 8px 12px;
   border-color: transparent;
-  border-radius: 8px;
+  border-radius: 10px;
   gap: 12px;
   color: var(--muted);
   transition: color 140ms ease, background-color 140ms ease;
@@ -52,17 +74,18 @@
 }
 
 .sidebar-nav .nav-item.is-active {
-  border-color: transparent;
+  border-color: color-mix(in srgb, var(--brand) 12%, transparent);
   background: var(--soft);
   color: var(--text);
   font-weight: 600;
+  box-shadow: none;
 }
 
 .sidebar-nav .nav-item.is-active::before {
   position: absolute;
-  inset-block: 9px;
+  inset-block: 14px;
   inset-inline-start: 0;
-  width: 3px;
+  width: 2px;
   border-radius: 3px;
   background: var(--brand);
   content: "";

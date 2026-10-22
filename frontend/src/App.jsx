@@ -27,7 +27,7 @@ const reviewTime = (value) => value ? new Date(value).toLocaleString('fa-IR', { 
 function RunRow({ run, active, onClick, compact = false }) {
   return <button className={`${compact ? 'recent-run' : 'dashboard-run-row'}${active ? ' is-active' : ''}`} onClick={onClick}>
     <span className={`run-dot${run.state === 'running' ? ' running' : ''}`} />
-    <span><strong>{runLabel(run)}</strong><small>{run.adapter === 'fixture' ? 'Fixture محلی' : 'Nexora'} · {stateNames[run.state] || 'پایان‌یافته'}</small></span>
+    <span className={compact ? 'recent-run-copy' : undefined}><strong>{runLabel(run)}</strong><small>{run.adapter === 'fixture' ? 'Fixture محلی' : 'Nexora'} · {stateNames[run.state] || 'پایان‌یافته'}</small></span>
     {!compact && <span className={`run-state${run.state === 'failed' ? ' failed' : ''}`}>{stateNames[run.state] || 'پایان‌یافته'}</span>}
   </button>;
 }
