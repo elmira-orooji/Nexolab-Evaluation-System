@@ -5,5 +5,6 @@ import './styles.css';
 import './sidebar.css';
 import './topbar.css';
 import './dashboard-simple.css';
+import './reference-dashboard.css';
 
 createRoot(document.getElementById('root')).render(<App />);
