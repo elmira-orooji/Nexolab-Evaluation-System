@@ -34,3 +34,19 @@
 .dashboard-recent-panel .dashboard-run-row { border-radius: 10px; }
 @media(max-width:1100px) { .dashboard-visual-grid { grid-template-columns: minmax(240px,.85fr) minmax(0,1.3fr); gap:16px; } .dashboard-side-stack,.dashboard-main-stack {gap:16px;} }
 @media(max-width:760px) { .dashboard-visual-grid {grid-template-columns:1fr;} .dashboard-response-metric,.dashboard-response-metric + .dashboard-response-metric {padding:14px;min-height:110px;} .dashboard-response-metric strong {font-size:24px;} }
+.dashboard-visual-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: 'chart stats' 'review info' 'recent recent'; }
+.dashboard-visual-grid .dashboard-side-stack,.dashboard-visual-grid .dashboard-main-stack { display: contents; }
+.dashboard-latency-card { grid-area: chart; }
+.dashboard-response-card { grid-area: stats; }
+.dashboard-human-card { grid-area: review; }
+.dashboard-run-info { grid-area: info; }
+.dashboard-recent-panel { grid-area: recent; }
+.latency-chart { padding: 12px 20px 20px; color: var(--brand); }
+.latency-chart svg { display: block; width: 100%; min-height: 230px; overflow: visible; direction: ltr; }
+.latency-chart text { fill: var(--muted); font: 10px Vazirmatn,sans-serif; }
+.chart-gridline { stroke: var(--border); stroke-dasharray: 3 5; opacity: .6; }
+.chart-point { fill: var(--panel); stroke: var(--brand); stroke-width: 2; }
+.chart-point:hover { fill: var(--brand); stroke-width: 4; }
+.latency-chart > p { font-size: 10px; margin: 6px 0 0; }
+@media(max-width:1100px) { .dashboard-visual-grid { grid-template-columns: minmax(0,1fr) minmax(0,1fr); } }
+@media(max-width:850px) { .dashboard-visual-grid {grid-template-columns:1fr;grid-template-areas:'stats' 'chart' 'review' 'info' 'recent';} }

@@ -1,4 +1,5 @@
 import RunSetup from './RunSetup.jsx';
+import LatencyChart from './LatencyChart.jsx';
 import React, { useEffect, useMemo, useState } from 'react';
 import { api, download, downloadUrl } from './api.js';
 import { Empty, Icon, Modal, SourceCard, StatusToast } from './components.jsx';
@@ -54,7 +55,7 @@ function Dashboard({ suite, report, run, runs, reviews, onView, onStart, onOpenR
   const percent = succeeded ? Math.min(100, Math.round(reviewedSuccessful / succeeded * 100)) : 0;
   const durations = results.map((item) => Number(item.duration_ms || 0));
   const averageDuration = durations.length ? Math.round(durations.reduce((sum, value) => sum + value, 0) / durations.length) : 0;
-  const maxDuration = Math.max(1, ...durations);
+
   const reviewScores = reviewCriteria.map(({ key, title }) => {
     const values = Object.values(reviews || {}).map((item) => Number(item[key])).filter((value) => value >= 1 && value <= 4);
     return { title, average: values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0 };
@@ -87,7 +88,7 @@ function Dashboard({ suite, report, run, runs, reviews, onView, onStart, onOpenR
           {report ? <div className="dashboard-response-body"><div className="dashboard-response-metrics"><div className="dashboard-response-metric"><span className="response-metric-icon is-success"><Icon name="review" /></span><strong>{number(succeeded)}</strong><small>پاسخ موفق</small></div><div className="dashboard-response-metric"><span className="response-metric-icon is-error"><Icon name="info" /></span><strong>{number(failed)}</strong><small>ناموفق</small></div><div className="dashboard-response-metric"><span className="response-metric-icon is-source"><Icon name="dashboard" /></span><strong>{number(withoutSources)}</strong><small>بدون منبع</small></div><div className="dashboard-response-metric"><span className="response-metric-icon is-time"><Icon name="clock" /></span><strong>{number(averageDuration)}</strong><small>میلی‌ثانیهٔ میانگین</small></div></div><div className="dashboard-response-bar" role="img" aria-label={`${number(succeeded)} پاسخ موفق و ${number(failed)} مورد ناموفق`}><i className="is-success" style={{ width: `${results.length ? succeeded / results.length * 100 : 0}%` }} /><i className="is-error" style={{ width: `${results.length ? failed / results.length * 100 : 0}%` }} /></div><div className="dashboard-response-legend"><span><i className="is-success" />موفق</span><span><i className="is-error" />ناموفق</span><span>بدون منبع: {number(withoutSources)}</span></div></div> : <div className="dashboard-empty"><p>داده‌ای برای نمایش نیست.</p><span className="muted">اجرای آزمون، خلاصهٔ پاسخ‌ها را می‌سازد.</span></div>}
         </article>
         <article className="panel dashboard-latency-card"><div className="panel-title"><div><h2>زمان پاسخ به پرسش‌ها</h2><p className="panel-subtitle">زمان ثبت‌شده برای هر درخواست</p></div><span className="muted">میلی‌ثانیه</span></div>
-          {results.length ? <div className="dashboard-latency-list">{results.slice(0, 6).map((item) => <div className="dashboard-latency-row" key={item.case_id}><span className="mono">{item.case_id}</span><div className="dashboard-latency-track"><i className={item.error ? 'is-error' : ''} style={{ width: `${Math.max(2, Number(item.duration_ms || 0) / maxDuration * 100)}%` }} /></div><strong>{number(item.duration_ms)}</strong></div>)}</div> : <div className="dashboard-empty"><p>زمانی ثبت نشده است.</p></div>}
+          <LatencyChart results={results} />
         </article>
         <article className="panel dashboard-recent-panel"><div className="panel-title"><div><h2>اجراهای اخیر</h2><p className="panel-subtitle">{number(runs.length)} اجرا در این فضا</p></div><button className="text-action" onClick={() => onView('runs')}>همهٔ اجراها</button></div><div className="dashboard-runs">{runs.length ? runs.slice(0, 3).map((item) => <RunRow key={item.run_id} run={item} active={item.run_id === run?.run_id} onClick={() => onOpenRun(item.run_id)} />) : <Empty>هنوز اجرایی ثبت نشده است.</Empty>}</div></article>
       </div>
