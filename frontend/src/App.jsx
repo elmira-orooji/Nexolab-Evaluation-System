@@ -233,11 +233,12 @@ export default function App() {
   };
   const activateSuite = async (key, destination = 'dashboard') => {
     if (!key) return;
+    setLoading(true);
     try {
       const data = await api('/api/suites/select', { method: 'POST', body: { suite_key: key } });
       setSuiteKey(data.suite_key); setSuite(data.suite); setRunId(''); setRunData(null); setReport(null); setReviews({}); setReviewHistory({}); setSelected(0); setSuiteDiagnostics(null);
       setView(destination); await refreshRuns(); await reloadSuites(); setMessage(`مجموعهٔ ${data.suite.id} برای اجرای بعدی انتخاب شد.`);
-    } catch (error) { setMessage(error.message); }
+    } catch (error) { setMessage(error.message); } finally { setLoading(false); }
   };
   const reloadSuites = async () => { const items = await api('/api/suites'); setSuiteCatalog(items); return items; };
   const validateSuite = async () => {
