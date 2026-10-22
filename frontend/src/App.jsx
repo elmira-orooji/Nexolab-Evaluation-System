@@ -42,25 +42,54 @@ function Diagnostics({ result }) {
 }
 
 function Dashboard({ suite, report, run, runs, reviews, onView, onStart, onOpenRun, onSuiteDetails, suiteCatalog, suiteKey, onSuiteChange, onCreateSuite, onEditSuite, onValidateSuite, diagnostics }) {
-  const casesCount = suite?.cases?.length || 0, reviewed = Object.keys(reviews || {}).length;
-  const percent = casesCount ? Math.round(reviewed / casesCount * 100) : 0;
-  const succeeded = (report?.results || []).filter((item) => item.response && !item.error).length;
-  const failed = (report?.results || []).filter((item) => item.error).length;
+  const reviewed = Object.keys(reviews || {}).length;
+  const results = report?.results || [];
+  const succeeded = results.filter((item) => item.response && !item.error).length;
+  const failed = results.filter((item) => item.error).length;
+  const withoutSources = results.filter((item) => item.response && !item.error
+    && !(item.response.sources?.length || item.response.citations?.length)).length;
+  const successfulCaseIds = new Set(results.filter((item) => item.response && !item.error).map((item) => item.case_id));
+  const reviewedSuccessful = Object.keys(reviews || {}).filter((caseId) => successfulCaseIds.has(caseId)).length;
+  const percent = succeeded ? Math.min(100, Math.round(reviewedSuccessful / succeeded * 100)) : 0;
+  const durations = results.map((item) => Number(item.duration_ms || 0));
+  const averageDuration = durations.length ? Math.round(durations.reduce((sum, value) => sum + value, 0) / durations.length) : 0;
+  const maxDuration = Math.max(1, ...durations);
+  const reviewScores = reviewCriteria.map(({ key, title }) => {
+    const values = Object.values(reviews || {}).map((item) => Number(item[key])).filter((value) => value >= 1 && value <= 4);
+    return { title, average: values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0 };
+  });
   const suiteIssues = suiteCatalog.filter((entry) => !entry.valid).flatMap((entry) => (entry.errors || []).map((issue) => ({ ...issue, message: `${entry.suite_key} · ${issue.message}` })));
   const suiteWarnings = suiteCatalog.find((entry) => entry.suite_key === suiteKey)?.warnings || [];
   const catalogDiagnostics = suiteIssues.length || suiteWarnings.length ? { valid: !suiteIssues.length, errors: suiteIssues, warnings: suiteWarnings } : null;
   return <>
-    <section className="page-heading dashboard-heading"><div><h1>داشبورد</h1><p className="muted">اجرای آزمون و پیگیری نتیجه‌ها</p></div><button className="primary dashboard-run" onClick={onStart}><Icon name="plus" />اجرای آزمون</button></section>
+    <section className="page-heading dashboard-heading"><div><p className="eyebrow">NEXOLAB · RAG EVALUATION</p><h1>داشبورد ارزیابی</h1><p className="muted">خلاصهٔ اجرا، منابع و بازبینی انسانی</p></div><button className="primary dashboard-run" onClick={onStart}><Icon name="plus" />اجرای آزمون</button></section>
     <section className="panel dashboard-suite-bar" aria-label="مجموعهٔ آزمون">
       <label htmlFor="suite-select">مجموعهٔ فعال</label>
       <select id="suite-select" value={suiteKey || ''} onChange={(event) => onSuiteChange(event.target.value)} disabled={!suiteCatalog.length}>{suiteCatalog.map((item) => <option key={item.suite_key} value={item.suite_key} disabled={!item.valid}>{item.id || item.suite_key} · {item.version || 'بدون نسخه'}</option>)}</select>
       <details className="dashboard-suite-tools"><summary>مدیریت مجموعه</summary><div className="dashboard-suite-actions"><button className="secondary" disabled={!suite} onClick={onSuiteDetails}>جزئیات</button><button className="secondary" onClick={onCreateSuite}>مجموعهٔ جدید</button><button className="secondary" disabled={!suiteKey} onClick={onEditSuite}>ویرایش JSON</button><button className="secondary" disabled={!suiteKey} onClick={onValidateSuite}>اعتبارسنجی</button></div><Diagnostics result={diagnostics || catalogDiagnostics} /></details>
     </section>
-    <section className="dashboard-grid dashboard-grid--simple">
-      <article className="panel dashboard-panel dashboard-latest-panel"><div className="panel-title"><div><h2>آخرین اجرا</h2>{run && <p className="panel-subtitle">{runLabel(run)} · {run.adapter === 'fixture' ? 'اجرای محلی' : 'Nexora'}</p>}</div><button className="text-action" disabled={!run} onClick={() => onView('review')}>بازکردن ارزیابی</button></div>
-        {report ? <div className="dashboard-latest-body"><div className="dashboard-run-status"><span className={`run-dot${run?.state === 'running' ? ' running' : ''}${run?.state === 'failed' ? ' failed' : ''}`} /><strong>{stateNames[run?.state] || 'پایان‌یافته'}</strong></div><div className="dashboard-quick-stats"><div><strong>{number(succeeded)}</strong><span>پاسخ موفق</span></div><div><strong>{number(failed)}</strong><span>ناموفق</span></div><div><strong>{number(reviewed)} از {number(casesCount)}</strong><span>بازبینی انسانی</span></div></div><progress max={casesCount || 1} value={reviewed} aria-label="پیشرفت بازبینی انسانی" /><div className="dashboard-latest-actions"><button className="primary" disabled={!run} onClick={() => onView('review')}>{percent ? 'ادامهٔ بازبینی' : 'شروع بازبینی'}</button><details className="dashboard-downloads"><summary>دریافت گزارش</summary><div>{run && <><a href={`/api/runs/${run.run_id}/report.md`} download>گزارش خوانا</a><a href={`/api/runs/${run.run_id}/report.json`} download>گزارش JSON</a>{run.state === 'completed' && <a href={`/api/runs/${run.run_id}/report.csv`} download>گزارش CSV</a>}</>}</div></details></div></div> : <div className="dashboard-empty"><p>هنوز اجرایی ثبت نشده است.</p><span className="muted">برای دیدن پاسخ‌ها، آزمون را اجرا کن.</span></div>}
-      </article>
-      <article className="panel dashboard-panel dashboard-recent-panel"><div className="panel-title"><div><h2>اجراهای اخیر</h2><p className="panel-subtitle">{number(runs.length)} اجرا</p></div><button className="text-action" onClick={() => onView('runs')}>همهٔ اجراها</button></div><div className="dashboard-runs">{runs.length ? runs.slice(0, 4).map((item) => <RunRow key={item.run_id} run={item} active={item.run_id === run?.run_id} onClick={() => onOpenRun(item.run_id)} />) : <Empty>هنوز اجرایی ثبت نشده است.</Empty>}</div></article>
+    <section className="dashboard-visual-grid">
+      <div className="dashboard-side-stack">
+        <article className="panel dashboard-human-card"><div className="panel-title"><div><h2>بازبینی انسانی</h2><p className="panel-subtitle">پیشرفت بررسی پاسخ‌های موفق</p></div><button className="text-action" disabled={!run} onClick={() => onView('review')}>ادامه</button></div>
+          <div className="dashboard-human-body"><div className="dashboard-review-overview"><div className="dashboard-review-ring" style={{ '--review-progress': `${percent}%` }}><strong>{number(percent)}٪</strong></div><div><strong>{number(reviewedSuccessful)} از {number(succeeded)} پاسخ</strong><span className="muted">بازبینی‌شده</span></div></div><progress max={succeeded || 1} value={reviewedSuccessful} aria-label="پیشرفت بازبینی انسانی" />
+            <div className="dashboard-score-list">{reviewScores.map((item) => <div className="dashboard-score-row" key={item.title}><span>{item.title}</span><div className="dashboard-score-track"><i style={{ width: `${item.average ? item.average / 4 * 100 : 0}%` }} /></div><strong>{item.average ? `${item.average.toFixed(1)} / 4` : '—'}</strong></div>)}</div>
+            {!reviewed && <p className="dashboard-card-note">پس از ثبت ارزیابی‌ها، میانگین معیارها اینجا نمایش داده می‌شود.</p>}
+          </div>
+        </article>
+        <article className="panel dashboard-run-info"><div className="panel-title"><div><h2>مشخصات اجرا</h2><p className="panel-subtitle">{run ? runLabel(run) : 'هنوز اجرایی ثبت نشده'}</p></div></div>
+          {report ? <div className="dashboard-info-list"><div><span>وضعیت</span><strong><i className={`run-dot${run?.state === 'running' ? ' running' : ''}${run?.state === 'failed' ? ' failed' : ''}`} />{stateNames[run?.state] || 'پایان‌یافته'}</strong></div><div><span>آداپتر</span><strong>{run?.adapter === 'fixture' ? 'اجرای محلی' : 'Nexora'}</strong></div><div><span>زمان پاسخ میانگین</span><strong>{number(averageDuration)} میلی‌ثانیه</strong></div></div> : <div className="dashboard-empty"><p>هنوز اجرایی ثبت نشده است.</p><span className="muted">برای شروع، آزمون را اجرا کن.</span></div>}
+          {run && <div className="dashboard-report-links"><a href={`/api/runs/${run.run_id}/report.md`} download>گزارش خوانا</a><a href={`/api/runs/${run.run_id}/report.json`} download>JSON</a>{run.state === 'completed' && <a href={`/api/runs/${run.run_id}/report.csv`} download>CSV</a>}</div>}
+        </article>
+      </div>
+      <div className="dashboard-main-stack">
+        <article className="panel dashboard-response-card"><div className="panel-title"><div><h2>نتیجهٔ پاسخ‌ها</h2><p className="panel-subtitle">خلاصهٔ موارد ثبت‌شده در آخرین اجرا</p></div><span className="nexora-status nexora-status--info">{number(results.length)} مورد</span></div>
+          {report ? <div className="dashboard-response-body"><div className="dashboard-response-metrics"><div className="dashboard-response-metric"><span className="response-metric-icon is-success"><Icon name="review" /></span><strong>{number(succeeded)}</strong><small>پاسخ موفق</small></div><div className="dashboard-response-metric"><span className="response-metric-icon is-error"><Icon name="info" /></span><strong>{number(failed)}</strong><small>ناموفق</small></div><div className="dashboard-response-metric"><span className="response-metric-icon is-source"><Icon name="dashboard" /></span><strong>{number(withoutSources)}</strong><small>بدون منبع</small></div><div className="dashboard-response-metric"><span className="response-metric-icon is-time"><Icon name="clock" /></span><strong>{number(averageDuration)}</strong><small>میلی‌ثانیهٔ میانگین</small></div></div><div className="dashboard-response-bar" role="img" aria-label={`${number(succeeded)} پاسخ موفق و ${number(failed)} مورد ناموفق`}><i className="is-success" style={{ width: `${results.length ? succeeded / results.length * 100 : 0}%` }} /><i className="is-error" style={{ width: `${results.length ? failed / results.length * 100 : 0}%` }} /></div><div className="dashboard-response-legend"><span><i className="is-success" />موفق</span><span><i className="is-error" />ناموفق</span><span>بدون منبع: {number(withoutSources)}</span></div></div> : <div className="dashboard-empty"><p>داده‌ای برای نمایش نیست.</p><span className="muted">اجرای آزمون، خلاصهٔ پاسخ‌ها را می‌سازد.</span></div>}
+        </article>
+        <article className="panel dashboard-latency-card"><div className="panel-title"><div><h2>زمان پاسخ به پرسش‌ها</h2><p className="panel-subtitle">زمان ثبت‌شده برای هر درخواست</p></div><span className="muted">میلی‌ثانیه</span></div>
+          {results.length ? <div className="dashboard-latency-list">{results.slice(0, 6).map((item) => <div className="dashboard-latency-row" key={item.case_id}><span className="mono">{item.case_id}</span><div className="dashboard-latency-track"><i className={item.error ? 'is-error' : ''} style={{ width: `${Math.max(2, Number(item.duration_ms || 0) / maxDuration * 100)}%` }} /></div><strong>{number(item.duration_ms)}</strong></div>)}</div> : <div className="dashboard-empty"><p>زمانی ثبت نشده است.</p></div>}
+        </article>
+        <article className="panel dashboard-recent-panel"><div className="panel-title"><div><h2>اجراهای اخیر</h2><p className="panel-subtitle">{number(runs.length)} اجرا در این فضا</p></div><button className="text-action" onClick={() => onView('runs')}>همهٔ اجراها</button></div><div className="dashboard-runs">{runs.length ? runs.slice(0, 3).map((item) => <RunRow key={item.run_id} run={item} active={item.run_id === run?.run_id} onClick={() => onOpenRun(item.run_id)} />) : <Empty>هنوز اجرایی ثبت نشده است.</Empty>}</div></article>
+      </div>
     </section>
   </>;
 }
