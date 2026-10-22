@@ -1,3 +1,17 @@
+.sidebar-brand {
+  height: var(--workspace-header-height, 76px);
+  min-height: var(--workspace-header-height, 76px);
+  padding-block: 0;
+}
+
+@media (min-width: 768px) {
+  .sidebar-collapsed .sidebar-brand {
+    height: var(--workspace-header-height, 76px);
+    min-height: var(--workspace-header-height, 76px);
+    padding-block: 0;
+  }
+}
+
 .sidebar-nav {
   display: flex;
   flex: 0 0 auto;

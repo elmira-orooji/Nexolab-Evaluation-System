@@ -1,9 +1,14 @@
+:root {
+  --workspace-header-height: 76px;
+  --workspace-inline-inset: max(clamp(16px, 3vw, 36px), calc((100% - 1440px) / 2));
+}
+
 .topbar {
   flex-direction: row;
   justify-content: space-between;
-  height: 64px;
-  min-height: 64px;
-  padding-inline: clamp(16px, 2vw, 30px);
+  height: var(--workspace-header-height);
+  min-height: var(--workspace-header-height);
+  padding-inline: var(--workspace-inline-inset);
 }
 
 .topbar-page-title {
@@ -131,11 +136,16 @@
 }
 
 @media (max-width: 767px) {
+  :root {
+    --workspace-header-height: 62px;
+    --workspace-inline-inset: 14px;
+  }
+
   .topbar {
-    height: 62px;
-    min-height: 62px;
+    height: var(--workspace-header-height);
+    min-height: var(--workspace-header-height);
     gap: 7px;
-    padding-inline: 11px;
+    padding-inline: var(--workspace-inline-inset);
   }
 
   .topbar-search {
@@ -183,7 +193,7 @@
 @media (max-width: 390px) {
   .topbar {
     gap: 4px;
-    padding-inline: 7px;
+    padding-inline: var(--workspace-inline-inset);
   }
 
   .topbar-actions {
