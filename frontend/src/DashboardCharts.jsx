@@ -13,7 +13,7 @@ export function DonutChart({ segments, centerLabel }) {
   });
   return <div className="space-y-6">
     <div className="relative mx-auto flex size-40 items-center justify-center rounded-full" role="img" aria-label={segments.map((item) => item.label + ': ' + number(item.value)).join('، ')} style={{ background: total ? 'conic-gradient(' + stops.join(',') + ')' : 'var(--border)' }}>
-      <div className="absolute inset-4 flex flex-col items-center justify-center rounded-full bg-card"><strong className="text-xl font-medium">{total ? number(total) : '—'}</strong><span className="text-caption text-muted-foreground">{total ? centerLabel : 'داده‌ای ثبت نشده'}</span></div>
+      <div className="absolute inset-4 flex flex-col items-center justify-center rounded-full bg-card"><strong className="text-xl font-normal">{total ? number(total) : '—'}</strong><span className="text-caption text-muted-foreground">{total ? centerLabel : 'داده‌ای ثبت نشده'}</span></div>
     </div>
     <ul className="m-0 list-none space-y-3 p-0">{segments.map((item,index) => <li key={item.label} className="flex items-center gap-2 text-label"><span className="size-2 rounded-full" aria-hidden="true" style={{ background: colors[index % colors.length] }}/><span className="flex-1 text-muted-foreground">{item.label}</span><span>{number(item.value)}</span><span className="text-caption text-muted-foreground">{total ? number(item.value / total * 100) + '٪' : '—'}</span></li>)}</ul>
   </div>;
