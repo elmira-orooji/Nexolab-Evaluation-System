@@ -2,7 +2,7 @@ import React, { useId } from 'react';
 
 export default function LatencyChart({ results }) {
   const gradientId = useId();
-  const rows = results.filter((row) => Number.isFinite(Number(row.duration_ms)));
+  const rows = results.filter((row) => typeof row.duration_ms === 'number' && Number.isFinite(row.duration_ms) && row.duration_ms >= 0);
   if (!rows.length) return <div className="dashboard-empty"><p>زمانی ثبت نشده است.</p></div>;
   const values = rows.map((row) => Math.max(0, Number(row.duration_ms)));
   const maximum = Math.max(1, ...values);
