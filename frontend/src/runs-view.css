@@ -1,0 +1,79 @@
+.runs-view .page-heading h1 {
+  font-size: var(--text-subheading);
+  font-weight: 400;
+  letter-spacing: normal;
+}
+
+.runs-view .panel-title h2 {
+  font-size: var(--text-label);
+  font-weight: 400;
+}
+
+.runs-view .page-heading .muted,
+.runs-view .empty-runs {
+  font-size: var(--text-description);
+}
+
+.runs-view .primary,
+.runs-view .compare-controls select {
+  min-height: calc(var(--spacing) * 9);
+  font-size: var(--text-sm);
+  font-weight: 400;
+}
+
+.runs-view .primary {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  box-shadow: none;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+.runs-view .primary:hover:not(:disabled) {
+  background: var(--brand-700);
+  filter: none;
+  transform: none;
+  box-shadow: none;
+}
+
+.dark .runs-view .primary:hover:not(:disabled) {
+  background: var(--brand-300);
+}
+
+.runs-view .primary:disabled {
+  opacity: 1;
+  background: var(--raised);
+  color: var(--text-subtle);
+  cursor: not-allowed;
+}
+
+.runs-view .dashboard-run-row {
+  transition: background-color 150ms ease;
+}
+
+.runs-view .dashboard-run-row:hover,
+.runs-view .dashboard-run-row.is-active {
+  background: var(--soft);
+  color: var(--text);
+  box-shadow: none;
+  transform: none;
+}
+
+.runs-view .dashboard-run-row strong {
+  font-size: var(--text-label);
+  font-weight: 400;
+}
+
+.runs-view .dashboard-run-row small,
+.runs-view .run-state,
+.runs-view .compare-controls label,
+.runs-view .panel-subtitle {
+  font-size: var(--text-caption);
+  font-weight: 400;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .runs-view .primary,
+  .runs-view .dashboard-run-row {
+    transition: none;
+  }
+}

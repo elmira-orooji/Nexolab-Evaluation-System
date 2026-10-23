@@ -1,6 +1,7 @@
 import ReviewView from './ReviewView.jsx';
 import { SuitesPage, GuidePage, ConnectionPage } from './WorkspacePages.jsx';
 import './workspace-pages.css';
+import './runs-view.css';
 import RunSetup from './RunSetup.jsx';
 import Dashboard from './Dashboard.jsx';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -44,11 +45,11 @@ function Diagnostics({ result }) {
 }
 
 function RunsView({ runs, activeRunId, onOpenRun, onStart, baseline, candidate, setBaseline, setCandidate, onCompare, comparison, comparing, comparisonOnly = false }) {
-  return <>
+  return <div className="runs-view">
     <section className="page-heading"><div><p className="eyebrow">تاریخچه</p><h1>{comparisonOnly ? 'مقایسهٔ اجراها' : 'اجراهای آزمون'}</h1><p className="muted">گزارش‌ها به تفکیک شناسه و زمان اجرا نگهداری می‌شوند.</p></div><button className="primary dashboard-run" onClick={onStart}><Icon name="plus" />اجرای آزمون</button></section>
     <section className="panel runs-panel"><div className="panel-title"><h2>همهٔ اجراها</h2><span className="muted">{number(runs.length)} اجرا</span></div><div className="runs-list">{runs.length ? runs.map((item) => <RunRow key={item.run_id} run={item} active={item.run_id === activeRunId} onClick={() => onOpenRun(item.run_id)} />) : <Empty>هنوز اجرایی ثبت نشده است.</Empty>}</div></section>
     <section className="panel compare-panel"><div className="panel-title"><div><h2>مقایسهٔ اجراها</h2><p className="panel-subtitle">تغییر پاسخ، منابع، خطا و زمان را برای هر پرسش ببین.</p></div></div><div className="compare-controls"><label>اجرای مبنا<select value={baseline} onChange={(event) => setBaseline(event.target.value)}><option value="">انتخاب اجرا</option>{runs.map((item) => <option key={item.run_id} value={item.run_id} disabled={item.state !== 'completed'}>{runLabel(item)} · {item.state === 'completed' ? 'پایان‌یافته' : 'ناتمام'}</option>)}</select></label><label>اجرای جدیدتر<select value={candidate} onChange={(event) => setCandidate(event.target.value)}><option value="">انتخاب اجرا</option>{runs.map((item) => <option key={item.run_id} value={item.run_id} disabled={item.state !== 'completed'}>{runLabel(item)} · {item.state === 'completed' ? 'پایان‌یافته' : 'ناتمام'}</option>)}</select></label><button className="primary" disabled={!baseline || !candidate || baseline === candidate || comparing} onClick={onCompare}>{comparing ? 'در حال مقایسه…' : 'مقایسه'}</button></div><Comparison result={comparison} /></section>
-  </>;
+  </div>;
 }
 
 function Comparison({ result }) {
