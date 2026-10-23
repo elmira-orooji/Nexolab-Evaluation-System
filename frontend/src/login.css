@@ -1,0 +1,32 @@
+.nexolab-login { display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); min-height:100dvh; color:var(--foreground); background:var(--panel); }
+.nexolab-login__visual { position:relative; display:flex; align-items:center; justify-content:center; min-height:100dvh; overflow:hidden; background:var(--dig-slate-950); }
+.nexolab-login__hero { display:block; width:100%; height:100%; position:absolute; inset:0; object-fit:cover; object-position:center; }
+.nexolab-login__visual-caption { position:relative; z-index:1; align-self:flex-end; width:100%; padding:3rem; color:var(--dig-white); background:linear-gradient(transparent,var(--dig-slate-950)); }
+.nexolab-login__eyebrow { font-size:var(--text-caption); letter-spacing:.15em; color:var(--brand-200); }
+.nexolab-login__visual-caption h2 { margin:.75rem 0 .5rem; font-size:1.75rem; font-weight:400; line-height:1.5; }
+.nexolab-login__visual-caption p { margin:0; font-size:var(--text-description); color:var(--brand-100); }
+.nexolab-login__main { position:relative; display:flex; align-items:center; justify-content:center; min-width:0; min-height:100dvh; max-width:none; margin:0; padding:7.5rem 3.5rem 4rem; background:var(--panel); border-inline-end:1px solid var(--border); }
+.nexolab-login__toolbar { position:absolute; inset-block-start:1.75rem; inset-inline-end:1.75rem; }
+.nexolab-login__form-wrap { width:100%; max-width:22rem; }
+.nexolab-login__logo { display:block; width:12rem; height:auto; margin:0 auto 3.25rem; }
+.nexolab-login__heading { text-align:center; }
+.nexolab-login__heading h1 { margin:0; font-size:1.25rem; line-height:1.5; font-weight:400; letter-spacing:normal; }
+.nexolab-login__heading p { margin:.5rem 0 0; color:var(--muted-foreground); font-size:var(--text-description); line-height:1.8; }
+.nexolab-login__form { display:grid; gap:1.5rem; margin-block-start:2.5rem; padding:0; }
+.nexolab-login__remember { display:flex; align-items:center; gap:.625rem; font-size:var(--text-caption); color:var(--muted-foreground); cursor:pointer; }
+.nexolab-login [data-slot="checkbox"] { padding:0; }
+.nexolab-login__submit { justify-self:center; width:11.25rem; margin:0; }
+.nexolab-login__notice { margin:0; font-size:var(--text-caption); color:var(--muted-foreground); line-height:1.9; text-align:center; }
+.nexolab-login__footer { margin-block-start:2.5rem; text-align:center; font-size:var(--text-caption); color:var(--muted-foreground); }
+@media(max-width:48rem) {
+  .nexolab-login { grid-template-columns:minmax(0,1fr); }
+  .nexolab-login__visual { min-height:0; height:12rem; }
+  .nexolab-login__hero { object-fit:cover; object-position:center 45%; }
+  .nexolab-login__visual-caption { display:none; }
+  .nexolab-login__main { min-height:calc(100dvh - 12rem); padding:4rem 1.5rem 2rem; }
+  .nexolab-login__toolbar { inset-block-start:.75rem; inset-inline-end:.75rem; }
+  .nexolab-login__logo { margin-block-end:1.75rem; width:10rem; }
+  .nexolab-login__form { margin-block-start:1.5rem; gap:1.25rem; }
+  .nexolab-login__submit { width:100%; }
+  .nexolab-login input { font-size:1rem !important; }
+}

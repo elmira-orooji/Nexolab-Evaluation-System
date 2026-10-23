@@ -1,11 +1,11 @@
 import React from 'react';
 import './app/globals.css';
 import { createRoot } from 'react-dom/client';
-import App from './App.jsx';
+import EntryApp from './EntryApp.jsx';
 import './styles.css';
 import './sidebar.css';
 import './topbar.css';
 import './dashboard-simple.css';
 import './reference-dashboard.css';
 
-createRoot(document.getElementById('root')).render(<App />);
+createRoot(document.getElementById('root')).render(<EntryApp />);
