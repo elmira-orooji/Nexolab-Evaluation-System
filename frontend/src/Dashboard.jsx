@@ -10,7 +10,7 @@ function ChartCard({ id, title, description, children, className = '' }) {
   return <Card aria-labelledby={id} className={'min-w-0 ' + className}><CardHeader><CardTitle asChild className="text-body font-medium"><h2 id={id}>{title}</h2></CardTitle>{description && <CardDescription className="text-caption">{description}</CardDescription>}</CardHeader><CardContent>{children}</CardContent></Card>;
 }
 
-export default function Dashboard({ suite, report, run, reviews, onView, onStart }) {
+export default function Dashboard({ suite, report, run, reviews, onView }) {
   const results = report?.results || [];
   const answered = results.filter((item) => item.response && !item.error);
   const failed = results.filter((item) => item.error).length;
@@ -22,8 +22,8 @@ export default function Dashboard({ suite, report, run, reviews, onView, onStart
   const timings = results.map((item) => item.duration_ms).filter((value) => typeof value === 'number' && Number.isFinite(value) && value >= 0);
   const mean = timings.length ? Math.round(timings.reduce((sum,value) => sum + value, 0) / timings.length).toLocaleString('fa-IR') : null;
   return <ControlSizeProvider size="lg"><div className="dig-surface space-y-6 text-foreground">
-    <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-8"><div className="space-y-2"><h1 className="text-heading font-medium">داشبورد ارزیابی</h1><p className="text-caption text-muted-foreground">{run ? <><bdi>{report?.suite?.id || suite?.id}</bdi> · {date} · {states[run.state] || 'وضعیت نامشخص'}</> : 'نمای بصری پاسخ‌ها، منابع و بازبینی انسانی'}</p></div><div className="flex flex-wrap gap-3"><Button variant="outline" disabled={!answered.length} onClick={() => onView('review')}>بازبینی پاسخ‌ها</Button><Button onClick={onStart}>اجرای آزمون جدید</Button></div></header>
-    {!run ? <ChartCard id="dashboard-empty" title="هنوز آزمونی اجرا نشده است" description="برای نمایش نمودارها، ابتدا یک مجموعه را اجرا کنید."><Button variant="outline" onClick={() => onView('suites')}>مجموعه‌های آزمون</Button></ChartCard> : <>
+    <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-8"><div className="space-y-2"><h1 className="text-heading font-medium">داشبورد ارزیابی</h1><p className="text-caption text-muted-foreground">{run ? <><bdi>{report?.suite?.id || suite?.id}</bdi> · {date} · {states[run.state] || 'وضعیت نامشخص'}</> : 'نمای بصری پاسخ‌ها، منابع و بازبینی انسانی'}</p></div></header>
+    {!run ? <ChartCard id="dashboard-empty" title="هنوز آزمونی اجرا نشده است" description="برای نمایش نمودارها، از گزینهٔ اجرای آزمون جدید در سایدبار شروع کنید."><Button variant="outline" onClick={() => onView('suites')}>مجموعه‌های آزمون</Button></ChartCard> : <>
       {run.adapter === 'fixture' && <p className="rounded-lg bg-primary-subtle p-3 text-caption text-primary-subtle-foreground">اجرای آزمایشی با پاسخ‌های ساختگی؛ این داده‌ها خروجی Nexora نیستند.</p>}
       <section className="grid grid-cols-1 gap-6 md:grid-cols-3" aria-label="نمودارهای خلاصهٔ اجرا">
         <ChartCard id="chart-response" title="وضعیت درخواست‌ها" description="توزیع نتیجه‌های ثبت‌شده"><DonutChart centerLabel="درخواست" segments={[{label:'پاسخ دریافت‌شده',value:answered.length},{label:'ناموفق',value:failed},{label:'بدون نتیجه',value:results.length - answered.length - failed}]}/></ChartCard>
