@@ -1,0 +1,41 @@
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { ControlSizeProvider } from '@/components/ui/control-size';
+import { TextField } from '@/components/ui/text-field';
+
+const number = (value) => Number(value || 0).toLocaleString('fa-IR');
+const secondary = 'font-normal shadow-none transition-colors hover:border-primary hover:bg-primary-subtle hover:text-primary-subtle-foreground';
+const primary = 'font-normal shadow-none transition-colors hover:bg-(--brand-700) dark:hover:bg-(--brand-300) hover:brightness-100 dark:hover:brightness-100';
+export function searchSuites(suites, query) {
+  const normalize = (value) => String(value || '').toLocaleLowerCase('fa').replaceAll('ي','ی').replaceAll('ك','ک').trim();
+  return suites.filter((item) => normalize([item.id,item.suite_key,item.description].join(' ')).includes(normalize(query)));
+}
+
+export default function SuitesPage({ suites, selected, suite, busy, onSelect, onCreate, onEdit, onValidate, diagnostics }) {
+  const [query,setQuery] = useState('');
+  const [validating,setValidating] = useState(false);
+  const filtered = searchSuites(suites,query);
+  const locked = busy || validating;
+  const validate = async () => {setValidating(true);try {await onValidate();} finally {setValidating(false);}};
+  return <ControlSizeProvider size="default"><div className="dig-surface space-y-8 text-foreground">
+    <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-8"><div className="space-y-2"><h1 className="text-subheading font-normal">مجموعه‌های آزمون</h1><p className="text-description text-muted-foreground">هر مجموعه شامل پرسش‌ها، پاسخ‌های مرجع و اسناد آزمون است.</p></div><Button className={primary} disabled={locked} onClick={onCreate}>ساخت مجموعهٔ جدید</Button></header>
+    {suites.length > 0 && <section aria-label="جست‌وجوی مجموعه‌ها" className="space-y-2"><TextField label="جست‌وجوی مجموعه" placeholder="نام یا توضیح مجموعه" value={query} onValueChange={setQuery}/><p className="text-caption text-muted-foreground">مجموعهٔ انتخاب‌شده برای آزمون بعدی استفاده می‌شود.</p></section>}
+    <section aria-labelledby="suites-list-title" className="space-y-3"><div className="flex items-center justify-between gap-3"><h2 id="suites-list-title" className="text-label font-normal">مجموعه‌های موجود</h2><p role="status" className="text-caption text-muted-foreground">{number(filtered.length)} مجموعه</p></div>
+      <div className="overflow-hidden rounded-xl border border-border bg-card">
+        {!suites.length ? <div className="space-y-3 p-6"><h3 className="text-body font-normal">هنوز مجموعه‌ای ندارید</h3><p className="text-description text-muted-foreground">با «ساخت مجموعهٔ جدید» پرسش‌ها و اسناد اولین آزمون را اضافه کنید.</p></div> : !filtered.length ? <div className="space-y-4 p-6"><h3 className="text-body font-normal">مجموعه‌ای پیدا نشد</h3><Button variant="outline" className={secondary} onClick={() => setQuery('')}>پاک‌کردن جست‌وجو</Button></div> : <ul className="m-0 list-none divide-y divide-border p-0">{filtered.map((item) => {
+          const active = item.suite_key === selected;
+          return <li key={item.suite_key} className="space-y-4 p-5">
+            <div className="flex flex-wrap items-start justify-between gap-4"><div className="min-w-0 flex-1 space-y-2"><div className="flex flex-wrap items-center gap-3"><h3 className="m-0 break-all text-body font-normal"><bdi>{item.id || item.suite_key}</bdi></h3>{active && <span className="rounded-md bg-primary-subtle px-2 py-1 text-caption text-primary-subtle-foreground">انتخاب‌شده برای آزمون</span>}</div>{item.description && <p className="text-description text-muted-foreground">{item.description}</p>}<p className="text-caption text-muted-foreground">{number(item.case_count)} پرسش · {number(item.document_count)} سند مرجع · نسخهٔ <bdi>{item.version || 'ثبت‌نشده'}</bdi></p><p className={'text-caption ' + (item.valid ? 'text-muted-foreground' : 'text-destructive')}>{item.valid ? 'ساختار معتبر' : 'نیازمند اصلاح؛ تا رفع خطاها قابل انتخاب نیست'}</p></div>{!active && <Button variant="outline" className={secondary} disabled={!item.valid || locked} onClick={() => onSelect(item.suite_key)} aria-label={'انتخاب مجموعهٔ ' + (item.id || item.suite_key)}>انتخاب مجموعه</Button>}</div>
+            {!item.valid && <details className="border-0 p-0"><summary className="text-caption text-muted-foreground">مشاهدهٔ خطاهای مجموعه</summary><ul className="mt-3 space-y-2 ps-4">{(item.errors || []).map((error,i) => <li key={i} className="text-description text-destructive"><bdi>{error.path}</bdi> · {error.message}</li>)}</ul></details>}
+            {active && <div className="space-y-4 border-t border-border pt-4">
+              <div className="flex flex-wrap gap-3"><Button variant="outline" className={secondary} disabled={locked} onClick={onEdit}>ویرایش مجموعه</Button><Button variant="ghost" className={secondary} disabled={locked} loading={validating} onClick={() => void validate()}>بررسی اعتبار مجموعه</Button></div>
+              <p className="text-caption text-muted-foreground">ویرایش در قالب JSON انجام می‌شود؛ پیش از ذخیره، ساختار مجموعه بررسی خواهد شد.</p>
+              {suite && <details className="border-0 p-0"><summary className="text-label text-muted-foreground">پیش‌نمایش پرسش‌ها و اسناد</summary><div className="mt-4 grid grid-cols-1 gap-6 md:grid-cols-2"><section aria-label="پرسش‌های مجموعه" className="min-w-0 space-y-3"><h4 className="m-0 text-label font-normal">پرسش‌ها</h4><ol className="m-0 space-y-3 ps-4">{(suite.cases || []).slice(0,5).map((entry) => <li key={entry.id} className="text-description">{entry.question}</li>)}</ol>{suite.cases?.length > 5 && <p className="text-caption text-muted-foreground">نمایش ۵ پرسش اول؛ همهٔ پرسش‌ها در ویرایش مجموعه در دسترس‌اند.</p>}</section><section aria-label="اسناد مجموعه" className="min-w-0 space-y-3"><h4 className="m-0 text-label font-normal">اسناد مرجع</h4>{(suite.documents || []).slice(0,5).map((entry) => <p key={entry.id} className="text-description">{entry.title || entry.id}</p>)}{suite.documents?.length > 5 && <p className="text-caption text-muted-foreground">نمایش ۵ سند اول؛ همهٔ اسناد در ویرایش مجموعه در دسترس‌اند.</p>}</section></div></details>}
+              {diagnostics}
+            </div>}
+          </li>;
+        })}</ul>}
+      </div>
+    </section>
+  </div></ControlSizeProvider>;
+}
