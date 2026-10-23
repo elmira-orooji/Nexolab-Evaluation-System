@@ -540,7 +540,7 @@ function SelectContent({
             position: "fixed",
             top: position ? position.y : 0,
             left: position ? position.x : 0,
-            minWidth: triggerWidth,
+            width: triggerWidth,
             visibility: position ? "visible" : "hidden",
             "--select-content-transform-origin": transformOriginFor(
               finalSide,
@@ -549,7 +549,9 @@ function SelectContent({
           } as React.CSSProperties
         }
         className={cn(
-          "relative z-(--z-overlay) max-h-96 min-w-[8rem] origin-(--select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-xl border bg-popover p-1 text-popover-foreground shadow-panel data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
+          // Tailwind utilities are important in this app: relative would override
+          // the inline fixed position and detach the portal from its trigger.
+          "fixed z-(--z-overlay) max-h-96 min-w-[8rem] origin-(--select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-xl border bg-popover p-1 text-popover-foreground shadow-panel data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
           className
         )}
         {...props}
