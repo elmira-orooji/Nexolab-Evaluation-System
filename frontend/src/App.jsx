@@ -1,3 +1,4 @@
+import ComparisonPage from './ComparisonPage.jsx';
 import ReviewView from './ReviewView.jsx';
 import RunsPage from './RunsPage.jsx';
 import { SuitesPage, GuidePage, ConnectionPage } from './WorkspacePages.jsx';
@@ -7,10 +8,9 @@ import RunSetup from './RunSetup.jsx';
 import Dashboard from './Dashboard.jsx';
 import React, { useEffect, useMemo, useState } from 'react';
 import { api, downloadUrl } from './api.js';
-import { Empty, Icon, Modal, StatusToast } from './components.jsx';
+import { Icon, Modal, StatusToast } from './components.jsx';
 
 const number = (value) => new Intl.NumberFormat('fa-IR').format(Number(value || 0));
-const stateNames = { running: 'در حال اجرا', completed: 'پایان‌یافته', failed: 'خطای اجرا', interrupted: 'ناتمام' };
 const reviewCriteria = [
   { key: 'correctness', title: 'درستی پاسخ', guide: '۱: نادرست یا بی‌پشتوانه؛ ۲: بخشی درست با خطای مهم؛ ۳: درست با ایراد جزئی؛ ۴: دقیق و مستند.' },
   { key: 'relevance', title: 'ارتباط با پرسش', guide: '۱: بی‌ارتباط؛ ۲: پاسخ ناقص یا پر از حاشیه؛ ۳: پاسخ‌گو با کمی حاشیه؛ ۴: مستقیم و متمرکز.' },
@@ -28,14 +28,6 @@ const adapterErrorNames = {
 const slug = (value) => String(value || '').toLocaleLowerCase('fa').replace(/[ي]/g, 'ی').replace(/[ك]/g, 'ک').trim();
 const runLabel = (run) => `${new Date(run.started_at).toLocaleString('fa-IR', { dateStyle: 'short', timeStyle: 'short' })} · ${run.run_id.slice(0, 8)}`;
 
-function RunRow({ run, active, onClick, compact = false }) {
-  return <button className={`${compact ? 'recent-run' : 'dashboard-run-row'}${active ? ' is-active' : ''}`} onClick={onClick}>
-    <span className={`run-dot${run.state === 'running' ? ' running' : ''}`} />
-    <span className={compact ? 'recent-run-copy' : undefined}><strong>{runLabel(run)}</strong><small>{run.adapter === 'fixture' ? 'Fixture محلی' : 'Nexora'} · {stateNames[run.state] || 'پایان‌یافته'}</small></span>
-    {!compact && <span className={`run-state${run.state === 'failed' ? ' failed' : ''}`}>{stateNames[run.state] || 'پایان‌یافته'}</span>}
-  </button>;
-}
-
 function Diagnostics({ result }) {
   if (!result) return null;
   const errors = result.errors || [], warnings = result.warnings || [];
@@ -45,25 +37,9 @@ function Diagnostics({ result }) {
   </div>;
 }
 
-function RunsView({ runs, activeRunId, onOpenRun, onStart, baseline, candidate, setBaseline, setCandidate, onCompare, comparison, comparing, comparisonOnly = false }) {
-  if (!comparisonOnly) return <RunsPage runs={runs} activeRunId={activeRunId} onOpenRun={onOpenRun} onStart={onStart}/>;
-  return <div className="runs-view">
-    <section className="page-heading"><div><p className="eyebrow">تاریخچه</p><h1>{comparisonOnly ? 'مقایسهٔ اجراها' : 'اجراهای آزمون'}</h1><p className="muted">گزارش‌ها به تفکیک شناسه و زمان اجرا نگهداری می‌شوند.</p></div><button className="primary dashboard-run" onClick={onStart}><Icon name="plus" />اجرای آزمون</button></section>
-    <section className="panel runs-panel"><div className="panel-title"><h2>همهٔ اجراها</h2><span className="muted">{number(runs.length)} اجرا</span></div><div className="runs-list">{runs.length ? runs.map((item) => <RunRow key={item.run_id} run={item} active={item.run_id === activeRunId} onClick={() => onOpenRun(item.run_id)} />) : <Empty>هنوز اجرایی ثبت نشده است.</Empty>}</div></section>
-    <section className="panel compare-panel"><div className="panel-title"><div><h2>مقایسهٔ اجراها</h2><p className="panel-subtitle">تغییر پاسخ، منابع، خطا و زمان را برای هر پرسش ببین.</p></div></div><div className="compare-controls"><label>اجرای مبنا<select value={baseline} onChange={(event) => setBaseline(event.target.value)}><option value="">انتخاب اجرا</option>{runs.map((item) => <option key={item.run_id} value={item.run_id} disabled={item.state !== 'completed'}>{runLabel(item)} · {item.state === 'completed' ? 'پایان‌یافته' : 'ناتمام'}</option>)}</select></label><label>اجرای جدیدتر<select value={candidate} onChange={(event) => setCandidate(event.target.value)}><option value="">انتخاب اجرا</option>{runs.map((item) => <option key={item.run_id} value={item.run_id} disabled={item.state !== 'completed'}>{runLabel(item)} · {item.state === 'completed' ? 'پایان‌یافته' : 'ناتمام'}</option>)}</select></label><button className="primary" disabled={!baseline || !candidate || baseline === candidate || comparing} onClick={onCompare}>{comparing ? 'در حال مقایسه…' : 'مقایسه'}</button></div><Comparison result={comparison} /></section>
-  </div>;
+function RunsView(props) {
+  return props.comparisonOnly ? <ComparisonPage {...props}/> : <RunsPage {...props}/>;
 }
-
-function Comparison({ result }) {
-  if (!result) return null;
-  const errorText = (error) => error ? `${error.kind}${error.http_status ? ` (${error.http_status})` : ''}` : 'ندارد';
-  return <div className="compare-result" role="region" aria-live="polite"><div className="compare-meta"><span>مبنا: {result.baseline_run_id.slice(0, 8)}</span><span>جدید: {result.candidate_run_id.slice(0, 8)}</span><span>مجموعه یکسان: {result.same_suite ? 'بله' : 'خیر'}</span><span>پیکربندی یکسان: {result.same_config ? 'بله' : 'خیر'}</span></div>
-    {(!result.same_suite || !result.same_config) && <p className="compare-warning">هشدار: {!result.same_suite ? 'هش مجموعه‌ها متفاوت است. ' : ''}{!result.same_config ? 'هش پیکربندی‌ها متفاوت است.' : ''} revision سامانه: {result.baseline_system_revision || 'ثبت‌نشده'} ← {result.candidate_system_revision || 'ثبت‌نشده'}؛ revision پیکره: {result.baseline_corpus_revision || 'ثبت‌نشده'} ← {result.candidate_corpus_revision || 'ثبت‌نشده'}</p>}
-    <p className="compare-summary">{number(result.shared_case_count)} پرسش مشترک · {number(result.answer_changes)} پاسخ تغییرکرده · {number(result.source_changes)} منبع تغییرکرده · {number(result.error_changes)} تغییر در خطا · خطاها {number(result.baseline_errors)} ← {number(result.candidate_errors)}</p>
-    {!result.cases.length ? <p className="muted">پرسش مشترکی برای مقایسه وجود ندارد.</p> : <div className="compare-table-wrap"><table className="compare-table"><thead><tr>{['شناسه', 'پاسخ اجرا مبنا', 'پاسخ اجرای جدید', 'منابع مبنا ← جدید', 'خطا مبنا ← جدید', 'اختلاف زمان (ms)'].map((title) => <th key={title}>{title}</th>)}</tr></thead><tbody>{result.cases.map((item) => <tr key={item.case_id}><td>{item.case_id}</td><td className={`compare-answer${item.answer_changed ? ' compare-change' : ''}`}>{item.baseline.answer || '—'}</td><td className={`compare-answer${item.answer_changed ? ' compare-change' : ''}`}>{item.candidate.answer || '—'}</td><td className={item.sources_changed ? 'compare-change' : ''}>{number(item.baseline.source_count)} ← {number(item.candidate.source_count)}{item.sources_changed ? ' · تغییر' : ''}</td><td className={item.error_changed ? 'compare-error' : ''}>{errorText(item.baseline.error)} ← {errorText(item.candidate.error)}</td><td>{item.duration_delta_ms > 0 ? '+' : ''}{number(item.duration_delta_ms)}</td></tr>)}</tbody></table></div>}
-  </div>;
-}
-
 export default function App() {
   const [suite, setSuite] = useState(null), [suiteKey, setSuiteKey] = useState(''), [suiteCatalog, setSuiteCatalog] = useState([]);
   const [adapter, setAdapter] = useState('fixture'), [view, setView] = useState('dashboard'), [runs, setRuns] = useState([]);
@@ -184,8 +160,8 @@ export default function App() {
   };
   const compareRuns = async () => {
     setComparing(true); setComparison(null);
-    try { setComparison(await api(`/api/compare?baseline=${encodeURIComponent(baseline)}&candidate=${encodeURIComponent(candidate)}`)); }
-    catch (error) { setMessage(error.message); }
+    try { setComparison(await api(`/api/compare?baseline=${encodeURIComponent(baseline)}&candidate=${encodeURIComponent(candidate)}`)); return true; }
+    catch (error) { setMessage(error.message); return false; }
     finally { setComparing(false); }
   };
   const showView = (name) => { setView(name); setMobileMenu(false); setGlobalSearchOpen(false); };
