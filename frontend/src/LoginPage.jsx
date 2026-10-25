@@ -15,7 +15,7 @@ export default function LoginPage({onEnter}) {
   useEffect(() => {document.documentElement.classList.toggle('dark',dark);try{localStorage.setItem('nexolab-theme',dark ? 'dark':'light');}catch{/* Browser storage may be unavailable. */}},[dark]);
   const submit = (event) => {event.preventDefault();if(username.trim() && password) onEnter(remember);};
   return <ControlSizeProvider size="default"><div className="dig-surface nexolab-login" dir="ltr">
-    <aside className="nexolab-login__visual" aria-label="آزمایشگاه ارزیابی پاسخ‌های هوش مصنوعی"><img className="nexolab-login__hero" src="/assets/nexolab-login-hero.webp" alt="آزمایشگاه دیجیتال با ارلن، شبکهٔ اسناد و پیوندهای ارزیابی پاسخ"/></aside>
+    <aside className="nexolab-login__visual" aria-label="آزمایشگاه ارزیابی پاسخ‌های هوش مصنوعی"/>
     <main className="nexolab-login__main" dir="rtl" aria-labelledby="login-title">
       <div className="nexolab-login__toolbar"><Button variant="ghost" aria-label={dark ? 'فعال‌کردن حالت روشن' : 'فعال‌کردن حالت تیره'} onClick={() => setDark(!dark)} className="shadow-none hover:bg-primary-subtle">{dark ? <Sun aria-hidden="true"/> : <Moon aria-hidden="true"/>}</Button></div>
       <div className="nexolab-login__form-wrap">
