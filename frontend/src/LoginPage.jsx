@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Eye, EyeOff, Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TextField } from '@/components/ui/text-field';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -11,11 +11,15 @@ export default function LoginPage({onEnter}) {
   const [password,setPassword] = useState('');
   const [showPassword,setShowPassword] = useState(false);
   const [remember,setRemember] = useState(false);
+  const [dark,setDark] = useState(() => {try{return localStorage.getItem('nexolab-theme') === 'dark';}catch{return false;}});
+  useEffect(() => {document.documentElement.classList.toggle('dark',dark);try{localStorage.setItem('nexolab-theme',dark ? 'dark':'light');}catch{/* Browser storage may be unavailable. */}},[dark]);
   const submit = (event) => {event.preventDefault();if(username.trim() && password) onEnter(remember);};
   return <ControlSizeProvider size="default"><div className="dig-surface nexolab-login" dir="ltr">
     <aside className="nexolab-login__visual" aria-label="آزمایشگاه ارزیابی پاسخ‌های هوش مصنوعی"/>
     <main className="nexolab-login__main" dir="rtl" aria-labelledby="login-title">
+      <div className="nexolab-login__toolbar"><Button variant="ghost" aria-label={dark ? 'فعال‌کردن حالت روشن' : 'فعال‌کردن حالت تیره'} onClick={() => setDark(!dark)} className="shadow-none hover:bg-primary-subtle">{dark ? <Sun aria-hidden="true"/> : <Moon aria-hidden="true"/>}</Button></div>
       <div className="nexolab-login__form-wrap">
+        <img className="nexolab-login__logo" src={dark ? '/assets/nexolab-login-dark.svg' : '/assets/nexolab-horizontal.svg'} alt="Nexolab"/>
         <header className="nexolab-login__heading"><h1 id="login-title">خوش آمدید</h1><p>برای ادامه، اطلاعات حساب خود را وارد کنید.</p></header>
         <form onSubmit={submit} className="nexolab-login__form">
           <TextField id="demo-username" className="nexolab-login__field" label="نام کاربری" placeholder="نام کاربری خود را وارد کنید" variant="underlined" value={username} onValueChange={setUsername} autoComplete="username" spellCheck={false} dir="rtl" required maxLength={120}/>
