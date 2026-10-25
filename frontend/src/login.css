@@ -1,7 +1,8 @@
 .nexolab-login { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); height:100dvh; min-height:0; overflow:hidden; color:var(--foreground); background:var(--panel); }
 .nexolab-login__visual { position:relative; display:flex; align-items:center; justify-content:center; min-width:0; min-height:0; overflow:hidden; background-color:#00051b; background-image:url('/assets/nexolab-login-hero-portrait.png'); background-position:center; background-size:cover; background-repeat:no-repeat; }
 .nexolab-login__main { position:relative; display:flex; align-items:center; justify-content:center; min-width:0; min-height:0; max-width:none; margin:0; padding:3rem 3.5rem 2rem; background:var(--panel); border-inline-end:1px solid var(--border); }
-.nexolab-login__toolbar { position:absolute; inset-block-start:1.25rem; inset-inline-end:1.25rem; }
+.nexolab-login__toolbar { position:absolute; inset-block-start:1.25rem; inset-inline-end:1.25rem; display:flex; align-items:center; gap:.125rem; direction:ltr; }
+.nexolab-login__language { display:inline-flex; align-items:center; gap:.375rem; }
 .nexolab-login__form-wrap { width:100%; max-width:27.5rem; }
 .nexolab-login__logo { display:block; width:11rem; height:auto; margin:0 auto 2rem; }
 .nexolab-login__heading { text-align:center; }
@@ -15,6 +16,7 @@
 .nexolab-login__field [data-slot="input"]::placeholder { color:var(--muted-foreground); opacity:1; }
 .nexolab-login__field [data-slot="input-end"] { margin-inline-end:auto; }
 .nexolab-login__field [data-slot="input-end"] button { color:var(--muted-foreground); }
+.nexolab-login[lang="en"] .nexolab-login__field [data-slot="input"] { text-align:left; }
 .nexolab-login__remember { display:flex; align-items:center; gap:.625rem; font-size:.95rem; color:var(--muted-foreground); cursor:pointer; }
 .nexolab-login [data-slot="checkbox"] { width:1.375rem; height:1.375rem; padding:0; border-radius:.375rem; }
 .nexolab-login__submit { justify-self:center; width:14rem; min-height:3.375rem; margin-block-start:.25rem; font-size:1rem; }
