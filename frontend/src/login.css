@@ -4,10 +4,10 @@
 .nexolab-login__toolbar { position:absolute; inset-block-start:1.25rem; inset-inline-end:1.25rem; display:flex; align-items:center; gap:.125rem; direction:ltr; }
 .nexolab-login__language { display:inline-flex; align-items:center; gap:.375rem; }
 .nexolab-login__form-wrap { width:100%; max-width:27.5rem; }
-.nexolab-login__logo { display:block; width:11rem; height:auto; margin:0 auto 2rem; }
+.nexolab-login__logo { display:block; width:13rem; height:auto; margin:0 auto 2rem; transform:translateX(-1.25rem); }
 .nexolab-login__heading { text-align:center; }
-.nexolab-login__heading h1 { margin:0; font-size:1.5rem; line-height:1.5; font-weight:500; letter-spacing:normal; }
-.nexolab-login__heading p { margin:.5rem 0 0; color:var(--muted-foreground); font-size:1rem; line-height:1.8; }
+.nexolab-login__heading h1 { margin:0; font-size:1.25rem; line-height:1.5; font-weight:500; letter-spacing:normal; }
+.nexolab-login__heading p { margin:.5rem 0 0; color:var(--muted-foreground); font-size:.875rem; line-height:1.8; }
 .nexolab-login__form { display:grid; gap:1.5rem; margin-block-start:3rem; padding:0; }
 .nexolab-login__field { gap:.5rem; }
 .nexolab-login__field [data-slot="text-field-label"] { justify-content:flex-start; font-size:.95rem; font-weight:400; }
@@ -25,14 +25,14 @@
   .nexolab-login__visual { min-height:0; }
   .nexolab-login__main { min-height:0; padding:2.5rem 1.5rem 1rem; }
   .nexolab-login__toolbar { inset-block-start:.5rem; inset-inline-end:.5rem; }
-  .nexolab-login__logo { width:8.5rem; margin-block-end:1.25rem; }
+  .nexolab-login__logo { width:10rem; margin-block-end:1.25rem; transform:translateX(-.5rem); }
   .nexolab-login__form { margin-block-start:2.25rem; gap:1.25rem; }
   .nexolab-login__submit { width:min(14rem,100%); }
   .nexolab-login input { font-size:1rem !important; }
 }
 @media(max-height:46rem) {
   .nexolab-login__main { padding:2.5rem 2rem 1rem; }
-  .nexolab-login__logo { width:8.5rem; margin-block-end:1rem; }
+  .nexolab-login__logo { width:10rem; margin-block-end:1rem; }
   .nexolab-login__form { margin-block-start:1.5rem; gap:1rem; }
 }
 @media(max-width:48rem) and (max-height:42rem) {
