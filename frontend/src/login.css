@@ -20,7 +20,7 @@
 .nexolab-login__remember { display:flex; align-items:center; gap:.625rem; font-size:.95rem; color:var(--muted-foreground); cursor:pointer; }
 .nexolab-login [data-slot="checkbox"] { width:1.375rem; height:1.375rem; padding:0; border-radius:.375rem; }
 .dark .nexolab-login [data-slot="checkbox"]:not([data-state="checked"]):not([data-state="indeterminate"]) { background-color:var(--neutral-800); border-color:var(--neutral-500); }
-.nexolab-login__submit { justify-self:center; width:14rem; min-height:3.375rem; margin-block-start:.25rem; font-size:1rem; }
+.nexolab-login__submit { justify-self:center; width:14rem; min-height:3.375rem; margin-block-start:.25rem; font-size:1.25rem; font-weight:600; }
 @media(max-width:48rem) {
   .nexolab-login { grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,18dvh) minmax(0,1fr); }
   .nexolab-login__visual { min-height:0; }
