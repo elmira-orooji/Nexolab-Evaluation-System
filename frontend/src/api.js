@@ -1,4 +1,7 @@
 const errors = {
+  invalid_credentials: 'نام کاربری یا رمز عبور نادرست است.',
+  too_many_attempts: 'تعداد تلاش‌ها زیاد است؛ ۱۵ دقیقهٔ دیگر دوباره امتحان کن.',
+  authentication_required: 'نشست ورود پایان یافته است؛ دوباره وارد شو.',
   run_in_progress: 'آزمونی در حال اجراست؛ پس از پایان دوباره تلاش کن.',
   suite_already_exists: 'شناسهٔ این مجموعه قبلاً استفاده شده است؛ شناسهٔ دیگری انتخاب کن.',
   invalid_configuration_or_request: 'تنظیمات یا توکن Nexora معتبر نیست. تنظیمات و متغیر محیطی NEXORA_TOKEN را بررسی کن.',
@@ -12,6 +15,7 @@ export async function api(url, options = {}) {
   try {
     response = await fetch(url, {
       ...options,
+      credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json', 'X-NexoLab-Request': '1', ...options.headers },
       body: Object.hasOwn(options, 'body') ? JSON.stringify(options.body) : undefined,
     });
@@ -21,6 +25,9 @@ export async function api(url, options = {}) {
   let data;
   try { data = await response.json(); }
   catch { throw new Error('پاسخ معتبر نیست؛ رابط را با nexolab --serve باز کن.'); }
+  if (response.status === 401 && data.error === 'authentication_required') {
+    window.dispatchEvent(new CustomEvent('nexolab:auth-expired'));
+  }
   if (!response.ok) {
     const details = [...(data.errors || []), ...(data.warnings || [])]
       .map((item) => `${item.path}: ${item.message}`).join('\n');
