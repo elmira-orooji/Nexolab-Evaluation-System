@@ -1,4 +1,0 @@
-.nexolab-login [data-slot="input-root"]:focus-within {
-  outline: none !important;
-  box-shadow: none !important;
-}

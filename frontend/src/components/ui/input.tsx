@@ -105,7 +105,7 @@ const inputVariants = cva(
         underlined: [
           "rounded-none border-0 border-b-2 border-(color:--field)/35 bg-transparent px-1 shadow-none",
           "hover:border-(color:--field)/65",
-          "focus-within:border-(color:--field) focus-within:outline-1 focus-within:-outline-offset-1 focus-within:outline-(color:--field) focus-within:ring-0 focus-within:shadow-[0_0_0_2px_color-mix(in_oklab,var(--field)_12%,var(--color-background))]",
+          "focus-within:border-(color:--field) focus-within:ring-0 focus-within:outline-none focus-within:shadow-none",
         ],
       },
     },
