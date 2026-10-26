@@ -1,0 +1,11 @@
+.nexolab-login__logo--dark {
+  display: none;
+}
+
+html.dark .nexolab-login__logo--light {
+  display: none;
+}
+
+html.dark .nexolab-login__logo--dark {
+  display: block;
+}

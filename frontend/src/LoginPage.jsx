@@ -5,6 +5,7 @@ import { TextField } from '@/components/ui/text-field';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ControlSizeProvider } from '@/components/ui/control-size';
 import './login.css';
+import './login-theme.css';
 
 export default function LoginPage({onEnter}) {
   const [username,setUsername] = useState('');
@@ -34,7 +35,8 @@ export default function LoginPage({onEnter}) {
         <Button variant="ghost" aria-label={english ? 'Switch to Persian':'Switch to English'} onClick={() => setLanguage(english ? 'fa':'en')} className="nexolab-login__language shadow-none hover:bg-primary-subtle"><Languages aria-hidden="true"/><span>{english ? 'FA':'EN'}</span></Button>
       </div>
       <div className="nexolab-login__form-wrap">
-        <img className="nexolab-login__logo" src={dark ? '/assets/nexolab-login-dark.svg' : '/assets/nexolab-horizontal.svg'} alt="Nexolab"/>
+        <img className="nexolab-login__logo nexolab-login__logo--light" src="/assets/nexolab-horizontal.svg" alt="Nexolab"/>
+        <img className="nexolab-login__logo nexolab-login__logo--dark" src="/assets/nexolab-login-dark.svg" alt="" aria-hidden="true"/>
         <header className="nexolab-login__heading"><h1 id="login-title">{english ? 'Welcome':'خوش آمدید'}</h1><p>{english ? 'Enter your account details to continue.':'برای ادامه، اطلاعات حساب خود را وارد کنید.'}</p></header>
         <form onSubmit={submit} className="nexolab-login__form">
           <TextField id="login-username" className="nexolab-login__field" label={english ? 'Username':'نام کاربری'} placeholder={english ? 'Enter your username':'نام کاربری خود را وارد کنید'} variant="underlined" value={username} onValueChange={setUsername} autoComplete="username" spellCheck={false} dir={english ? 'ltr':'rtl'} required maxLength={120}/>
