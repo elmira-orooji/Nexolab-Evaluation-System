@@ -24,7 +24,9 @@ export async function api(url, options = {}) {
   }
   let data;
   try { data = await response.json(); }
-  catch { throw new Error('پاسخ معتبر نیست؛ رابط را با nexolab --serve باز کن.'); }
+  catch {
+    throw new Error('سرور FastAPI در دسترس نیست یا پاسخ غیر JSON داده است. اگر هنوز حساب مدیر نساخته‌ای، یک بار nexolab --create-admin --output runs را اجرا کن. سپس سرور را با nexolab --serve --suite datasets/persian.synthetic.json --config configs/fixture.json --output runs --port 8013 روشن نگه دار و صفحهٔ http://127.0.0.1:8013 را باز کن.');
+  }
   if (response.status === 401 && data.error === 'authentication_required') {
     window.dispatchEvent(new CustomEvent('nexolab:auth-expired'));
   }
