@@ -101,10 +101,7 @@ class AuthStore:
         username = username.strip()
         if not username or len(username) > 120:
             raise ValueError("نام کاربری باید بین ۱ تا ۱۲۰ نویسه باشد.")
-        if len(password) < 12 or len(password) > 1024:
-            raise ValueError("رمز عبور مدیر باید دست‌کم ۱۲ نویسه داشته باشد.")
-        if password.isspace() or password.casefold() == username.casefold():
-            raise ValueError("رمز عبور باید با نام کاربری متفاوت باشد.")
+        self._validate_admin_password(username, password)
         encoded = self._hash_password(password)
         now = int(time.time())
         with self._connect() as db:
@@ -116,6 +113,30 @@ class AuthStore:
                 "VALUES (?, ?, ?, 'admin', ?)",
                 (username, self._username_key(username), encoded, now),
             )
+
+    @staticmethod
+    def _validate_admin_password(username: str, password: str) -> None:
+        if len(password) < 12 or len(password) > 1024:
+            raise ValueError("رمز عبور مدیر باید دست‌کم ۱۲ نویسه داشته باشد.")
+        if password.isspace() or password.casefold() == username.casefold():
+            raise ValueError("رمز عبور باید با نام کاربری متفاوت باشد.")
+
+    def reset_admin_password(self, password: str) -> None:
+        now = int(time.time())
+        with self._connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            admins = db.execute(
+                "SELECT id, username FROM users WHERE role = 'admin'"
+            ).fetchall()
+            if len(admins) != 1:
+                raise ValueError("باید دقیقاً یک حساب مدیر برای بازنشانی وجود داشته باشد.")
+            admin = admins[0]
+            self._validate_admin_password(admin["username"], password)
+            db.execute(
+                "UPDATE users SET password_hash = ? WHERE id = ?",
+                (self._hash_password(password), admin["id"]),
+            )
+            db.execute("DELETE FROM sessions WHERE user_id = ?", (admin["id"],))
 
     def authenticate(self, username: str, password: str):
         key = self._username_key(username)
