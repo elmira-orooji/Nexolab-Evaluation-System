@@ -1,8 +1,8 @@
 import React from 'react';
-import { Plus, PanelRightClose, PanelRightOpen, Sun, LayoutDashboard, CheckCheck, Clock3, Menu, X, Play, Info, Search, Download, Bell, LibraryBig, GitCompareArrows, Settings2, BookOpen } from 'lucide-react';
+import { Plus, PanelRightClose, PanelRightOpen, Sun, LayoutDashboard, CheckCheck, Clock3, Menu, X, Play, Info, Search, Download, Bell, LibraryBig, GitCompareArrows, Settings2, BookOpen, LogOut } from 'lucide-react';
 
 // Lucide is available in the 21st.dev icon catalog; distributed under the ISC license.
-const icons = { plus: Plus, sidebar: PanelRightClose, sidebarOpen: PanelRightOpen, theme: Sun, dashboard: LayoutDashboard, review: CheckCheck, clock: Clock3, menu: Menu, close: X, play: Play, info: Info, search: Search, download: Download, bell: Bell, suites: LibraryBig, compare: GitCompareArrows, settings: Settings2, guide: BookOpen };
+const icons = { plus: Plus, sidebar: PanelRightClose, sidebarOpen: PanelRightOpen, theme: Sun, dashboard: LayoutDashboard, review: CheckCheck, clock: Clock3, menu: Menu, close: X, play: Play, info: Info, search: Search, download: Download, bell: Bell, suites: LibraryBig, compare: GitCompareArrows, settings: Settings2, guide: BookOpen, logout: LogOut };
 
 export function Icon({ name, className = 'ui-icon', ...props }) {
   const Component = icons[name] || Info;
