@@ -72,9 +72,9 @@ export default function ConnectionPage({adapter,dark,onThemeChange,onAdapterChan
       <Heading id="settings-connection-title" icon={Plug} title="اتصال آزمون‌ها" description="روش دریافت پاسخ بر اساس تنظیمات فعلی سرور"/>
       <div className="flex flex-wrap items-start justify-between gap-4 rounded-lg bg-subtle p-4"><div className="min-w-0 space-y-2"><h3 className="m-0 text-label font-normal">{fixture ? 'اجرای آزمایشی' : 'سرویس Nexora'}</h3><p className="text-description text-muted-foreground">{fixture ? 'پاسخ‌های ساختگی برای آزمایش ابزار استفاده می‌شوند.' : 'پرسش‌ها برای دریافت پاسخ و منابع به Nexora ارسال می‌شوند.'}</p></div><span className="rounded-md bg-primary-subtle px-2 py-1 text-caption text-primary-subtle-foreground">روش انتخاب‌شده در سرور</span></div>
       <p className="text-caption text-muted-foreground">{fixture ? 'این حالت برای سنجش کیفیت پاسخ‌های Nexora مناسب نیست.' : 'این اطلاعات روش اتصال را نشان می‌دهد؛ موفقیت ارتباط در زمان اجرای آزمون مشخص می‌شود.'}</p>
-      <details className="border-t border-border pt-4 pb-0"><summary className="text-label font-normal">تغییر تنظیمات اتصال</summary><div className="mt-3 space-y-3 text-description text-muted-foreground"><p>اتصال Nexora را در همین صفحه تنظیم کنید. تنظیم اتصال تا زمان خاموش‌شدن سرور در حافظه نگه‌داری می‌شود.</p><p>برای ماندگاری پس از راه‌اندازی مجدد، نشانی را در فایل پیکربندی و کلید را در متغیر محیطی <bdi dir="ltr">NEXORA_TOKEN</bdi> تنظیم کنید.</p></div></details>
     </section>
     <div className="flex items-start gap-2 p-1 text-caption text-muted-foreground"><Info className="mt-1 size-4 shrink-0" aria-hidden="true"/><p>توکن اتصال در این صفحه نمایش داده نمی‌شود.</p></div>
   </div></ControlSizeProvider>;
 }
+
 
