@@ -63,11 +63,11 @@ export default function ConnectionPage({adapter,dark,onThemeChange,onAdapterChan
       <form className="space-y-4" onSubmit={saveConnection}>
         <TextField id="rag-api-url" label="نشانی پایهٔ API" description="برای نمونه: https://rag.example.com . مسیر /api/v1/rag/answer به نشانی افزوده می‌شود." value={baseUrl} onValueChange={setBaseUrl} dir="ltr" autoComplete="url" placeholder="https://"/>
         <TextField id="rag-api-token" label="کلید API" description={connection.token_configured ? 'کلید قبلی ثبت شده است؛ برای جایگزینی، کلید جدید را وارد کنید. خالی گذاشتن، کلید فعلی را نگه می‌دارد.' : 'کلید فقط در حافظهٔ سرور تا زمان خاموش‌شدن آن نگه‌داری می‌شود.'} type="password" value={apiToken} onValueChange={setApiToken} dir="ltr" autoComplete="new-password" placeholder={connection.token_configured ? 'کلید API ثبت شده' : 'Bearer token'}/>
-        <div className="flex flex-wrap items-center gap-3"><Button type="submit" loading={savingConnection} disabled={savingConnection || !baseUrl.trim()}>ذخیرهٔ اتصال Nexora</Button><span className="text-caption text-muted-foreground">{connection.token_configured ? 'کلید ثبت شده است' : 'کلیدی ثبت نشده است'}</span></div>
+        <div className="flex flex-wrap items-center gap-3"><Button type="submit" loading={savingConnection} disabled={savingConnection || !baseUrl.trim()}>ذخیرهٔ اتصال</Button><span className="text-caption text-muted-foreground">{connection.token_configured ? 'کلید ثبت شده است' : 'کلیدی ثبت نشده است'}</span></div>
         {connectionMessage && <p role="status" className="m-0 text-caption text-muted-foreground">{connectionMessage}</p>}
         {connectionError && <p role="alert" className="m-0 text-caption text-destructive">{connectionError}</p>}
       </form>
-      <p className="text-caption text-muted-foreground">این اتصال با قرارداد Nexora کار می‌کند: درخواست Bearer به <bdi dir="ltr">POST /api/v1/rag/answer</bdi> می‌فرستد. نشانی‌های بیرونی باید HTTPS باشند؛ اتصال HTTP فقط برای localhost مجاز است.</p>
+
     </section>    <section aria-labelledby="settings-connection-title" className="space-y-5 rounded-xl border border-border bg-card p-5">
       <Heading id="settings-connection-title" icon={Plug} title="اتصال آزمون‌ها" description="روش دریافت پاسخ بر اساس تنظیمات فعلی سرور"/>
       <div className="flex flex-wrap items-start justify-between gap-4 rounded-lg bg-subtle p-4"><div className="min-w-0 space-y-2"><h3 className="m-0 text-label font-normal">{fixture ? 'اجرای آزمایشی' : 'سرویس Nexora'}</h3><p className="text-description text-muted-foreground">{fixture ? 'پاسخ‌های ساختگی برای آزمایش ابزار استفاده می‌شوند.' : 'پرسش‌ها برای دریافت پاسخ و منابع به Nexora ارسال می‌شوند.'}</p></div><span className="rounded-md bg-primary-subtle px-2 py-1 text-caption text-primary-subtle-foreground">روش انتخاب‌شده در سرور</span></div>
@@ -77,3 +77,4 @@ export default function ConnectionPage({adapter,dark,onThemeChange,onAdapterChan
     <div className="flex items-start gap-2 p-1 text-caption text-muted-foreground"><Info className="mt-1 size-4 shrink-0" aria-hidden="true"/><p>توکن اتصال در این صفحه نمایش داده نمی‌شود.</p></div>
   </div></ControlSizeProvider>;
 }
+
