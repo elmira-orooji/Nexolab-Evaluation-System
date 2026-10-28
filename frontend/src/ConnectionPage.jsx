@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Palette, Sun, Moon, Plug, Info, Languages } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ControlSizeProvider } from '@/components/ui/control-size';
@@ -36,3 +37,4 @@ export default function ConnectionPage({adapter,dark,onThemeChange}) {
     <div className="flex items-start gap-2 p-1 text-caption text-muted-foreground"><Info className="mt-1 size-4 shrink-0" aria-hidden="true"/><p>توکن اتصال در این صفحه نمایش داده نمی‌شود.</p></div>
   </div></ControlSizeProvider>;
 }
+
