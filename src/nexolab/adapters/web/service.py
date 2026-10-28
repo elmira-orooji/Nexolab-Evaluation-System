@@ -26,15 +26,50 @@ class LockedRunStore:
 
 
 class EvaluationService:
-    def __init__(self, output_root: Path, prepare: Callable, suite_repository=None, active_suite_key=None):
+    def __init__(self, output_root: Path, prepare: Callable, suite_repository=None, active_suite_key=None, connection=None):
         self.output_root = Path(output_root)
         self.prepare = prepare
         self.suite_repository = suite_repository
         self.active_suite_key = active_suite_key
+        self.connection = connection
         self.lock = threading.RLock()
         self.active_id = None
         self.states = {}
 
+    def connection_status(self):
+        with self.lock:
+            if self.connection is None:
+                return {"adapter": "unknown", "base_url": "", "token_configured": False}
+            return {"adapter": self.connection["settings"].get("adapter", "fixture"),
+                    "base_url": self.connection["settings"].get("base_url", ""),
+                    "token_configured": bool(self.connection.get("token"))}
+
+    def update_connection(self, adapter, base_url, api_token):
+        from urllib.parse import urlsplit
+        with self.lock:
+            if self.active_id:
+                raise RunBusyError()
+            if adapter not in ("fixture", "nexora") or not isinstance(base_url, str) or len(base_url) > 2048:
+                raise ValueError("invalid_connection")
+            current_token = self.connection.get("token", "") if self.connection else ""
+            token = api_token.strip() if api_token.strip() else current_token
+            if adapter == "nexora":
+                parsed = urlsplit(base_url.rstrip("/"))
+                if (parsed.scheme not in ("http", "https") or not parsed.hostname or parsed.username or parsed.password
+                        or parsed.query or parsed.fragment or parsed.path
+                        or (parsed.scheme == "http" and parsed.hostname not in ("localhost", "127.0.0.1", "::1"))
+                        or not token or len(token) > 4096):
+                    raise ValueError("invalid_connection")
+            if self.connection is None:
+                self.connection = {"settings": {}, "token": ""}
+            settings = dict(self.connection["settings"])
+            settings["adapter"] = adapter
+            if adapter == "nexora":
+                settings["base_url"] = base_url.rstrip("/")
+            settings.setdefault("request", {})
+            self.connection["settings"] = settings
+            self.connection["token"] = token if adapter == "nexora" else current_token
+            return self.connection_status()
     def directory(self, run_id):
         if not isinstance(run_id, str) or str(uuid.UUID(run_id)) != run_id:
             raise ValueError("Invalid run ID")

@@ -1,5 +1,6 @@
 """Composition root for the local web interface."""
 from pathlib import Path
+import os
 
 from .adapters.datasets.json_loader import load_suite
 from .adapters.datasets.json_repository import JsonSuiteRepository
@@ -17,8 +18,12 @@ def serve(suite_path, config_path, output_root, port=8013, ui_directory="ui"):
         raise ValueError("UI directory missing; run from repository root or pass --ui-directory")
     suite_path = Path(suite_path).resolve()
     repository = JsonSuiteRepository(suite_path.parent)
-    service = EvaluationService(Path(output_root), lambda selected_path: prepare_run(selected_path, config_path, output_root),
-                                repository, suite_path.stem)
+    connection = {"settings": dict(settings), "token": os.environ.get("NEXORA_TOKEN", "")}
+    def prepare_configured(selected_path):
+        return prepare_run(selected_path, config_path, output_root,
+                           settings_override=connection["settings"], token_override=connection["token"])
+    service = EvaluationService(Path(output_root), prepare_configured,
+                                repository, suite_path.stem, connection)
     auth_store = AuthStore(Path(output_root) / ".nexolab-auth.sqlite3")
     auth_store.require_admin()
     app = create_app(service, suite, settings["adapter"], ui_directory, port, auth_store)

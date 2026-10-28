@@ -18,6 +18,12 @@ from .auth import AuthStore
 from .service import RunBusyError
 
 
+class ConnectionBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    adapter: str = Field(max_length=20)
+    base_url: str = Field(max_length=2048)
+    api_token: str = Field(default="", max_length=4096)
+
 class LoginBody(BaseModel):
     model_config = ConfigDict(extra="forbid")
     username: str = Field(min_length=1, max_length=120)
@@ -159,6 +165,16 @@ def create_app(service, suite, adapter_name, ui_directory, port, auth_store: Aut
         response.delete_cookie(AuthStore.SESSION_COOKIE, path="/", httponly=True, samesite="lax")
         return {"authenticated": False}
 
+    @app.get("/api/connection")
+    def connection_status():
+        return service.connection_status()
+
+    @app.put("/api/connection")
+    def update_connection(body: ConnectionBody):
+        try:
+            return service.update_connection(body.adapter, body.base_url, body.api_token)
+        except ValueError:
+            raise HTTPException(400, "invalid_connection") from None
     @app.get("/api/info")
     def info():
         current = service.suite_snapshot()

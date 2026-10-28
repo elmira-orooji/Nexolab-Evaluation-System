@@ -66,16 +66,16 @@ class PreparedRun:
         return max(candidates, key=lambda item: item.get("started_at", ""), default=None)
 
 
-def prepare_run(suite_path, config_path, output_root):
+def prepare_run(suite_path, config_path, output_root, settings_override=None, token_override=None):
     suite = load_suite(suite_path)
-    settings = RunConfig.load(config_path).settings
+    settings = dict(settings_override) if settings_override is not None else RunConfig.load(config_path).settings
     if settings["adapter"] == "fixture":
         adapter = FixtureAdapter()
     else:
         validate_request(settings.get("request", {}))
         for case in suite.cases:
             validate_request(case.request)
-        adapter = NexoraAdapter(settings["base_url"], nexora_token(), settings.get("timeout_seconds", 60))
+        adapter = NexoraAdapter(settings["base_url"], token_override if token_override is not None else nexora_token(), settings.get("timeout_seconds", 60))
     run_id = str(uuid.uuid4())
     output = Path(output_root) / run_id
     output.mkdir(parents=True, exist_ok=False)
