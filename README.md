@@ -1,81 +1,201 @@
 # NexoLab
 
-NexoLab پرسش‌های فارسی را اجرا می‌کند و پاسخ، منابع، ارجاع‌ها، زمان اجرا، خطا و تنظیمات را برای تحلیل خودکار و بررسی دستی نگه می‌دارد. اجرای fixture فقط مسیر اجرا و گزارش را بررسی می‌کند و کیفیت RAG را اندازه نمی‌گیرد.
+NexoLab is a Persian-first evaluation workspace for Retrieval-Augmented Generation (RAG) systems. It runs a test suite against a connected RAG API, stores answers, sources, citations, latency, errors, and configuration, and supports automatic analysis and human review.
 
-ساختار پروژه بر معماری پورت و آداپتر بنا شده است. مدل‌های دامنه، هماهنگ‌کنندهٔ اجرا، اتصال Nexora و گزارش‌ها مسئولیت‌های جدا دارند. توضیح مرزها و روش افزودن آداپتر در [معماری](docs/architecture.md) آمده است.
+The built-in fixture adapter only checks the execution and reporting workflow. It returns reference answers and does not measure a RAG system's quality.
 
-رابط ارزیابی دستی با React ساخته شده و خروجی build آن در `ui/` قرار دارد تا سرور Python فایل‌ها را از همان origin ارائه کند. برای توسعهٔ رابط:
+The codebase follows a ports-and-adapters architecture. Domain models, the evaluation runner, RAG adapters, persistence, reports, and the web interface have separate responsibilities. See [Architecture](docs/architecture.md) for the boundaries and extension points.
 
-```powershell
+## Features
+
+- Connect to Nexora's POST /api/v1/rag/answer API.
+- Run versioned test suites and save a reproducible snapshot with every run.
+- Review answers, sources, and citations manually in the web interface.
+- Calculate deterministic document-recall and citation precision, recall, and F1 metrics when expected document IDs are supplied.
+- Optionally use DeepEval to judge answer correctness and faithfulness.
+- Compare completed runs and export JSON, CSV, and Markdown reports.
+- Keep API tokens out of configuration files and redact the configured Nexora token from reports.
+
+## Requirements
+
+- Python 3.11 or later.
+- Node.js and npm only when building or developing the frontend.
+- A Nexora instance with the test documents already indexed when running against a real system.
+
+## Install
+
+From the repository root:
+
+~~~powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+python -m pip install -e .
+~~~
+
+On Linux, activate the environment with:
+
+~~~bash
+source .venv/bin/activate
+~~~
+
+The package installs the CLI command nexolab. You can also run it as python -m nexolab.
+
+## Start the local web interface
+
+Create the local administrator account once:
+
+~~~powershell
+nexolab --create-admin --output runs
+~~~
+
+The command prompts for a username and password. Passwords must be at least 12 characters and are stored as hashes in a SQLite database.
+
+Start the local server:
+
+~~~powershell
+nexolab --serve --suite datasets/persian.synthetic.json --config configs/fixture.json --output runs --port 8013
+~~~
+
+Open [http://127.0.0.1:8013](http://127.0.0.1:8013) and sign in. The API requires a valid session. The server binds to loopback and is intended for local use, not public or multi-user deployment.
+
+Selecting “Remember me” keeps the session for up to 30 days. Otherwise, the session cookie is cleared when the browser closes and expires after at most 12 hours.
+
+If the administrator password is lost, reset it using the same output directory:
+
+~~~powershell
+nexolab --reset-admin-password --output runs
+~~~
+
+This prompts for a new password and revokes existing sessions.
+
+## Run an evaluation from the CLI
+
+A fixture run exercises the complete run and report workflow without contacting Nexora:
+
+~~~powershell
+nexolab --suite datasets/persian.synthetic.json --config configs/fixture.json --output runs
+~~~
+
+Exit code 0 means every request succeeded, 1 means at least one test case failed, and 2 indicates invalid input or configuration.
+
+## Connect Nexora
+
+Copy the example configuration:
+
+~~~powershell
+Copy-Item configs/nexora.example.json configs/nexora.local.json
+~~~
+
+Set base_url, and scope the run to the test corpus by setting request.document_set_id or request.document_ids in the local configuration. The documents must already be uploaded and indexed in Nexora. NexoLab does not upload documents. Local test-suite document IDs and Nexora document IDs are separate identifiers; do not substitute one for the other.
+
+Set NEXORA_TOKEN in the environment of the NexoLab process, then run:
+
+~~~powershell
+nexolab --suite datasets/persian.synthetic.json --config configs/nexora.local.json --output runs
+~~~
+
+For Windows, scripts/start-nexora.ps1 can prompt for the token once and store it encrypted with DPAPI for the current Windows account at %LOCALAPPDATA%\NexoLab\nexora-token.dpapi. Use scripts/start-nexora.ps1 -ResetToken to replace it or scripts/start-nexora.ps1 -ForgetToken to remove it. The encrypted token file is outside the repository. A manually started CLI still requires NEXORA_TOKEN in its process environment.
+
+base_url must be the service origin. The endpoint path is fixed by the Nexora adapter. Remote connections require HTTPS. See the [Nexora API contract](docs/nexora-contract.md) for the request and response schema, error handling, rate limits, and token handling.
+
+Set system_revision and corpus_revision in the configuration to the actual application/deployment and indexed-corpus revisions. Obtain these values from the service owner; NexoLab does not verify them. Do not guess a model version when the API does not provide one.
+
+## Automatic evaluation
+
+When expected_document_ids is set for a test case, each successful response receives deterministic metrics:
+
+- document_recall: the fraction of expected documents returned in sources.
+- citation_precision: the fraction of cited documents that are expected sources.
+- citation_recall: the fraction of expected documents included in citations.
+- citation_f1: the harmonic mean of citation precision and recall.
+
+These metrics compare document IDs. They do not determine whether the answer is semantically correct or whether each citation supports the specific claim.
+
+To enable DeepEval's semantic judges, install the optional extra and explicitly enable the engine:
+
+~~~powershell
+python -m pip install -e ".[evaluation]"
+$env:NEXOLAB_EVALUATION_ENGINE = "deepeval"
+$env:OPENAI_API_KEY = "your evaluator provider key"
+~~~
+
+DeepEval evaluates answer_correctness against the reference answer and, when source text is returned, faithfulness against the retrieved context. The example uses the provider key expected by DeepEval (OpenAI by default). Configure the evaluator provider according to DeepEval's documentation if using another supported model.
+
+Enabling DeepEval sends each test question, generated answer, reference answer, and returned source text to the configured evaluator model. This may incur API charges. Do not enable it for sensitive data unless the provider and data-processing policy are approved for that data. Without NEXOLAB_EVALUATION_ENGINE=deepeval, no external evaluation-model call is made.
+
+Automatic metrics are saved under automatic_evaluation in report.json, included in the matching CSV column, and summarized on the Advanced Analysis page. Human reviews remain separate.
+
+## Test suites
+
+The Persian synthetic suite is in datasets/persian.synthetic.json; datasets/template.json is a template for new suites. Suites have a version in X.Y.Z format. Each case can include a category, a difficulty (easy, medium, or hard), and tags. The interface can filter cases by category and difficulty.
+
+The suite manager in the dashboard can create, edit, validate, and select suites. Validation reports structural errors and warnings such as duplicate questions, missing labels, or references to unknown documents. Each run stores a snapshot of the suite as it existed when the run started. expected_document_ids are local evaluation labels and are never sent to the Nexora API. Per-case request values override the shared request settings.
+
+Never put credentials in a suite, question, document, revision, or filter.
+
+## Reports and reproducibility
+
+Each run is stored in its own UUID-named directory and produces report.json, report.csv, and report.md. The CSV uses a UTF-8 BOM for spreadsheet compatibility and escapes potentially executable spreadsheet values.
+
+The JSON report stores the test-suite snapshot, effective per-case requests, full responses, automatic metric results, latency, and errors. It also records the suite SHA-256, a normalized configuration SHA-256, Python version, platform, and optional revision identifiers. Set NEXOLAB_REVISION to the code commit identifier before running if you want it recorded.
+
+The Markdown report summarizes successful and failed requests, successful answers without sources or citations, latency statistics, and error categories. It also compares the run with the latest completed run that used the same suite and adapter.
+
+A checkpoint is written after each case. The CSV and completion timestamp are written only when the run finishes. NexoLab continues after authentication or authorization failures, rate limits, timeouts, interrupted or incomplete responses, and invalid responses. HTTP 429 responses preserve a valid Retry-After value, but NexoLab does not retry automatically so each case makes exactly one request. A run can be started again after the indicated delay.
+
+## Compare runs
+
+In the Runs page, select two completed runs and open the comparison. NexoLab shows changes to answers, sources, errors, per-case latency, and suite/configuration fingerprints. The local endpoint GET /api/compare?baseline={run_id}&candidate={run_id} returns the same structured comparison.
+
+This comparison identifies changes; it does not calculate an overall quality score. Incomplete runs cannot be compared.
+
+## Human review
+
+The Manual Evaluation page lets reviewers score each answer from 1 to 4 for correctness, relevance, source adequacy, and citation quality. The criteria are explained beside the review form.
+
+Reviewer name, timestamp, and review history are stored in reviews.json inside the run directory, separately from the original reports. Review records can be downloaded from the interface. Clearing a review does not change report.json or report.csv.
+
+## Develop the frontend
+
+The React frontend source is in frontend/. Its build output is written to ui/, which the Python server serves from the same origin.
+
+~~~powershell
 cd frontend
 npm ci
 npm run build
 cd ..
-```
+~~~
 
-ساخت رابط فقط هنگام تغییر frontend لازم است؛ استفاده از بستهٔ Python به Node نیاز ندارد. سپس از ریشهٔ مخزن اجرا کنید:
+For live frontend development, run the Python API server in one terminal and start Vite in another:
 
-```powershell
-nexolab --create-admin --output runs
-nexolab --serve --suite datasets/persian.synthetic.json --config configs/fixture.json --output runs --port 8013
-```
+~~~powershell
+cd frontend
+npm run dev
+~~~
 
-فرمان اول نام کاربری و رمز عبور مدیر را به‌صورت تعاملی می‌گیرد؛ رمز عبور باید دست‌کم ۱۲ نویسه داشته باشد و در پایگاه SQLite به شکل هش‌شده ذخیره می‌شود. این فرمان فقط یک بار لازم است. سپس سرور را اجرا کنید، آدرس `http://127.0.0.1:8013` را باز کنید و با حساب مدیر وارد پنل شوید. انتخاب «مرا به خاطر بسپار» نشست را تا ۳۰ روز نگه می‌دارد؛ در غیر این صورت نشست با بستن مرورگر پاک می‌شود و حداکثر پس از ۱۲ ساعت منقضی خواهد شد. API پنل بدون نشست معتبر پاسخ نمی‌دهد.
+Vite serves the interface at [http://127.0.0.1:5173](http://127.0.0.1:5173) and proxies /api requests to the Python server. Opening index.html directly or using python -m http.server is not sufficient because the interface requires the API.
 
-اگر رمز عبور مدیر را فراموش کردید، در همان مسیر پروژه و با همان `--output` که هنگام اجرای سرور استفاده می‌کنید، `nexolab --reset-admin-password --output runs` را اجرا کنید. رمز تازه به‌صورت تعاملی دریافت می‌شود و نشست‌های قبلی باطل خواهند شد.
+## Security and privacy
 
-fixture فقط مسیر اجرا را بررسی می‌کند. برای پاسخ واقعی Nexora، توکن را در محیط سرور تنظیم کنید و همین دستور را با `--config configs/nexora.local.json` اجرا کنید. فایل تنظیمات باید محدودهٔ UUID اسناد نمایه‌شدهٔ آزمون را داشته باشد. [راهنمای اتصال رابط](ui/README.md)
+- The local web server listens only on 127.0.0.1; it is not a public or multi-user service.
+- The API requires an authenticated administrator session. Host, Origin, and a dedicated request header are checked for mutating requests.
+- Nexora credentials are read from the server process environment. The browser never receives or stores the token.
+- The configured Bearer token is redacted from JSON and CSV report values, including if it is echoed in a question or response. HTTP error bodies from Nexora are not stored.
+- Reports can contain private questions, document text, answers, and citations. Review them before sharing. Token redaction is not general-purpose redaction of sensitive content.
+- Local configuration files, .env files, and runs/ are ignored by Git.
 
-Python 3.11 یا جدیدتر لازم است. `pip install -e .`، FastAPI و Uvicorn را نیز نصب می‌کند.
+## CI and tests
 
-```powershell
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-python -m pip install -e .
+Continuous integration runs the Python test suite and a fixture evaluation on Python 3.11 through 3.14 without connecting to Nexora.
+
+Run the test suite locally with:
+
+~~~powershell
 python -m unittest discover -s tests -v
-nexolab --suite datasets/persian.synthetic.json --config configs/fixture.json --output runs
-```
+~~~
 
-روی Linux فعال‌سازی محیط با `source .venv/bin/activate` انجام می‌شود. دستور `python -m nexolab` نیز همان CLI را اجرا می‌کند.
+## Project documentation
 
-هر اجرا در پوشه‌ای با UUID مستقل، `report.json` و `report.csv` تولید می‌کند. CSV با UTF-8 BOM برای خواندن فارسی نوشته می‌شود. در صفحهٔ «ارزیابی دستی»، هر پاسخ را از ۱ تا ۴ در چهار معیار درستی، ارتباط با پرسش، کفایت منبع و کیفیت استناد امتیاز بدهید؛ راهنمای هر معیار کنار فرم آمده است. نام ارزیاب، زمان ثبت و همهٔ نسخه‌های بازبینی در `reviews.json` همان اجرا نگهداری می‌شوند و از رابط قابل دریافت‌اند. `report.json` و `report.csv` اصلی دست‌نخورده می‌مانند. JSON نسخهٔ دقیق پاسخ و snapshot مجموعهٔ آزمون را نگه می‌دارد. `suite_sha256` اثرانگشت محتوای snapshot و `provenance.config_sha256` اثرانگشت تنظیمات نرمال‌شده است؛ هر دو برای تشخیص تغییر مجموعه یا پیکربندی‌اند. محیط Python و سیستم‌عامل نیز ثبت می‌شوند. برای ثبت revision کد مستقرشده، متغیر `NEXOLAB_REVISION` را پیش از اجرا به شناسهٔ commit تنظیم کنید. برای جلوگیری از اجرای فرمول در spreadsheet، رشته‌های خطرناک در CSV با آپاستروف آغاز می‌شوند.
-
-هر پاسخ موفق در صورت تعریف `expected_document_ids` به‌طور خودکار معیارهای قطعی `document_recall` و precision، recall و F1 استناد را می‌گیرد. شناسهٔ سند بازیابی‌شده و استنادشده با شناسه‌های مرجع مقایسه می‌شود. این معیارها صحت معنایی پاسخ را ثابت نمی‌کنند. صفحهٔ «تحلیل پیشرفته» میانگین معیارهای قابل‌محاسبه را نشان می‌دهد.
-
-برای افزودن داوری معنایی DeepEval، بستهٔ اختیاری را نصب و صریحاً فعال کنید:
-
-```powershell
-python -m pip install -e ".[evaluation]"
-$env:NEXOLAB_EVALUATION_ENGINE = "deepeval"
-$env:OPENAI_API_KEY = "کلید ارزیاب"
-```
-
-DeepEval معیارهای `answer_correctness` و، در صورت برگشت زمینهٔ متنی، `faithfulness` را محاسبه می‌کند. فعال‌سازی آن پرسش، پاسخ، پاسخ مرجع و متن منابع را برای سرویس مدلِ پیکربندی‌شده می‌فرستد و هزینهٔ API ممکن است داشته باشد؛ در داده‌های حساس، پیش از فعال‌کردن سیاست حریم خصوصی و محل پردازش را بررسی کنید. بدون متغیر فعال‌سازی، هیچ تماس داوری بیرونی انجام نمی‌شود. نتیجه‌ها در `automatic_evaluation` گزارش JSON، ستون هم‌نام CSV و صفحهٔ تحلیل پیشرفته ذخیره و نمایش داده می‌شوند. بازبینی انسانی همچنان مستقل می‌ماند.
-
-نمونه‌های فارسی و متن اسناد ساختگی آن‌ها در `datasets/persian.synthetic.json` قرار دارند. `datasets/template.json` قالب ساخت مجموعه است. از بخش «مجموعهٔ آزمون فعال» در داشبورد می‌توان مجموعهٔ جدید ساخت، JSON آن را ویرایش و اعتبارسنجی کرد و برای اجرای بعدی انتخاب کرد. فایل‌های مجموعه در کنار فایلی ذخیره می‌شوند که با `--suite` هنگام راه‌اندازی سرور معرفی شده است؛ اجرای هر آزمون snapshot مجموعهٔ همان لحظه را در گزارش خودش نگه می‌دارد.
-
-هر مجموعه `version` با قالب `X.Y.Z` دارد. هر پرسش فیلدهای `category`، `difficulty` (`easy`، `medium` یا `hard`) و `tags` می‌گیرد و در صفحهٔ ارزیابی می‌توان پرسش‌ها را بر اساس موضوع و دشواری فیلتر کرد. اعتبارسنجی همهٔ خطاهای ساختاری را یک‌جا نشان می‌دهد؛ شناسه‌های تکراری، پرسش‌های تکراری، فیلدهای ناقص، موضوع/دشواری ثبت‌نشده و ارجاع به سند ناموجود جداگانه گزارش می‌شوند. تکرار پرسش یا متن سند هشدار است و شناسهٔ تکراری یا دادهٔ ناقص خطا محسوب می‌شود. `expected_document_ids` شناسهٔ محلی سند است و به API Nexora فرستاده نمی‌شود. `request` هر مورد تنظیمات عمومی را بازنویسی می‌کند. هیچ توکن یا اطلاعات ورود را در مجموعه نگذارید.
-
-برای اتصال واقعی، قرارداد تأییدشده در [docs/nexora-contract.md](docs/nexora-contract.md) آمده است:
-
-```powershell
-Copy-Item configs/nexora.example.json configs/nexora.local.json
-# NEXORA_TOKEN را در محیط نشست، خارج از کد و فایل تنظیمات، تنظیم کنید.
-nexolab --suite datasets/persian.synthetic.json --config configs/nexora.local.json --output runs
-```
-
-در ویندوز می‌توانید به‌جای واردکردن دستی متغیر محیطی، `scripts/start-nexora.ps1` را اجرا کنید. توکن فقط بار اول پرسیده می‌شود و با DPAPI ویندوز، مخصوص حساب کاربری فعلی، در `%LOCALAPPDATA%\NexoLab\nexora-token.dpapi` رمزگذاری می‌شود؛ فایل در مخزن نیست و متن خام توکن را نگه نمی‌دارد. برای جایگزینی توکن از `scripts/start-nexora.ps1 -ResetToken` و برای حذف نسخهٔ ذخیره‌شده از `scripts/start-nexora.ps1 -ForgetToken` استفاده کنید. اجرای دستی CLI همچنان به متغیر محیطی `NEXORA_TOKEN` نیاز دارد.
-
-پیش از اجرا، اسناد آزمون باید در Nexora بارگذاری و نمایه‌سازی شده باشند. بارگذاری خودکار در این نسخه وجود ندارد. شناسهٔ مجموعهٔ واقعی را در `request.document_set_id` یا UUID اسناد را در `request.document_ids` ثبت کنید. شناسه‌های محلی مجموعهٔ آزمون را با UUIDهای Nexora اشتباه نگیرید. برای جداسازی آزمون از دانش دیگر، محدودهٔ اسناد را صریح مشخص کنید.
-
-در تنظیمات، base_url فقط origin سرویس است. endpoint طبق کد Nexora ثابت است. برای سرویس دوردست HTTPS لازم است. `system_revision` را با شناسهٔ نسخهٔ کد/استقرار سامانه و `corpus_revision` را با شناسهٔ نمایهٔ مورد ارزیابی جایگزین کنید؛ این مقادیر باید از مسئول استقرار یا سامانهٔ Nexora گرفته شوند و NexoLab آن‌ها را مستقلاً تأیید نمی‌کند. گزارش نسخهٔ NexoLab، snapshot مجموعه، SHA-256، درخواست مؤثر هر مورد، زمان UTC، نسخهٔ محیط و revisionهای اعلام‌شده را ثبت می‌کند. اگر نسخهٔ مدل در قرارداد Nexora در دسترس نیست، آن را حدس نزنید؛ `system_revision` را به‌عنوان نسخهٔ قابل‌ردیابی استقرار ثبت کنید. تولید مدل ممکن است برای ورودی یکسان پاسخ متفاوت بدهد.
-
-برای مقایسهٔ دو اجرای کامل، صفحهٔ «اجراها» دو اجرا را در بخش «مقایسهٔ اجراها» انتخاب می‌کند. تغییر پاسخ، منابع، خطا و زمان هر پرسش و همچنین تفاوت هش مجموعه/تنظیمات نمایش داده می‌شود. مسیر محلی `GET /api/compare?baseline={run_id}&candidate={run_id}` همین مقایسهٔ ساختاریافته را ارائه می‌کند. این مقایسه نمرهٔ کیفیت تولید نمی‌کند؛ تفاوت‌ها را برای بررسی انسانی آشکار می‌کند. اجراهای ناتمام قابل مقایسه نیستند.
-
-کد خروج ۰ یعنی تمام درخواست‌ها موفق بوده‌اند؛ ۱ یعنی حداقل یک خطای مورد ثبت شده و ۲ یعنی ورودی یا تنظیمات نامعتبر است. پس از هر مورد JSON checkpoint نوشته می‌شود؛ CSV و زمان پایان فقط پس از پایان اجرا موجودند. آزمون‌ها پس از خطای احراز هویت/دسترسی، محدودیت نرخ، timeout، قطع یا ناقص‌شدن پاسخ و پاسخ نامعتبر ادامه پیدا می‌کنند. در پاسخ 429، زمان `Retry-After` ذخیره می‌شود؛ برای حفظ بازتولیدپذیری، NexoLab درون اجرا retry خودکار نمی‌کند و می‌توان اجرا را پس از زمان اعلام‌شده دوباره آغاز کرد.
-
-توکن فقط از محیط فرایند NexoLab خوانده می‌شود؛ اسکریپت ویندوز آن را با DPAPI برای حساب جاری رمزگذاری می‌کند. فایل‌های `.env`، تنظیمات محلی و `runs/` در Git نادیده گرفته می‌شوند. مقدار دقیق Bearer token از همهٔ فیلدهای گزارش JSON و CSV، حتی اگر تصادفاً در سؤال یا پاسخ بازتاب داده شود، با `[REDACTED]` جایگزین می‌شود؛ بدنهٔ خطاهای Nexora ذخیره نمی‌شود. گزارش‌ها همچنان ممکن است متن خصوصی اسناد و پاسخ‌ها را داشته باشند؛ پیش از اشتراک‌گذاری بررسی شوند. اعتبارنامه را در سؤال، متن سند، revision یا filters قرار ندهید. این ابزار پالایش عمومی اطلاعات محرمانهٔ متن نیست.
-
-CI روی Python 3.11 تا 3.14 تست‌ها و اجرای fixture را بدون دسترسی به Nexora انجام می‌دهد.
-
-گزارش خوانای هر اجرا در `report.md` ذخیره می‌شود. این گزارش تعداد موفق و ناموفق، پاسخ‌های موفق بدون منبع یا استناد، میانگین/میانه/کمینه/بیشینهٔ زمان پاسخ و دسته‌های خطا را نشان می‌دهد. همچنین اجرا را با آخرین اجرای کامل همان مجموعه و آداپتر مقایسه می‌کند و تغییر پاسخ، منبع، خطا و میانگین زمان را می‌آورد. دادهٔ خام همچنان در `report.json` و `report.csv` باقی می‌ماند؛ هر سه گزارش از داشبورد و صفحهٔ ارزیابی قابل دریافت‌اند.
+- [Connected web interface](ui/README.md)
+- [Architecture](docs/architecture.md)
+- [Nexora API contract](docs/nexora-contract.md)
