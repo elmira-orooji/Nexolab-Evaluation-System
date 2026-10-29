@@ -1,5 +1,6 @@
 // Interface copy only. Questions, answers, evidence and other user data stay in their original language.
 export default {
+  'تصویر باز نمی‌شود؛ یک فایل PNG، JPG یا WebP سالم انتخاب کنید.': 'Cannot open this image. Choose a valid PNG, JPG or WebP file.',
   'عکس کاربری': 'Profile photo',
   'این تصویر در پروفایل هدبار نمایش داده می‌شود.': 'This photo appears in your header profile.',
   'انتخاب عکس': 'Choose photo',

@@ -3,21 +3,7 @@ import {Camera} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {api} from './api.js';
 import {t} from './i18n.js';
-
-async function preparePhoto(file) {
-  if (!['image/png','image/jpeg','image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) throw new Error('فایل PNG، JPG یا WebP با حجم حداکثر ۵ مگابایت انتخاب کنید.');
-  const url = URL.createObjectURL(file);
-  try {
-    const image = new Image();
-    image.src = url;
-    await image.decode();
-    const canvas = document.createElement('canvas');
-    canvas.width = canvas.height = 192;
-    const size = Math.min(image.naturalWidth, image.naturalHeight);
-    canvas.getContext('2d').drawImage(image, (image.naturalWidth-size)/2, (image.naturalHeight-size)/2, size, size, 0, 0, 192, 192);
-    return canvas.toDataURL('image/png').split(',')[1];
-  } finally { URL.revokeObjectURL(url); }
-}
+import {preparePhoto} from './profile-photo.js';
 
 export default function ProfilePhoto({avatarUrl, onChange}) {
   const input = useRef(null);
