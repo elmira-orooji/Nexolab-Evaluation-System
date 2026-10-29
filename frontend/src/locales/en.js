@@ -1,5 +1,16 @@
 // Interface copy only. Questions, answers, evidence and other user data stay in their original language.
 export default {
+  'عکس کاربری': 'Profile photo',
+  'این تصویر در پروفایل هدبار نمایش داده می‌شود.': 'This photo appears in your header profile.',
+  'انتخاب عکس': 'Choose photo',
+  'حذف عکس': 'Remove photo',
+  'در حال ذخیره…': 'Saving…',
+  'عکس کاربری ذخیره شد.': 'Profile photo saved.',
+  'عکس کاربری حذف شد.': 'Profile photo removed.',
+  'ذخیرهٔ عکس انجام نشد. دوباره تلاش کنید.': 'Could not save the photo. Try again.',
+  'فایل PNG، JPG یا WebP با حجم حداکثر ۵ مگابایت انتخاب کنید.': 'Choose a PNG, JPG or WebP image up to 5 MB.',
+  'PNG، JPG یا WebP؛ حداکثر ۵ مگابایت. تصویر از مرکز به شکل مربع برش می‌خورد.': 'PNG, JPG or WebP, up to 5 MB. The image is cropped to a square from the center.',
+  'تصویر معتبر نیست یا اندازهٔ آن مجاز نیست.': 'The image is invalid or exceeds the allowed size.',
   'پاک‌کردن': 'Clear',
   'فایلی انتخاب نشده': 'No file selected',
   'ارزیاب': 'Reviewer',

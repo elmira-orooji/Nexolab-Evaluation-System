@@ -6,6 +6,7 @@ import hmac
 import secrets
 import sqlite3
 import time
+from contextlib import contextmanager
 from pathlib import Path
 
 
@@ -27,11 +28,16 @@ class AuthStore:
         self._initialize()
         self._dummy_hash = self._hash_password(secrets.token_urlsafe(32))
 
+    @contextmanager
     def _connect(self):
         connection = sqlite3.connect(self.database, timeout=10)
         connection.row_factory = sqlite3.Row
         connection.execute("PRAGMA foreign_keys = ON")
-        return connection
+        try:
+            with connection:
+                yield connection
+        finally:
+            connection.close()
 
     def _initialize(self):
         with self._connect() as db:
@@ -53,6 +59,10 @@ class AuthStore:
                 );
                 CREATE INDEX IF NOT EXISTS sessions_user_id_idx ON sessions(user_id);
                 CREATE INDEX IF NOT EXISTS sessions_expires_at_idx ON sessions(expires_at);
+                CREATE TABLE IF NOT EXISTS user_avatars (
+                    user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+                    image BLOB NOT NULL
+                );
             """)
 
     @classmethod
@@ -188,3 +198,16 @@ class AuthStore:
         token_hash = hashlib.sha256(token.encode()).hexdigest()
         with self._connect() as db:
             db.execute("DELETE FROM sessions WHERE token_hash = ?", (token_hash,))
+
+    def get_avatar(self, user_id: int) -> bytes | None:
+        with self._connect() as db:
+            row = db.execute("SELECT image FROM user_avatars WHERE user_id = ?", (user_id,)).fetchone()
+        return bytes(row["image"]) if row else None
+
+    def set_avatar(self, user_id: int, image: bytes | None) -> None:
+        with self._connect() as db:
+            if image is None:
+                db.execute("DELETE FROM user_avatars WHERE user_id = ?", (user_id,))
+            else:
+                db.execute("INSERT INTO user_avatars(user_id, image) VALUES (?, ?) "
+                           "ON CONFLICT(user_id) DO UPDATE SET image = excluded.image", (user_id, image))

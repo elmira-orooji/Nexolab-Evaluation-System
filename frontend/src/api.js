@@ -1,5 +1,6 @@
 import {t, locale, direction} from './i18n.js';
 const errors = () => ( {
+  invalid_avatar: t('تصویر معتبر نیست یا اندازهٔ آن مجاز نیست.'),
   invalid_credentials: t("نام کاربری یا رمز عبور نادرست است."),
   invalid_connection: t("نشانی API یا کلید واردشده معتبر نیست؛ اتصال باید با قرارداد Nexora سازگار باشد."),
   too_many_attempts: t("تعداد تلاش‌ها زیاد است؛ ۱۵ دقیقهٔ دیگر دوباره امتحان کن."),

@@ -2,6 +2,10 @@
 from __future__ import annotations
 
 import time
+import base64
+import binascii
+import struct
+import zlib
 from collections import defaultdict, deque
 from pathlib import Path
 from threading import Lock
@@ -29,6 +33,45 @@ class LoginBody(BaseModel):
     username: str = Field(min_length=1, max_length=120)
     password: str = Field(min_length=1, max_length=1024)
     remember: bool = False
+
+
+class AvatarBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    image: str = Field(max_length=350_000)
+
+
+def decode_avatar(encoded: str) -> bytes:
+    """Accept the small, non-interlaced RGB/RGBA PNG produced by the photo editor."""
+    image = base64.b64decode(encoded, validate=True)
+    if len(image) < 33 or len(image) > 262_144 or image[:8] != b"\x89PNG\r\n\x1a\n":
+        raise ValueError("invalid PNG")
+    offset, chunks, ended = 8, [], False
+    while offset + 12 <= len(image):
+        size = struct.unpack(">I", image[offset:offset + 4])[0]
+        kind = image[offset + 4:offset + 8]
+        end = offset + 8 + size
+        if end + 4 > len(image) or binascii.crc32(image[offset + 4:end]) != struct.unpack(">I", image[end:end + 4])[0]:
+            raise ValueError("invalid chunk")
+        if offset == 8:
+            if kind != b"IHDR" or size != 13:
+                raise ValueError("missing header")
+            width, height, depth, color, compression, filtering, interlace = struct.unpack(">IIBBBBB", image[offset + 8:end])
+            if not (1 <= width <= 256 and 1 <= height <= 256) or depth != 8 or color not in (2, 6) or compression or filtering or interlace:
+                raise ValueError("unsupported image")
+        if kind == b"IDAT":
+            chunks.append(image[offset + 8:end])
+        offset = end + 4
+        if kind == b"IEND":
+            ended = size == 0 and offset == len(image)
+            break
+    if not ended or not chunks:
+        raise ValueError("incomplete image")
+    stride = width * (4 if color == 6 else 3) + 1
+    decoder = zlib.decompressobj()
+    pixels = decoder.decompress(b"".join(chunks), stride * height + 1)
+    if not decoder.eof or decoder.unused_data or len(pixels) != stride * height or any(pixels[row * stride] > 4 for row in range(height)):
+        raise ValueError("invalid pixels")
+    return image
 
 
 class LoginThrottle:
@@ -82,7 +125,7 @@ def create_app(service, suite, adapter_name, ui_directory, port, auth_store: Aut
             content_length = int(request.headers.get("content-length", "0"))
         except ValueError:
             return JSONResponse({"error": "invalid_request"}, status_code=400)
-        limit = 2_000_000 if path in {"/api/suites", "/api/suites/validate"} else 65_536
+        limit = 2_000_000 if path in {"/api/suites", "/api/suites/validate"} else 360_000 if path == "/api/profile/avatar" else 65_536
         if content_length > limit:
             return JSONResponse({"error": "request_too_large"}, status_code=413)
 
@@ -136,6 +179,31 @@ def create_app(service, suite, adapter_name, ui_directory, port, auth_store: Aut
         if not user or user["role"] != "admin":
             return {"authenticated": False, "user": None}
         return {"authenticated": True, "user": {"username": user["username"], "role": user["role"]}}
+
+    @app.get("/api/profile")
+    def profile(request: Request):
+        return {"has_avatar": auth_store.get_avatar(request.state.user["id"]) is not None}
+
+    @app.get("/api/profile/avatar")
+    def avatar(request: Request):
+        image = auth_store.get_avatar(request.state.user["id"])
+        if image is None:
+            raise HTTPException(404, "not_found")
+        return Response(content=image, media_type="image/png")
+
+    @app.put("/api/profile/avatar")
+    def save_avatar(body: AvatarBody, request: Request):
+        try:
+            image = decode_avatar(body.image)
+        except (ValueError, binascii.Error, struct.error, zlib.error):
+            raise HTTPException(400, "invalid_avatar") from None
+        auth_store.set_avatar(request.state.user["id"], image)
+        return {"has_avatar": True}
+
+    @app.delete("/api/profile/avatar")
+    def delete_avatar(request: Request):
+        auth_store.set_avatar(request.state.user["id"], None)
+        return {"has_avatar": False}
 
     @app.post("/api/auth/login")
     def login(body: LoginBody, request: Request, response: Response):
