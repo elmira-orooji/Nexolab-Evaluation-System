@@ -34,7 +34,7 @@ export async function api(url, options = {}) {
     window.dispatchEvent(new CustomEvent('nexolab:auth-expired'));
   }
   if (!response.ok) {
-    const details = [...(data.errors() || []), ...(data.warnings || [])]
+    const details = [...(Array.isArray(data.errors) ? data.errors : []), ...(Array.isArray(data.warnings) ? data.warnings : [])]
       .map((item) => `${item.path}: ${item.message}`).join('\n');
     if (response.status === 404 && url.startsWith('/api/suites')) {
       throw new Error(t("API مدیریت مجموعه‌ها در سرور فعلی وجود ندارد؛ سرور را با نسخهٔ فعلی NexoLab دوباره اجرا کن."));
