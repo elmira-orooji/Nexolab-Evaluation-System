@@ -20,3 +20,12 @@ html[lang="en"] .nexolab-login__toolbar { left:auto; right:1.25rem; }
   .topbar-language { padding-inline:4px; }
   .topbar-language svg { display:none; }
 }
+
+/* Explicit language rules take precedence over legacy chrome directions. */
+html[lang="fa"] .main-shell > .topbar{direction:rtl}
+html[lang="en"] .main-shell > .topbar{direction:ltr}
+.main-shell > .topbar .topbar-search,.main-shell > .topbar .global-search-wrap,.main-shell > .topbar .global-searchbox,.main-shell > .topbar .topbar-actions{direction:inherit}
+.main-shell > .topbar .topbar-welcome{justify-self:start;text-align:start}
+.main-shell > .topbar .topbar-profile{border-left:0;border-right:0;border-inline-start:1px solid var(--border);padding-left:0;padding-right:0;padding-inline-start:20px}
+.main-shell > .topbar .topbar-actions{margin-left:0;margin-right:0}
+@media(max-width:767px){.main-shell > .topbar .topbar-profile{padding-inline-start:8px}}
