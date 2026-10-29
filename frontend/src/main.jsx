@@ -7,5 +7,6 @@ import './sidebar.css';
 import './topbar.css';
 import './dashboard-simple.css';
 import './reference-dashboard.css';
+import './i18n.css';
 
 createRoot(document.getElementById('root')).render(<EntryApp />);

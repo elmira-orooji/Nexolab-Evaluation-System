@@ -1,4 +1,5 @@
 "use client"
+import {direction} from '../../i18n.js'
 
 import * as React from "react"
 
@@ -209,7 +210,7 @@ type SelectProps = (SelectSingleProps | SelectMultipleProps) & {
 function Select(props: SelectProps) {
   const {
     disabled = false,
-    dir = "rtl",
+    dir = direction(),
     open: openProp,
     defaultOpen = false,
     onOpenChange,
@@ -527,7 +528,7 @@ function SelectContent({
         role="listbox"
         aria-multiselectable={context?.multiple || undefined}
         tabIndex={-1}
-        dir={context?.dir ?? "rtl"}
+        dir={context?.dir ?? direction()}
         data-slot="select-content"
         data-state={context?.open ? "open" : "closed"}
         data-side={finalSide}

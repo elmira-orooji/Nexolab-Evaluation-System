@@ -1,4 +1,5 @@
 "use client"
+import {t} from '../../i18n.js'
 
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
@@ -313,7 +314,7 @@ function TextFieldLabel({
     >
       {children}
       {optional && (
-        <span className="font-normal text-muted-foreground">(اختیاری)</span>
+        <span className="font-normal text-muted-foreground">{t('(اختیاری)')}</span>
       )}
     </Label>
   )

@@ -1,3 +1,4 @@
+import {t} from './i18n.js';
 import React from 'react';
 import { Plus, PanelRightClose, PanelRightOpen, Sun, LayoutDashboard, CheckCheck, Clock3, Menu, X, Play, Info, Search, Download, Bell, LibraryBig, GitCompareArrows, Settings2, BookOpen, LogOut, ChartNoAxesCombined } from 'lucide-react';
 
@@ -18,7 +19,7 @@ export function Modal({ open, onClose, title, subtitle, icon = 'info', children,
   if (!open) return null;
   return <div className="modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
     <section className={`nexora-dialog react-dialog ${className}`} role="dialog" aria-modal="true" aria-label={title}>
-      <header className="dialog-header"><span className="dialog-icon"><Icon name={icon} /></span><div><h2>{title}</h2>{subtitle && <p>{subtitle}</p>}</div><button className="icon-button dialog-close" onClick={onClose} aria-label="بستن پنجره"><Icon name="close" /></button></header>
+      <header className="dialog-header"><span className="dialog-icon"><Icon name={icon} /></span><div><h2>{title}</h2>{subtitle && <p>{subtitle}</p>}</div><button className="icon-button dialog-close" onClick={onClose} aria-label={t("بستن پنجره")}><Icon name="close" /></button></header>
       <div className="dialog-content">{children}</div>{footer && <footer className="dialog-footer">{footer}</footer>}
     </section>
   </div>;
@@ -26,7 +27,7 @@ export function Modal({ open, onClose, title, subtitle, icon = 'info', children,
 
 export function StatusToast({ message, onClose }) {
   if (!message) return null;
-  return <div className="react-toast" role="status" aria-live="polite"><span>{message}</span><button className="icon-button" onClick={onClose} aria-label="بستن پیام"><Icon name="close" /></button></div>;
+  return <div className="react-toast" role="status" aria-live="polite"><span>{message}</span><button className="icon-button" onClick={onClose} aria-label={t("بستن پیام")}><Icon name="close" /></button></div>;
 }
 
 export function Empty({ children }) { return <p className="empty-runs">{children}</p>; }

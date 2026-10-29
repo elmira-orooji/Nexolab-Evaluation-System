@@ -1,4 +1,5 @@
 "use client"
+import {t, direction, getLanguage} from '../../i18n.js'
 
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
@@ -362,13 +363,13 @@ function Input({
   onValueChange,
   onChange,
   hidePlaceholderOnFocus = true,
-  clearButtonLabel = "پاک‌کردن",
+  clearButtonLabel = t("پاک‌کردن"),
   faDigits,
   groupDigits,
   digitGroups,
   normalizeArabic = true,
-  fileButtonLabel = "انتخاب فایل",
-  filePlaceholder = "فایلی انتخاب نشده",
+  fileButtonLabel = t("انتخاب فایل"),
+  filePlaceholder = t("فایلی انتخاب نشده"),
   ref,
   ...props
 }: InputProps) {
@@ -390,7 +391,7 @@ function Input({
     props.inputMode === "numeric" ||
     props.inputMode === "decimal" ||
     props.inputMode === "tel"
-  const useFaDigits = faDigits ?? numericByNature
+  const useFaDigits = faDigits ?? (numericByNature && getLanguage() === 'fa')
 
   // در type=number مرورگر اصلاً اجازهٔ تایپ رقم فارسی نمی‌دهد و مقدار را
   // نامعتبر می‌شمارد، پس به text سوییچ می‌کنیم و کیبورد عددی را با inputMode
@@ -450,7 +451,7 @@ function Input({
     resolvedInputMode === "numeric" ||
     resolvedInputMode === "decimal" ||
     resolvedInputMode === "tel"
-  const resolvedDir = props.dir ?? (latinByNature ? "ltr" : "rtl")
+  const resolvedDir = props.dir ?? (latinByNature ? "ltr" : direction())
 
   // فقط «خالی یا پر بودن» را نگه می‌داریم، نه خود مقدار را؛ این‌طور تایپ‌کردن
   // در حالت uncontrolled فقط یک بار (لحظهٔ خالی↔پر شدن) رندر دوباره می‌سازد.

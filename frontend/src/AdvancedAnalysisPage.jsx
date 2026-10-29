@@ -1,3 +1,4 @@
+import {t, locale} from './i18n.js';
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -14,11 +15,11 @@ function analyze(report) {
       .map((source) => source.document_id || source.doc_id || source.documentId)
       .filter(Boolean);
     const missing = expected.filter((id) => !retrieved.includes(id));
-    if (result.error) return [{ ...result, kind: 'error', title: 'درخواست ناموفق', detail: 'تا زمانی که این پرسش پاسخ نگیرد، کیفیت بازیابی و پاسخ قابل سنجش نیست.' }];
-    if (!result.response?.answer?.trim()) return [{ ...result, kind: 'empty', title: 'پاسخ خالی', detail: 'درخواست موفق ثبت شده، اما متن پاسخی برای ارزیابی وجود ندارد.' }];
-    if (expected.length && !retrieved.length) return [{ ...result, kind: 'retrieval', title: 'منبعی بازیابی نشده', detail: 'برای این پرسش سند مرجع تعریف شده، اما پاسخ هیچ شناسهٔ منبعی برنگردانده است.' }];
-    if (missing.length) return [{ ...result, kind: 'retrieval', title: 'بخشی از اسناد مرجع بازیابی نشده', detail: 'شناسه‌های بازیابی‌نشده: ' + missing.join('، ') }];
-    if (result.response.grounded === false) return [{ ...result, kind: 'grounding', title: 'پاسخ بدون اتکای کافی به منبع', detail: 'سرویس پاسخ را grounded=false علامت‌گذاری کرده است؛ متن و استنادها را بازبینی کنید.' }];
+    if (result.error) return [{ ...result, kind: 'error', title: t("درخواست ناموفق"), detail: t("تا زمانی که این پرسش پاسخ نگیرد، کیفیت بازیابی و پاسخ قابل سنجش نیست.") }];
+    if (!result.response?.answer?.trim()) return [{ ...result, kind: 'empty', title: t("پاسخ خالی"), detail: t("درخواست موفق ثبت شده، اما متن پاسخی برای ارزیابی وجود ندارد.") }];
+    if (expected.length && !retrieved.length) return [{ ...result, kind: 'retrieval', title: t("منبعی بازیابی نشده"), detail: t("برای این پرسش سند مرجع تعریف شده، اما پاسخ هیچ شناسهٔ منبعی برنگردانده است.") }];
+    if (missing.length) return [{ ...result, kind: 'retrieval', title: t("بخشی از اسناد مرجع بازیابی نشده"), detail: t("شناسه‌های بازیابی‌نشده: ") + missing.join(t("، ")) }];
+    if (result.response.grounded === false) return [{ ...result, kind: 'grounding', title: t("پاسخ بدون اتکای کافی به منبع"), detail: t("سرویس پاسخ را grounded=false علامت‌گذاری کرده است؛ متن و استنادها را بازبینی کنید.") }];
     return [];
   });
   return { cases, results, findings };
@@ -32,12 +33,12 @@ export default function AdvancedAnalysisPage({ report, run, onReviewCase, onView
     errors: findings.filter((item) => item.kind === 'error' || item.kind === 'empty').length,
   };
   const metricLabels = {
-    document_recall: 'بازیابی اسناد مرجع',
-    citation_precision: 'دقت استناد',
-    citation_recall: 'پوشش استناد',
-    citation_f1: 'امتیاز ترکیبی استناد',
-    answer_correctness: 'درستی پاسخ',
-    faithfulness: 'وفاداری به زمینه',
+    document_recall: t("بازیابی اسناد مرجع"),
+    citation_precision: t("دقت استناد"),
+    citation_recall: t("پوشش استناد"),
+    citation_f1: t("امتیاز ترکیبی استناد"),
+    answer_correctness: t("درستی پاسخ"),
+    faithfulness: t("وفاداری به زمینه"),
   };
   const metricGroups = new Map();
   for (const result of results) {
@@ -56,16 +57,16 @@ export default function AdvancedAnalysisPage({ report, run, onReviewCase, onView
   }));
   const hasSemantic = results.some((result) => result.automatic_evaluation?.metrics?.some((metric) => metric.kind === 'llm_judge'));
   return <ControlSizeProvider size="lg"><div className="dig-surface space-y-6 text-foreground">
-    <header className="space-y-2"><h1 className="text-heading font-normal">تحلیل پیشرفته</h1><p className="text-caption text-muted-foreground">{run ? <>تحلیل اجرای <bdi>{run.run_id.slice(0, 8)}</bdi> بر اساس داده‌های ثبت‌شده و اسناد مرجع</> : 'برای شروع تحلیل، یک اجرای آزمون را باز کنید.'}</p></header>
-    {!run ? <Card><CardHeader><CardTitle className="text-body font-normal">اجرایی برای تحلیل انتخاب نشده است</CardTitle><CardDescription>از فهرست اجراها یک اجرا را باز کنید تا یافته‌ها و شواهد آن نمایش داده شود.</CardDescription></CardHeader><CardContent><Button variant="outline" className="font-normal" onClick={() => onView('runs')}>رفتن به اجراها</Button></CardContent></Card> : <>
-      {run.adapter === 'fixture' && <p className="rounded-lg bg-primary-subtle p-3 text-caption text-primary-subtle-foreground">این اجرای آزمایشی است و پاسخ‌های آن خروجی Nexora نیستند.</p>}
-      <Card><CardHeader><CardTitle className="text-body font-normal">معیارهای خودکار</CardTitle><CardDescription>{hasSemantic ? 'امتیازهای DeepEval در کنار معیارهای قطعی این اجرا محاسبه شده‌اند.' : 'معیارهای قطعی از شناسهٔ اسناد مرجع و ارجاع‌های پاسخ محاسبه شده‌اند. برای سنجش معنایی، DeepEval را جداگانه فعال کنید.'}</CardDescription></CardHeader><CardContent>
-        {averages.length > 0 ? <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">{averages.map((metric) => <div key={metric.name} className="rounded-lg bg-subtle p-3"><p className="m-0 text-caption text-muted-foreground">{metric.label}</p><p className="mb-1 mt-2 text-subheading">{(metric.score * 100).toLocaleString('fa-IR', { maximumFractionDigits: 1 })}٪</p><p className="m-0 text-caption text-muted-foreground">{metric.count.toLocaleString('fa-IR')} مورد</p></div>)}</div> : <p className="m-0 text-caption text-muted-foreground">برای این اجرا شناسهٔ سند مرجع ثبت نشده است؛ معیارهای بازیابی و استناد قابل محاسبه نیستند.</p>}
+    <header className="space-y-2"><h1 className="text-heading font-normal">{t("تحلیل پیشرفته")}</h1><p className="text-caption text-muted-foreground">{run ? <>{t("تحلیل اجرای")} <bdi>{run.run_id.slice(0, 8)}</bdi> {t("بر اساس داده‌های ثبت‌شده و اسناد مرجع")}</> : t("برای شروع تحلیل، یک اجرای آزمون را باز کنید.")}</p></header>
+    {!run ? <Card><CardHeader><CardTitle className="text-body font-normal">{t("اجرایی برای تحلیل انتخاب نشده است")}</CardTitle><CardDescription>{t("از فهرست اجراها یک اجرا را باز کنید تا یافته‌ها و شواهد آن نمایش داده شود.")}</CardDescription></CardHeader><CardContent><Button variant="outline" className="font-normal" onClick={() => onView('runs')}>{t("رفتن به اجراها")}</Button></CardContent></Card> : <>
+      {run.adapter === 'fixture' && <p className="rounded-lg bg-primary-subtle p-3 text-caption text-primary-subtle-foreground">{t("این اجرای آزمایشی است و پاسخ‌های آن خروجی Nexora نیستند.")}</p>}
+      <Card><CardHeader><CardTitle className="text-body font-normal">{t("معیارهای خودکار")}</CardTitle><CardDescription>{hasSemantic ? t("امتیازهای DeepEval در کنار معیارهای قطعی این اجرا محاسبه شده‌اند.") : t("معیارهای قطعی از شناسهٔ اسناد مرجع و ارجاع‌های پاسخ محاسبه شده‌اند. برای سنجش معنایی، DeepEval را جداگانه فعال کنید.")}</CardDescription></CardHeader><CardContent>
+        {averages.length > 0 ? <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">{averages.map((metric) => <div key={metric.name} className="rounded-lg bg-subtle p-3"><p className="m-0 text-caption text-muted-foreground">{metric.label}</p><p className="mb-1 mt-2 text-subheading">{(metric.score * 100).toLocaleString(locale(), { maximumFractionDigits: 1 })}{t("٪")}</p><p className="m-0 text-caption text-muted-foreground">{metric.count.toLocaleString(locale())} {t("مورد")}</p></div>)}</div> : <p className="m-0 text-caption text-muted-foreground">{t("برای این اجرا شناسهٔ سند مرجع ثبت نشده است؛ معیارهای بازیابی و استناد قابل محاسبه نیستند.")}</p>}
       </CardContent></Card>
-      <Card><CardHeader><CardTitle className="text-body font-normal">یافته‌های این اجرا</CardTitle><CardDescription>تشخیص‌ها از خطاهای ثبت‌شده، شناسهٔ اسناد مرجع و وضعیت استناد سرویس به دست آمده‌اند؛ امتیازها معیارهای مستقل‌اند و جای بازبینی انسانی را نمی‌گیرند.</CardDescription></CardHeader><CardContent>
-        <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-3" aria-label="شمار یافته‌ها">{[['شکاف بازیابی', counts.retrieval], ['نیازمند بازبینی استناد', counts.grounding], ['خطا یا پاسخ خالی', counts.errors]].map(([label, value]) => <div key={label} className="rounded-lg bg-subtle p-3"><p className="m-0 text-caption text-muted-foreground">{label}</p><p className="mb-0 mt-2 text-subheading">{value.toLocaleString('fa-IR')}</p></div>)}</div>
-        {!findings.length ? <p role="status" className="text-description text-muted-foreground">بر پایهٔ داده‌های ثبت‌شده، موردی برای هشدار پیدا نشد. این نتیجه به‌تنهایی درستی پاسخ‌ها را تأیید نمی‌کند.</p> : <ul className="m-0 list-none divide-y divide-border p-0">{findings.map((item) => { const index = cases.findIndex((entry) => entry.id === item.case_id); return <li key={item.case_id} className="flex flex-wrap items-start justify-between gap-4 py-4 first:pt-0 last:pb-0"><div className="min-w-0 flex-1 space-y-2"><h3 className="m-0 text-label font-normal">{item.title} <span className="text-caption text-muted-foreground"><bdi>{item.case_id}</bdi></span></h3><p className="m-0 text-caption text-muted-foreground">{item.detail}</p><p className="m-0 line-clamp-2 text-caption">{item.question}</p></div>{index >= 0 && <Button variant="outline" className="font-normal" onClick={() => onReviewCase(index)}>بررسی شواهد</Button>}</li>; })}</ul>}
+      <Card><CardHeader><CardTitle className="text-body font-normal">{t("یافته‌های این اجرا")}</CardTitle><CardDescription>{t("تشخیص‌ها از خطاهای ثبت‌شده، شناسهٔ اسناد مرجع و وضعیت استناد سرویس به دست آمده‌اند؛ امتیازها معیارهای مستقل‌اند و جای بازبینی انسانی را نمی‌گیرند.")}</CardDescription></CardHeader><CardContent>
+        <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-3" aria-label={t("شمار یافته‌ها")}>{[[t("شکاف بازیابی"), counts.retrieval], [t("نیازمند بازبینی استناد"), counts.grounding], [t("خطا یا پاسخ خالی"), counts.errors]].map(([label, value]) => <div key={label} className="rounded-lg bg-subtle p-3"><p className="m-0 text-caption text-muted-foreground">{label}</p><p className="mb-0 mt-2 text-subheading">{value.toLocaleString(locale())}</p></div>)}</div>
+        {!findings.length ? <p role="status" className="text-description text-muted-foreground">{t("بر پایهٔ داده‌های ثبت‌شده، موردی برای هشدار پیدا نشد. این نتیجه به‌تنهایی درستی پاسخ‌ها را تأیید نمی‌کند.")}</p> : <ul className="m-0 list-none divide-y divide-border p-0">{findings.map((item) => { const index = cases.findIndex((entry) => entry.id === item.case_id); return <li key={item.case_id} className="flex flex-wrap items-start justify-between gap-4 py-4 first:pt-0 last:pb-0"><div className="min-w-0 flex-1 space-y-2"><h3 className="m-0 text-label font-normal">{item.title} <span className="text-caption text-muted-foreground"><bdi>{item.case_id}</bdi></span></h3><p className="m-0 text-caption text-muted-foreground">{item.detail}</p><p className="m-0 line-clamp-2 text-caption">{item.question}</p></div>{index >= 0 && <Button variant="outline" className="font-normal" onClick={() => onReviewCase(index)}>{t("بررسی شواهد")}</Button>}</li>; })}</ul>}
       </CardContent></Card>
-      <p className="text-caption text-muted-foreground">{results.length.toLocaleString('fa-IR')} پرسش بررسی شد. نبود هشدار، تضمین صحت پاسخ نیست.</p>
+      <p className="text-caption text-muted-foreground">{results.length.toLocaleString(locale())} {t("پرسش بررسی شد. نبود هشدار، تضمین صحت پاسخ نیست.")}</p>
     </>}</div></ControlSizeProvider>;
 }

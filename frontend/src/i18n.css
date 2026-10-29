@@ -1,0 +1,22 @@
+/* Mirror application chrome while preserving the direction of technical fields and content. */
+html[lang="en"] .app-shell, html[lang="en"] .sidebar, html[lang="en"] .main-shell { direction:ltr; }
+html[lang="en"] .app-shell .sidebar { border-right:1px solid var(--border); border-left:0; }
+html[lang="en"] .topbar-welcome { direction:ltr; text-align:left; }
+html[lang="en"] .global-searchbox input { direction:ltr; text-align:left; }
+html[lang="en"] .global-search-result, html[lang="en"] .global-search-results { direction:ltr; text-align:left; }
+html[lang="en"] .sidebar .nav-item { text-align:left; }
+html[lang="en"] .sidebar-collapse .ui-icon { transform:scaleX(-1); }
+html[lang="en"] .nexolab-login__toolbar { left:auto; right:1.25rem; }
+.main-shell > .topbar .topbar-welcome { grid-column:1; grid-row:1; }
+.main-shell > .topbar .topbar-search { grid-column:2; grid-row:1; }
+.main-shell > .topbar .topbar-actions { grid-column:3; grid-row:1; margin-left:0; direction:inherit; }
+.main-shell > .topbar .topbar-profile { grid-column:4; grid-row:1; }
+.topbar-language { display:inline-flex; align-items:center; justify-content:center; gap:5px; padding:7px 8px; border:1px solid transparent; background:transparent; color:var(--muted); font-size:11px; font-weight:400; line-height:1.5; white-space:nowrap; }
+.topbar-language:hover { background:var(--soft); color:var(--brand); }
+.topbar-language:focus-visible { outline:2px solid var(--brand); outline-offset:2px; }
+@media(max-width:767px) {
+  .main-shell > .topbar .topbar-menu { grid-column:1; grid-row:1; }
+  .main-shell > .topbar .topbar-actions { gap:3px; }
+  .topbar-language { padding-inline:4px; }
+  .topbar-language svg { display:none; }
+}
