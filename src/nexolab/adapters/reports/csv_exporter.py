@@ -4,7 +4,7 @@ from pathlib import Path
 from ...domain.models import EvaluationRun
 
 FIELDS = ["case_id", "category", "difficulty", "tags", "question", "reference_answer", "expected_document_ids", "answer",
-          "sources", "citations", "duration_ms", "error", "settings",
+          "sources", "citations", "duration_ms", "error", "settings", "automatic_evaluation",
           "answer_correct", "sources_correct", "notes"]
 
 
@@ -36,6 +36,7 @@ class CsvExporter:
                           "sources": response.sources if response else [],
                           "citations": response.citations if response else [],
                           "error": result.to_record()["error"],
+                          "automatic_evaluation": result.automatic_evaluation or {},
                           "settings": {**run.settings, "effective_request": result.request}}
                 row.update({key: json.dumps(value, ensure_ascii=False) for key, value in values.items()})
                 if self.redact is not None:

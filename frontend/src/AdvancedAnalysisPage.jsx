@@ -10,7 +10,7 @@ function analyze(report) {
   const findings = results.flatMap((result) => {
     const testCase = caseById.get(result.case_id);
     const expected = testCase?.expected_document_ids || [];
-    const retrieved = [...(result.response?.sources || []), ...(result.response?.citations || [])]
+    const retrieved = (result.response?.sources || [])
       .map((source) => source.document_id || source.doc_id || source.documentId)
       .filter(Boolean);
     const missing = expected.filter((id) => !retrieved.includes(id));
@@ -31,11 +31,38 @@ export default function AdvancedAnalysisPage({ report, run, onReviewCase, onView
     grounding: findings.filter((item) => item.kind === 'grounding').length,
     errors: findings.filter((item) => item.kind === 'error' || item.kind === 'empty').length,
   };
+  const metricLabels = {
+    document_recall: 'بازیابی اسناد مرجع',
+    citation_precision: 'دقت استناد',
+    citation_recall: 'پوشش استناد',
+    citation_f1: 'امتیاز ترکیبی استناد',
+    answer_correctness: 'درستی پاسخ',
+    faithfulness: 'وفاداری به زمینه',
+  };
+  const metricGroups = new Map();
+  for (const result of results) {
+    for (const metric of result.automatic_evaluation?.metrics || []) {
+      if (typeof metric.score !== 'number' || !Number.isFinite(metric.score)) continue;
+      const values = metricGroups.get(metric.name) || [];
+      values.push(metric.score);
+      metricGroups.set(metric.name, values);
+    }
+  }
+  const averages = [...metricGroups.entries()].map(([name, values]) => ({
+    name,
+    label: metricLabels[name] || name,
+    score: values.reduce((total, value) => total + value, 0) / values.length,
+    count: values.length,
+  }));
+  const hasSemantic = results.some((result) => result.automatic_evaluation?.metrics?.some((metric) => metric.kind === 'llm_judge'));
   return <ControlSizeProvider size="lg"><div className="dig-surface space-y-6 text-foreground">
     <header className="space-y-2"><h1 className="text-heading font-normal">تحلیل پیشرفته</h1><p className="text-caption text-muted-foreground">{run ? <>تحلیل اجرای <bdi>{run.run_id.slice(0, 8)}</bdi> بر اساس داده‌های ثبت‌شده و اسناد مرجع</> : 'برای شروع تحلیل، یک اجرای آزمون را باز کنید.'}</p></header>
     {!run ? <Card><CardHeader><CardTitle className="text-body font-normal">اجرایی برای تحلیل انتخاب نشده است</CardTitle><CardDescription>از فهرست اجراها یک اجرا را باز کنید تا یافته‌ها و شواهد آن نمایش داده شود.</CardDescription></CardHeader><CardContent><Button variant="outline" className="font-normal" onClick={() => onView('runs')}>رفتن به اجراها</Button></CardContent></Card> : <>
       {run.adapter === 'fixture' && <p className="rounded-lg bg-primary-subtle p-3 text-caption text-primary-subtle-foreground">این اجرای آزمایشی است و پاسخ‌های آن خروجی Nexora نیستند.</p>}
-      <Card><CardHeader><CardTitle className="text-body font-normal">یافته‌های این اجرا</CardTitle><CardDescription>تشخیص‌ها از خطاهای ثبت‌شده، شناسهٔ اسناد مرجع و وضعیت استناد سرویس به دست آمده‌اند؛ ارزیابی معنایی پاسخ انجام نمی‌شود.</CardDescription></CardHeader><CardContent>
+      <Card><CardHeader><CardTitle className="text-body font-normal">معیارهای خودکار</CardTitle><CardDescription>{hasSemantic ? 'امتیازهای DeepEval در کنار معیارهای قطعی این اجرا محاسبه شده‌اند.' : 'معیارهای قطعی از شناسهٔ اسناد مرجع و ارجاع‌های پاسخ محاسبه شده‌اند. برای سنجش معنایی، DeepEval را جداگانه فعال کنید.'}</CardDescription></CardHeader><CardContent>
+        {averages.length > 0 ? <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">{averages.map((metric) => <div key={metric.name} className="rounded-lg bg-subtle p-3"><p className="m-0 text-caption text-muted-foreground">{metric.label}</p><p className="mb-1 mt-2 text-subheading">{(metric.score * 100).toLocaleString('fa-IR', { maximumFractionDigits: 1 })}٪</p><p className="m-0 text-caption text-muted-foreground">{metric.count.toLocaleString('fa-IR')} مورد</p></div>)}</div> : <p className="m-0 text-caption text-muted-foreground">برای این اجرا شناسهٔ سند مرجع ثبت نشده است؛ معیارهای بازیابی و استناد قابل محاسبه نیستند.</p>}
+      </CardContent></Card>
+      <Card><CardHeader><CardTitle className="text-body font-normal">یافته‌های این اجرا</CardTitle><CardDescription>تشخیص‌ها از خطاهای ثبت‌شده، شناسهٔ اسناد مرجع و وضعیت استناد سرویس به دست آمده‌اند؛ امتیازها معیارهای مستقل‌اند و جای بازبینی انسانی را نمی‌گیرند.</CardDescription></CardHeader><CardContent>
         <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-3" aria-label="شمار یافته‌ها">{[['شکاف بازیابی', counts.retrieval], ['نیازمند بازبینی استناد', counts.grounding], ['خطا یا پاسخ خالی', counts.errors]].map(([label, value]) => <div key={label} className="rounded-lg bg-subtle p-3"><p className="m-0 text-caption text-muted-foreground">{label}</p><p className="mb-0 mt-2 text-subheading">{value.toLocaleString('fa-IR')}</p></div>)}</div>
         {!findings.length ? <p role="status" className="text-description text-muted-foreground">بر پایهٔ داده‌های ثبت‌شده، موردی برای هشدار پیدا نشد. این نتیجه به‌تنهایی درستی پاسخ‌ها را تأیید نمی‌کند.</p> : <ul className="m-0 list-none divide-y divide-border p-0">{findings.map((item) => { const index = cases.findIndex((entry) => entry.id === item.case_id); return <li key={item.case_id} className="flex flex-wrap items-start justify-between gap-4 py-4 first:pt-0 last:pb-0"><div className="min-w-0 flex-1 space-y-2"><h3 className="m-0 text-label font-normal">{item.title} <span className="text-caption text-muted-foreground"><bdi>{item.case_id}</bdi></span></h3><p className="m-0 text-caption text-muted-foreground">{item.detail}</p><p className="m-0 line-clamp-2 text-caption">{item.question}</p></div>{index >= 0 && <Button variant="outline" className="font-normal" onClick={() => onReviewCase(index)}>بررسی شواهد</Button>}</li>; })}</ul>}
       </CardContent></Card>

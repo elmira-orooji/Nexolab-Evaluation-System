@@ -47,9 +47,10 @@ class CaseResult:
     duration_ms: float
     response: RagResponse | None
     error: CaseError | None
+    automatic_evaluation: JsonObject | None = None
 
     def to_record(self) -> JsonObject:
-        return {
+        record = {
             "case_id": self.case_id, "question": self.question,
             "started_at": self.started_at, "request": self.request,
             "duration_ms": self.duration_ms,
@@ -63,6 +64,9 @@ class CaseResult:
                       "retry_after_seconds": self.error.retry_after_seconds} if self.error else None,
             "manual_review": {"answer_correct": None, "sources_correct": None, "notes": ""},
         }
+        if self.automatic_evaluation is not None:
+            record["automatic_evaluation"] = self.automatic_evaluation
+        return record
 
 
 @dataclass

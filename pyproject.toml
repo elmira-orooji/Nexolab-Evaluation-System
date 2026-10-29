@@ -12,6 +12,9 @@ dependencies = [
     "uvicorn>=0.30,<1",
 ]
 
+[project.optional-dependencies]
+evaluation = ["deepeval>=3.0,<4"]
+
 [project.scripts]
 nexolab = "nexolab.cli:main"
 

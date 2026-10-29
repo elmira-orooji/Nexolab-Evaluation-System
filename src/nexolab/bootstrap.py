@@ -16,6 +16,7 @@ from .adapters.rag.nexora_validation import validate_request
 from .adapters.reports.csv_exporter import CsvExporter
 from .adapters.reports.json_store import JsonRunStore
 from .application.run_evaluation import EvaluationRunner, utc_now
+from .application.evaluators import make_evaluation_engine
 from .application.readable_report import render_markdown
 from .config import RunConfig, nexora_token
 from .domain.models import EvaluationRun
@@ -92,7 +93,7 @@ def prepare_run(suite_path, config_path, output_root, settings_override=None, to
     redact = getattr(adapter, "redact", None)
     store = JsonRunStore(output / "report.json", redact=redact)
     store.save(evaluation)
-    return PreparedRun(evaluation, EvaluationRunner(adapter, store),
+    return PreparedRun(evaluation, EvaluationRunner(adapter, store, evaluator=make_evaluation_engine()),
                        CsvExporter(output / "report.csv", redact=redact), output, redact)
 
 
