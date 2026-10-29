@@ -1,12 +1,13 @@
 import {t, useLanguage} from './i18n.js';
 import { useEffect, useState } from 'react';
-import { Palette, Sun, Moon, Plug, Info, Languages } from 'lucide-react';
+import { Palette, Sun, Moon, Plug, Info, Languages, Settings2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ControlSizeProvider } from '@/components/ui/control-size';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { TextField } from '@/components/ui/text-field';
 import { api } from './api.js';
 import ProfilePhoto from './ProfilePhoto.jsx';
+import './connection-workspace.css';
 
 function Heading({id,icon:Icon,title,description}) {
   return <div className="flex items-start gap-3"><span className="grid size-9 shrink-0 place-items-center rounded-lg border border-border bg-primary-subtle text-primary-subtle-foreground"><Icon className="size-4" aria-hidden="true"/></span><div className="min-w-0 space-y-1"><h2 id={id} className="m-0 text-body font-normal">{title}</h2><p className="text-caption text-muted-foreground">{description}</p></div></div>;
@@ -45,8 +46,8 @@ export default function ConnectionPage({adapter,dark,onThemeChange,onAdapterChan
   };
   const [language, chooseLanguage] = useLanguage();
   const fixture = adapter === 'fixture';
-  return <ControlSizeProvider size="default"><div className="dig-surface mx-auto w-full max-w-3xl space-y-4 text-foreground">
-    <header className="mb-6 space-y-2"><h1 className="text-subheading font-normal">{t("اتصال و تنظیمات")}</h1><p className="text-description text-muted-foreground">{t("ظاهر محیط را انتخاب کنید و روش اجرای آزمون‌ها را ببینید.")}</p></header>
+  return <ControlSizeProvider size="default"><div className="connection-workspace dig-surface mx-auto w-full text-foreground">
+    <header className="connection-workspace__header space-y-2"><span className="connection-workspace__eyebrow"><Settings2 size={16} aria-hidden="true"/>{language==='fa'?'محیط و حساب کاربری':'Workspace preferences'}</span><h1 className="text-heading font-normal">{t("اتصال و تنظیمات")}</h1><p className="text-description text-muted-foreground">{t("ظاهر محیط را انتخاب کنید و روش اجرای آزمون‌ها را ببینید.")}</p></header>
     <ProfilePhoto avatarUrl={avatarUrl} onChange={onAvatarChange}/>
     <section aria-labelledby="settings-appearance-title" className="space-y-5 rounded-xl border border-border bg-card p-5">
       <Heading id="settings-appearance-title" icon={Palette} title={t("ظاهر محیط")} description={t("تغییرها بلافاصله اعمال و در همین مرورگر ذخیره می‌شوند.")}/>
@@ -54,14 +55,14 @@ export default function ConnectionPage({adapter,dark,onThemeChange,onAdapterChan
     </section>
     <section aria-labelledby="settings-language-title" className="space-y-5 rounded-xl border border-border bg-card p-5">
       <Heading id="settings-language-title" icon={Languages} title={t("زبان")} description={t("زبان برنامه و صفحهٔ ورود را انتخاب کنید.")}/>
-      <div className="flex flex-wrap gap-3" role="group" aria-label={t("انتخاب زبان برنامه")}>
-        <Button type="button" variant={language === 'fa' ? 'default' : 'outline'} aria-pressed={language === 'fa'} onClick={() => chooseLanguage('fa')} className="font-normal">{t("فارسی")}</Button>
-        <Button type="button" variant={language === 'en' ? 'default' : 'outline'} aria-pressed={language === 'en'} onClick={() => chooseLanguage('en')} className="font-normal">English</Button>
+      <div className="connection-workspace__languages" role="group" aria-label={t("انتخاب زبان برنامه")}>
+        <Button type="button" variant={language === 'fa' ? 'default' : 'outline'} aria-pressed={language === 'fa'} onClick={() => chooseLanguage('fa')} className="font-normal"><span lang="fa">فارسی</span><span className="connection-workspace__language-direction">RTL</span></Button>
+        <Button type="button" variant={language === 'en' ? 'default' : 'outline'} aria-pressed={language === 'en'} onClick={() => chooseLanguage('en')} className="font-normal"><span lang="en">English</span><span className="connection-workspace__language-direction">LTR</span></Button>
       </div>
     </section>
     <section aria-labelledby="settings-rag-api-title" className="space-y-5 rounded-xl border border-border bg-card p-5">
       <Heading id="settings-rag-api-title" icon={Plug} title={t("اتصال API سامانهٔ RAG")} description={t("نشانی سرویس و کلید API سامانه‌ای را وارد کنید که پاسخ‌ها و منابع را برمی‌گرداند.")}/>
-      <form className="space-y-4" onSubmit={saveConnection}>
+      <form className="connection-workspace__form space-y-4" onSubmit={saveConnection}>
         <TextField id="rag-api-url" label={t("نشانی پایهٔ API")} description={t("برای نمونه: https://rag.example.com . مسیر /api/v1/rag/answer به نشانی افزوده می‌شود.")} value={baseUrl} onValueChange={setBaseUrl} dir="ltr" autoComplete="url" placeholder="https://"/>
         <TextField id="rag-api-token" label={t("کلید API")} description={connection.token_configured ? t("کلید قبلی ثبت شده است؛ برای جایگزینی، کلید جدید را وارد کنید. خالی گذاشتن، کلید فعلی را نگه می‌دارد.") : t("کلید فقط در حافظهٔ سرور تا زمان خاموش‌شدن آن نگه‌داری می‌شود.")} type="password" value={apiToken} onValueChange={setApiToken} dir="ltr" autoComplete="new-password" placeholder={connection.token_configured ? t("کلید API ثبت شده") : 'Bearer token'}/>
         <div className="flex flex-wrap items-center gap-3"><Button type="submit" loading={savingConnection} disabled={savingConnection || !baseUrl.trim()}>{t("ذخیرهٔ اتصال")}</Button><span className="text-caption text-muted-foreground">{connection.token_configured ? t("کلید ثبت شده است") : t("کلیدی ثبت نشده است")}</span></div>
