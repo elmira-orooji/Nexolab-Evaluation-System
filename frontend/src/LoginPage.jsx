@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Eye, EyeOff, Moon, Sun } from 'lucide-react';
+import { Eye, EyeOff, Languages, Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TextField } from '@/components/ui/text-field';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -15,8 +15,13 @@ export default function LoginPage({onEnter}) {
   const [busy,setBusy] = useState(false);
   const [error,setError] = useState('');
   const [dark,setDark] = useState(() => {try{return localStorage.getItem('nexolab-theme') === 'dark';}catch{return false;}});
-  const [language] = useState(() => {try{return localStorage.getItem('nexolab-login-language') === 'en' ? 'en':'fa';}catch{return 'fa';}});
+  const [language,setLanguage] = useState(() => {try{return localStorage.getItem('nexolab-login-language') === 'en' ? 'en':'fa';}catch{return 'fa';}});
   const english = language === 'en';
+  const changeLanguage = () => {
+    const nextLanguage = english ? 'fa' : 'en';
+    setLanguage(nextLanguage);
+    try { localStorage.setItem('nexolab-login-language', nextLanguage); } catch { /* Browser storage may be unavailable. */ }
+  };
   useEffect(() => {document.documentElement.classList.toggle('dark',dark);try{localStorage.setItem('nexolab-theme',dark ? 'dark':'light');}catch{/* Browser storage may be unavailable. */}},[dark]);
   const submit = async (event) => {
     event.preventDefault();
@@ -31,6 +36,7 @@ export default function LoginPage({onEnter}) {
     <main className="nexolab-login__main" dir={english ? 'ltr':'rtl'} aria-labelledby="login-title">
       <div className="nexolab-login__toolbar">
         <Button variant="ghost" aria-label={dark ? (english ? 'Enable light mode':'فعال‌کردن حالت روشن') : (english ? 'Enable dark mode':'فعال‌کردن حالت تیره')} onClick={() => setDark(!dark)} className="shadow-none hover:bg-primary-subtle">{dark ? <Sun aria-hidden="true"/> : <Moon aria-hidden="true"/>}</Button>
+        <Button variant="ghost" aria-label={english ? 'تغییر زبان به فارسی' : 'Switch language to English'} onClick={changeLanguage} className="inline-flex items-center gap-1.5 px-2 font-normal shadow-none hover:bg-primary-subtle"><Languages aria-hidden="true"/><span className="text-caption" lang={english ? 'fa' : 'en'}>{english ? 'فا' : 'EN'}</span></Button>
       </div>
       <div className="nexolab-login__form-wrap">
         <img className="nexolab-login__logo nexolab-login__logo--light" src="/assets/nexolab-horizontal.svg" alt="Nexolab"/>
