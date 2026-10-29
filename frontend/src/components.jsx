@@ -1,3 +1,4 @@
+import './inline-message.css';
 import {t} from './i18n.js';
 import React from 'react';
 import { Plus, PanelRightClose, PanelRightOpen, Sun, LayoutDashboard, CheckCheck, Clock3, Menu, X, Play, Info, Search, Download, Bell, LibraryBig, GitCompareArrows, Settings2, BookOpen, LogOut, ChartNoAxesCombined } from 'lucide-react';
@@ -25,9 +26,9 @@ export function Modal({ open, onClose, title, subtitle, icon = 'info', children,
   </div>;
 }
 
-export function StatusToast({ message, onClose }) {
+export function InlineMessage({ message, onClose }) {
   if (!message) return null;
-  return <div className="react-toast" role="status" aria-live="polite"><span>{message}</span><button className="icon-button" onClick={onClose} aria-label={t("بستن پیام")}><Icon name="close" /></button></div>;
+  return <div className={`inline-message inline-message--${message.kind}`} role={message.kind === 'error' ? 'alert' : 'status'} aria-live="polite"><span>{message.text}</span><button className="icon-button" onClick={onClose} aria-label={t("بستن پیام")}><Icon name="close" /></button></div>;
 }
 
 export function Empty({ children }) { return <p className="empty-runs">{children}</p>; }
