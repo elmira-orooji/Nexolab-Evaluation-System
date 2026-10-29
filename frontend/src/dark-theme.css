@@ -1,0 +1,71 @@
+/* Shared dark palette for legacy chrome and the Dig component surfaces. */
+html.dark {
+  --canvas:#0d1424;
+  --panel:#151f32;
+  --raised:#111b2d;
+  --text:#e8edf6;
+  --muted:#a8b5ca;
+  --border:#2c3950;
+  --brand:#c0a9f5;
+  --strong:#e2d7ff;
+  --soft:#b99aef14;
+  --brand-line:#9e80d65c;
+  --action:#8c68cb;
+  --success:#79d1b3;
+}
+html.dark .dig-surface {
+  --background:#0d1424;
+  --foreground:#e8edf6;
+  --card:#151f32;
+  --card-foreground:#e8edf6;
+  --popover:#1b273d;
+  --popover-foreground:#e8edf6;
+  --secondary:#233148;
+  --secondary-foreground:#e8edf6;
+  --muted:#253249;
+  --muted-foreground:#a8b5ca;
+  --subtle:#1b273d;
+  --inverse:#253249;
+  --inverse-raised:#35445d;
+  --inverse-border:#52627b;
+  --placeholder:#93a2ba;
+  --accent:#253249;
+  --accent-foreground:#e8edf6;
+  --border:#2c3950;
+  --input:#34425b;
+  --ring:#c0a9f5;
+  --primary:#c0a9f5;
+  --primary-foreground:#1c1230;
+  --primary-subtle:#29263e;
+  --primary-subtle-foreground:#dacafa;
+  --destructive:#ff999f;
+  --destructive-subtle:#3b2330;
+  --destructive-subtle-foreground:#ffd1d5;
+  --success-subtle:#163a36;
+  --success-subtle-foreground:#a8e8d2;
+  --warning-subtle:#3b3022;
+  --warning-subtle-foreground:#f2d199;
+}
+html.dark .app-shell .content-scroll { background:var(--canvas); }
+html.dark .app-shell .sidebar { background:var(--raised); }
+html.dark .main-shell > .topbar { background:var(--raised); }
+html.dark .sidebar .brand b { color:#e8edf6; }
+html.dark .sidebar .brand small { color:#bdc5d5; }
+html.dark .sidebar .nav-item.is-active { color:#eee7ff; background:#25243d; }
+html.dark .sidebar .nav-item:hover { background:#1d2940; }
+html.dark .topbar .global-searchbox { background:#192438; border-color:var(--border); }
+html.dark .topbar .global-searchbox:focus-within { border-color:var(--brand); }
+html.dark .topbar .topbar-icon { background:#192438; color:var(--muted); }
+html.dark .topbar .topbar-icon:hover { background:#29334b; color:var(--text); }
+html.dark .profile-photo-preview { background:#242b44; }
+/* A theme preview represents its own theme, independent of the active theme. */
+.theme-preview { display:flex; height:96px; overflow:hidden; border:1px solid #dfe4ed; border-radius:6px; background:#f4f5fa; }
+.theme-preview__sidebar { display:flex; flex-direction:column; gap:8px; width:25%; padding:12px; border-inline-end:1px solid #dfe4ed; background:#fff; }
+.theme-preview__body { display:flex; flex:1; flex-direction:column; gap:12px; padding:12px; }
+.theme-preview i { display:block; height:4px; border-radius:4px; background:#a4afc1; }
+.theme-preview__sidebar i:first-child { background:#9974d8; }
+.theme-preview__cards { display:flex; gap:8px; flex:1; }
+.theme-preview__cards i { height:auto; flex:1; border:1px solid #dfe4ed; background:#fff; }
+.theme-preview[data-preview="dark"] { background:#0d1424; border-color:#34425b; }
+.theme-preview[data-preview="dark"] .theme-preview__sidebar { background:#111b2d; border-color:#34425b; }
+.theme-preview[data-preview="dark"] .theme-preview__cards i { background:#1b273d; border-color:#34425b; }

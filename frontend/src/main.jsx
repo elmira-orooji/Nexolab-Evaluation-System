@@ -8,5 +8,6 @@ import './topbar.css';
 import './dashboard-simple.css';
 import './reference-dashboard.css';
 import './i18n.css';
+import './dark-theme.css';
 
 createRoot(document.getElementById('root')).render(<EntryApp />);

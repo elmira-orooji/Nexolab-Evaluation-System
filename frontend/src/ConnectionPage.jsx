@@ -13,9 +13,8 @@ function Heading({id,icon:Icon,title,description}) {
 }
 
 function ThemePreview({dark}) {
-  return <div aria-hidden="true" className={'flex h-24 overflow-hidden rounded-md border border-border ' + (dark ? 'bg-inverse' : 'bg-subtle')}><div className={'flex w-1/4 flex-col gap-2 border-e border-border p-3 ' + (dark ? 'bg-inverse-raised' : 'bg-card')}><span className="h-1 rounded bg-primary"/><span className="h-1 rounded bg-placeholder"/><span className="h-1 rounded bg-placeholder"/></div><div className="flex flex-1 flex-col gap-3 p-3"><span className="h-1 w-1/2 rounded bg-placeholder"/><div className="grid flex-1 grid-cols-2 gap-2"><span className={'rounded border border-border ' + (dark ? 'bg-inverse-raised' : 'bg-card')}/><span className={'rounded border border-border ' + (dark ? 'bg-inverse-raised' : 'bg-card')}/></div><span className="h-1 w-3/4 rounded bg-placeholder"/></div></div>;
+  return <div aria-hidden="true" className="theme-preview" data-preview={dark ? 'dark' : 'light'}><div className="theme-preview__sidebar"><i/><i/><i/></div><div className="theme-preview__body"><i/><div className="theme-preview__cards"><i/><i/></div><i/></div></div>;
 }
-
 export default function ConnectionPage({adapter,dark,onThemeChange,onAdapterChange,avatarUrl,onAvatarChange}) {
   const [connection, setConnection] = useState({ adapter, base_url: '', token_configured: false });
   const [baseUrl, setBaseUrl] = useState('');
