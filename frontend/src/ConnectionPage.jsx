@@ -74,7 +74,7 @@ export default function ConnectionPage({adapter,dark,onThemeChange,onAdapterChan
       <div className="flex flex-wrap items-start justify-between gap-4 rounded-lg bg-subtle p-4"><div className="min-w-0 space-y-2"><h3 className="m-0 text-label font-normal">{fixture ? t("اجرای آزمایشی") : t("سرویس Nexora")}</h3><p className="text-description text-muted-foreground">{fixture ? t("پاسخ‌های ساختگی برای آزمایش ابزار استفاده می‌شوند.") : t("پرسش‌ها برای دریافت پاسخ و منابع به Nexora ارسال می‌شوند.")}</p></div><span className="rounded-md bg-primary-subtle px-2 py-1 text-caption text-primary-subtle-foreground">{t("روش انتخاب‌شده در سرور")}</span></div>
       <p className="text-caption text-muted-foreground">{fixture ? t("این حالت برای سنجش کیفیت پاسخ‌های Nexora مناسب نیست.") : t("این اطلاعات روش اتصال را نشان می‌دهد؛ موفقیت ارتباط در زمان اجرای آزمون مشخص می‌شود.")}</p>
     </section>
-    <div className="flex items-start gap-2 p-1 text-caption text-muted-foreground"><Info className="mt-1 size-4 shrink-0" aria-hidden="true"/><p>{t("توکن اتصال در این صفحه نمایش داده نمی‌شود.")}</p></div>
+    <div className="flex w-full items-center justify-center gap-2 p-1 text-center text-caption text-muted-foreground"><Info className="size-4 shrink-0" aria-hidden="true"/><p className="m-0">{t("توکن اتصال در این صفحه نمایش داده نمی‌شود.")}</p></div>
   </div></ControlSizeProvider>;
 }
 
