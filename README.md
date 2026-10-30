@@ -8,7 +8,7 @@ The codebase follows a ports-and-adapters architecture. Domain models, the evalu
 
 ## Features
 
-- Connect to Nexora's POST /api/v1/rag/answer API.
+- Connect to your RAG system
 - Run versioned test suites and save a reproducible snapshot with every run.
 - Review answers, sources, and citations manually in the web interface.
 - Calculate deterministic document-recall and citation precision, recall, and F1 metrics when expected document IDs are supplied.
@@ -20,7 +20,6 @@ The codebase follows a ports-and-adapters architecture. Domain models, the evalu
 
 - Python 3.11 or later.
 - Node.js and npm only when building or developing the frontend.
-- A Nexora instance with the test documents already indexed when running against a real system.
 
 ## Install
 
@@ -96,7 +95,6 @@ nexolab --suite datasets/persian.synthetic.json --config configs/nexora.local.js
 
 For Windows, scripts/start-nexora.ps1 can prompt for the token once and store it encrypted with DPAPI for the current Windows account at %LOCALAPPDATA%\NexoLab\nexora-token.dpapi. Use scripts/start-nexora.ps1 -ResetToken to replace it or scripts/start-nexora.ps1 -ForgetToken to remove it. The encrypted token file is outside the repository. A manually started CLI still requires NEXORA_TOKEN in its process environment.
 
-base_url must be the service origin. The endpoint path is fixed by the Nexora adapter. Remote connections require HTTPS. See the [Nexora API contract](docs/nexora-contract.md) for the request and response schema, error handling, rate limits, and token handling.
 
 Set system_revision and corpus_revision in the configuration to the actual application/deployment and indexed-corpus revisions. Obtain these values from the service owner; NexoLab does not verify them. Do not guess a model version when the API does not provide one.
 
@@ -198,4 +196,3 @@ python -m unittest discover -s tests -v
 
 - [Connected web interface](ui/README.md)
 - [Architecture](docs/architecture.md)
-- [Nexora API contract](docs/nexora-contract.md)
