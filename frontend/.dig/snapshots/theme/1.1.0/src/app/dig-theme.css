@@ -1,0 +1,1314 @@
+/* ==================================================================== *
+ * تمِ دیگ
+ *
+ * این فایل توکن‌های رنگ، فونت، شعاع، سایه و ترازِ نمایشِ دیزاین‌سیستم دیگ
+ * را دارد. همهٔ کامپوننت‌ها روی همین متغیرها سوارند، پس بدون این فایل
+ * کامپوننت‌ها نصب می‌شوند ولی بی‌ظاهر می‌مانند.
+ *
+ * شخصی‌سازی:
+ *   رنگِ برند   → فقط لایهٔ ۲ (--brand-*) را عوض کنید، نه توکن‌های معنایی
+ *   شعاع گوشه   → --radius
+ *   فونت        → --font-anchor
+ *   اندازهٔ متن  → --font-scale
+ *
+ * ساخته‌شده از globals.css خودِ دیگ؛ دستی ویرایشش نکنید مگر بدانید چه
+ * می‌کنید — «dig diff theme» تغییراتتان را نشان می‌دهد.
+ * ==================================================================== */
+
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ==================================================================== *
+ * رنگ‌های دیگ در سه لایه تعریف می‌شوند. هر لایه فقط به لایهٔ بالاتر از
+ * خودش نگاه می‌کند و هیچ‌وقت از آن رد نمی‌شود:
+ *
+ *   ۱) پالت پایه  --dig-*            مقدار خام، بدون معنی و بدون برند
+ *   ۲) برند        --brand-*          نام مستعارِ یکی از رمپ‌های پایه
+ *   ۳) معنایی      --primary, ...     نقشِ رنگ در رابط کاربری
+ *
+ * سود این چیدمان برای مولتی‌برند: یک برند تازه فقط لایهٔ ۲ را بازتعریف
+ * می‌کند (۲۲ سطر)، نه ۵۰ توکن معنایی را. تصمیم‌های دسترسی‌پذیری، اینکه
+ * کدام Shade متن سفید می‌گیرد و کدام متن تیره، در لایهٔ ۳ می‌مانند و مالِ
+ * دیزاین‌سیستم‌اند، نه مالِ برند. پس هیچ برندی نمی‌تواند ناخواسته
+ * کنتراست را خراب کند.
+ * ==================================================================== */
+
+/* -------------------------------------------------------------------- *
+ * لایهٔ ۱، پالت پایه
+ *
+ * مقادیر دقیقاً همان‌هایی هستند که Tailwind v4 در theme.css می‌دهد و
+ * عمداً اینجا پین شده‌اند (نه var(--color-*)) تا سه چیز تضمین شود:
+ * فایل خروجیِ رجیستری خودبسنده بماند، ارتقای Tailwind رنگ‌ها را زیر پا
+ * عوض نکند، و tree-shaking متغیرهای بلااستفادهٔ Tailwind به ما آسیب نزند.
+ * -------------------------------------------------------------------- */
+:root {
+  --dig-white: oklch(100% 0 0);
+  --dig-black: oklch(0% 0 0);
+
+  /* خاکستری پایه */
+  --dig-slate-50: oklch(98.4% 0.003 247.858);
+  --dig-slate-100: oklch(96.8% 0.007 247.896);
+  --dig-slate-200: oklch(92.9% 0.013 255.508);
+  --dig-slate-300: oklch(86.9% 0.022 252.894);
+  --dig-slate-400: oklch(70.4% 0.04 256.788);
+  --dig-slate-500: oklch(55.4% 0.046 257.417);
+  --dig-slate-600: oklch(44.6% 0.043 257.281);
+  --dig-slate-700: oklch(37.2% 0.044 257.287);
+  --dig-slate-800: oklch(27.9% 0.041 260.031);
+  --dig-slate-900: oklch(20.8% 0.042 265.755);
+  --dig-slate-950: oklch(12.9% 0.042 264.695);
+
+  --dig-indigo-50: oklch(96.2% 0.018 272.314);
+  --dig-indigo-100: oklch(93% 0.034 272.788);
+  --dig-indigo-200: oklch(87% 0.065 274.039);
+  --dig-indigo-300: oklch(78.5% 0.115 274.713);
+  --dig-indigo-400: oklch(67.3% 0.182 276.935);
+  --dig-indigo-500: oklch(58.5% 0.233 277.117);
+  --dig-indigo-600: oklch(51.1% 0.262 276.966);
+  --dig-indigo-700: oklch(45.7% 0.24 277.023);
+  --dig-indigo-800: oklch(39.8% 0.195 277.366);
+  --dig-indigo-900: oklch(35.9% 0.144 278.697);
+  --dig-indigo-950: oklch(25.7% 0.09 281.288);
+
+  --dig-cyan-50: oklch(98.4% 0.019 200.873);
+  --dig-cyan-100: oklch(95.6% 0.045 203.388);
+  --dig-cyan-200: oklch(91.7% 0.08 205.041);
+  --dig-cyan-300: oklch(86.5% 0.127 207.078);
+  --dig-cyan-400: oklch(78.9% 0.154 211.53);
+  --dig-cyan-500: oklch(71.5% 0.143 215.221);
+  --dig-cyan-600: oklch(60.9% 0.126 221.723);
+  --dig-cyan-700: oklch(52% 0.105 223.128);
+  --dig-cyan-800: oklch(45% 0.085 224.283);
+  --dig-cyan-900: oklch(39.8% 0.07 227.392);
+  --dig-cyan-950: oklch(30.2% 0.056 229.695);
+
+  --dig-violet-50: oklch(96.9% 0.016 293.756);
+  --dig-violet-100: oklch(94.3% 0.029 294.588);
+  --dig-violet-200: oklch(89.4% 0.057 293.283);
+  --dig-violet-300: oklch(81.1% 0.111 293.571);
+  --dig-violet-400: oklch(70.2% 0.183 293.541);
+  --dig-violet-500: oklch(60.6% 0.25 292.717);
+  --dig-violet-600: oklch(54.1% 0.281 293.009);
+  --dig-violet-700: oklch(49.1% 0.27 292.581);
+  --dig-violet-800: oklch(43.2% 0.232 292.759);
+  --dig-violet-900: oklch(38% 0.189 293.745);
+  --dig-violet-950: oklch(28.3% 0.141 291.089);
+
+  --dig-blue-50: oklch(97% 0.014 254.604);
+  --dig-blue-100: oklch(93.2% 0.032 255.585);
+  --dig-blue-200: oklch(88.2% 0.059 254.128);
+  --dig-blue-300: oklch(80.9% 0.105 251.813);
+  --dig-blue-400: oklch(70.7% 0.165 254.624);
+  --dig-blue-500: oklch(62.3% 0.214 259.815);
+  --dig-blue-600: oklch(54.6% 0.245 262.881);
+  --dig-blue-700: oklch(48.8% 0.243 264.376);
+  --dig-blue-800: oklch(42.4% 0.199 265.638);
+  --dig-blue-900: oklch(37.9% 0.146 265.522);
+  --dig-blue-950: oklch(28.2% 0.091 267.935);
+
+  --dig-green-50: oklch(97.6% 0.0173 159.13);
+  --dig-green-100: oklch(94.1% 0.0395 156.86);
+  --dig-green-200: oklch(88.7% 0.0731 158.64);
+  --dig-green-300: oklch(81.1% 0.1083 159.87);
+  --dig-green-400: oklch(72.0% 0.1352 158.80);
+  --dig-green-500: oklch(63.3% 0.1351 158.19);
+  --dig-green-600: oklch(54.1% 0.1182 158.28);
+  --dig-green-700: oklch(46.0% 0.0952 160.71);
+  --dig-green-800: oklch(39.5% 0.0779 161.78);
+  --dig-green-900: oklch(34.7% 0.0648 163.36);
+  --dig-green-950: oklch(24.2% 0.0416 165.51);
+
+  --dig-amber-50: oklch(98.7% 0.022 95.277);
+  --dig-amber-100: oklch(96.2% 0.059 95.617);
+  --dig-amber-200: oklch(92.4% 0.12 95.746);
+  --dig-amber-300: oklch(87.9% 0.169 91.605);
+  --dig-amber-400: oklch(82.8% 0.189 84.429);
+  --dig-amber-500: oklch(76.9% 0.188 70.08);
+  --dig-amber-600: oklch(66.6% 0.179 58.318);
+  --dig-amber-700: oklch(55.5% 0.163 48.998);
+  --dig-amber-800: oklch(47.3% 0.137 46.201);
+  --dig-amber-900: oklch(41.4% 0.112 45.904);
+  --dig-amber-950: oklch(27.9% 0.077 45.635);
+
+  --dig-orange-50: oklch(98% 0.016 73.684);
+  --dig-orange-100: oklch(95.4% 0.038 75.164);
+  --dig-orange-200: oklch(90.1% 0.076 70.697);
+  --dig-orange-300: oklch(83.7% 0.128 66.29);
+  --dig-orange-400: oklch(75% 0.183 55.934);
+  --dig-orange-500: oklch(70.5% 0.213 47.604);
+  --dig-orange-600: oklch(64.6% 0.222 41.116);
+  --dig-orange-700: oklch(55.3% 0.195 38.402);
+  --dig-orange-800: oklch(47% 0.157 37.304);
+  --dig-orange-900: oklch(40.8% 0.123 38.172);
+  --dig-orange-950: oklch(26.6% 0.079 36.259);
+
+  --dig-pink-50: oklch(97.1% 0.014 343.198);
+  --dig-pink-100: oklch(94.8% 0.028 342.258);
+  --dig-pink-200: oklch(89.9% 0.061 343.231);
+  --dig-pink-300: oklch(82.3% 0.12 346.018);
+  --dig-pink-400: oklch(71.8% 0.202 349.761);
+  --dig-pink-500: oklch(65.6% 0.241 354.308);
+  --dig-pink-600: oklch(59.2% 0.249 0.584);
+  --dig-pink-700: oklch(52.5% 0.223 3.958);
+  --dig-pink-800: oklch(45.9% 0.187 3.815);
+  --dig-pink-900: oklch(40.8% 0.153 2.432);
+  --dig-pink-950: oklch(28.4% 0.109 3.907);
+
+  --dig-red-50: oklch(97.1% 0.013 17.38);
+  --dig-red-100: oklch(93.6% 0.032 17.717);
+  --dig-red-200: oklch(88.5% 0.062 18.334);
+  --dig-red-300: oklch(80.8% 0.114 19.571);
+  --dig-red-400: oklch(70.4% 0.191 22.216);
+  --dig-red-500: oklch(63.7% 0.237 25.331);
+  --dig-red-600: oklch(57.7% 0.245 27.325);
+  --dig-red-700: oklch(50.5% 0.213 27.518);
+  --dig-red-800: oklch(44.4% 0.177 26.899);
+  --dig-red-900: oklch(39.6% 0.141 25.723);
+  --dig-red-950: oklch(25.8% 0.092 26.042);
+
+  /* مشکیِ لندینگِ دیگ (digdesign.ir): Shade ۶۰۰ دقیقاً همان رنگیست که آن
+     صفحه روی دکمه‌های اصلی‌اش دارد (rgb(15,15,22) = #0F0F16، اندازه‌گیری‌
+     شده). رمپ برخلاف بقیه در ۶۰۰ به‌جای نیمه‌تیره مستقیم به نزدیکِ سیاه
+     می‌رود، چون هویتِ برند خودِ سیاه است، نه یک رنگِ اشباع‌شده که در تم
+     تیره روشن‌تر شود؛ Shadeهای ۷۰۰ تا ۹۵۰ همه‌شان عملاً از هم غیرقابل‌
+     تشخیص‌اند، چون زیر مشکیِ برند دیگر جای واقعی برای تیره‌ترشدن نمانده. */
+  --dig-graphite-50: oklch(98.3% 0.001 284.78);
+  --dig-graphite-100: oklch(96% 0.003 284.78);
+  /* Shade ۴۰۰ همان رنگ دکمهٔ اصلی در تم تیره است (--primary: brand-400)؛
+     نسخهٔ قبلی (۶۵٪ روشنی) خاکستریِ میانه بود و شبیه دکمهٔ غیرفعال دیده
+     می‌شد. حالا نزدیک سفید است تا واضحاً «فعال» بخواند. */
+  --dig-graphite-200: oklch(95% 0.005 284.78);
+  --dig-graphite-300: oklch(93.5% 0.006 284.78);
+  --dig-graphite-400: oklch(92% 0.007 284.78);
+  --dig-graphite-500: oklch(45% 0.014 284.78);
+  --dig-graphite-600: oklch(17.2% 0.0145 284.78);
+  --dig-graphite-700: oklch(13% 0.013 284.78);
+  --dig-graphite-800: oklch(9.5% 0.011 284.78);
+  --dig-graphite-900: oklch(6.5% 0.009 284.78);
+  --dig-graphite-950: oklch(4% 0.007 284.78);
+
+  /* خاکستریِ خنثی، بدون هیچ رنگ‌مایه‌ای (chroma صفر). این همان رمپِ
+     neutral در Tailwind است و برخلاف --dig-slate-* که کمی به آبی می‌زند،
+     کاملاً بی‌طرف است. فقط برای Gray Dark به کار می‌رود؛ نگاه کنید
+     به لایهٔ آلیاسِ --neutral-* پایین‌تر. */
+  --dig-neutral-50: oklch(98.5% 0 0);
+  --dig-neutral-100: oklch(97% 0 0);
+  --dig-neutral-200: oklch(92.2% 0 0);
+  --dig-neutral-300: oklch(87% 0 0);
+  --dig-neutral-400: oklch(70.8% 0 0);
+  --dig-neutral-500: oklch(55.6% 0 0);
+  --dig-neutral-600: oklch(43.9% 0 0);
+  --dig-neutral-700: oklch(37.1% 0 0);
+  --dig-neutral-800: oklch(26.9% 0 0);
+  --dig-neutral-900: oklch(20.5% 0 0);
+  --dig-neutral-950: oklch(14.5% 0 0);
+
+  /* رمپِ مات، هیوِ slate با نصفِ کروما.
+     Blue Dark پیش‌تر مستقیم روی --dig-slate-* می‌نشست. مشکلش ته‌رنگ نبود،
+     اشباع بود: کرومای slate در پله‌های تیره ۰.۰۴۲ است و کنار سطح‌های بزرگِ
+     تیره «تیز» می‌خواند. این رمپ همان هیو را نگه می‌دارد (۲۵۴، در برابر
+     drift ۲۴۸ تا ۲۶۶ در slate) و کروما را روی اوجِ ۰.۰۲۴ می‌بندد.
+
+     روشناییِ پله‌های تیره از خودِ طرح اندازه‌گیری شده، نه از slate: ۹۵۰ تا
+     ۷۰۰ به‌ترتیب پس‌زمینه، کارت، حاشیه و حاشیهٔ پررنگ‌اند. نتیجه در برابر
+     slate کنتراستِ برابر یا بهتر می‌دهد (muted-foreground از ۵.۵۶ به ۶.۳۳)،
+     پس هیچ کامپوننتی لازم نیست بازبینی شود.
+
+     فقط Blue Dark از این رمپ می‌خورد. تم روشن و Gray Dark دست‌نخورده‌اند. */
+  --dig-mist-50: oklch(98.4% 0.002 254);
+  --dig-mist-100: oklch(96.8% 0.004 254);
+  --dig-mist-200: oklch(93.9% 0.0063 254);
+  --dig-mist-300: oklch(86.9% 0.011 254);
+  --dig-mist-400: oklch(75.7% 0.0187 254);
+  --dig-mist-500: oklch(58.5% 0.0219 254);
+  --dig-mist-600: oklch(46.5% 0.024 254);
+  --dig-mist-700: oklch(37.5% 0.0245 254);
+  --dig-mist-800: oklch(29.8% 0.0214 254);
+  --dig-mist-900: oklch(22% 0.0157 254);
+  --dig-mist-950: oklch(18.5% 0.012 254);
+
+  /* رمپِ خاکستریِ Gray Dark: همان روشناییِ پله‌های mist (Blue Dark) با کرومای صفر.
+     Gray Dark پیش‌تر روی neutralِ خام بود (پس‌زمینه ۱۴.۵٪، تقریباً مشکی)؛ حالا
+     فقط ته‌رنگِ آبی را از Blue Dark برمی‌دارد و روشنایی و کنتراست‌ها همان می‌ماند. */
+  --dig-ash-50: oklch(98.4% 0 0);
+  --dig-ash-100: oklch(96.8% 0 0);
+  --dig-ash-200: oklch(93.9% 0 0);
+  --dig-ash-300: oklch(86.9% 0 0);
+  --dig-ash-400: oklch(75.7% 0 0);
+  --dig-ash-500: oklch(58.5% 0 0);
+  --dig-ash-600: oklch(46.5% 0 0);
+  --dig-ash-700: oklch(37.5% 0 0);
+  --dig-ash-800: oklch(29.8% 0 0);
+  --dig-ash-900: oklch(22% 0 0);
+  --dig-ash-950: oklch(18.5% 0 0);
+}
+
+/* -------------------------------------------------------------------- *
+ * لایهٔ ۲، برند
+ *
+ * تنها لایه‌ای که یک برند تازه بازنویسی می‌کند. برای ساخت برند، همین دو
+ * بلوک را با رمپ دیگری جایگزین کنید:
+ *
+ *   :root { --brand-600: var(--dig-violet-600); ... }
+ *
+ * شرط تنها: رمپ باید یازده Shade داشته باشد (مثل Tailwind) و Shade ۶۰۰ آن با
+ * متن سفید حداقل ۴.۵ کنتراست بدهد. همهٔ رمپ‌های پایهٔ بالا این شرط را
+ * دارند (اندازه‌گیری‌شده).
+ * -------------------------------------------------------------------- */
+:root {
+  /* برندِ پیش‌فرضِ دیگ: جوهرِ graphite (نه مشکیِ خالص). شیک‌بودن از سلسله‌مراتبِ
+     خاکستری‌ها، تایپوگرافی و فضا می‌آید، نه از رنگِ برند. */
+  --brand-50: var(--dig-graphite-50);
+  --brand-100: var(--dig-graphite-100);
+  --brand-200: var(--dig-graphite-200);
+  --brand-300: var(--dig-graphite-300);
+  --brand-400: var(--dig-graphite-400);
+  --brand-500: var(--dig-graphite-500);
+  --brand-600: var(--dig-graphite-600);
+  --brand-700: var(--dig-graphite-700);
+  --brand-800: var(--dig-graphite-800);
+  --brand-900: var(--dig-graphite-900);
+  --brand-950: var(--dig-graphite-950);
+
+  /* رنگِ مکملِ برندِ مشکی: بنفشِ آرام، فقط برای راهنماییِ چشم
+     (فوکوس، لینک، رنگِ اولِ نمودار، نشانهٔ «جدید»)؛ دکمه‌ها مشکی می‌مانند. */
+  --brand-secondary-50: oklch(97.2% 0.012 293);
+  --brand-secondary-100: oklch(94.6% 0.024 293);
+  --brand-secondary-200: oklch(89.8% 0.045 293);
+  --brand-secondary-300: oklch(81.5% 0.082 293);
+  --brand-secondary-400: oklch(70.5% 0.125 293);
+  --brand-secondary-500: oklch(60% 0.155 293);
+  --brand-secondary-600: oklch(51.5% 0.165 293);
+  --brand-secondary-700: oklch(45.5% 0.15 293);
+  --brand-secondary-800: oklch(39.5% 0.125 293);
+  --brand-secondary-900: oklch(34% 0.1 293);
+  --brand-secondary-950: oklch(25% 0.07 293);
+}
+
+/* -------------------------------------------------------------------- *
+ * لایهٔ ۲، خاکستریِ خنثی (قابل انتخاب توسط دولوپر)
+ *
+ * درست مثل --brand-*، این هم فقط نام مستعارِ یک رمپ پایه است، نه توکن
+ * معنایی. تم تیره پیش‌فرض (Blue Dark) از --dig-slate-* می‌آید. برای
+ * Gray Dark کافی‌ست همین ۱۱ سطر در .dark[data-dark-theme="gray"]
+ * بازنویسی شود؛ هیچ توکن معنایی یا کامپوننتی دست نمی‌خورد.
+ * -------------------------------------------------------------------- */
+:root {
+  --neutral-50: var(--dig-slate-50);
+  --neutral-100: var(--dig-slate-100);
+  --neutral-200: var(--dig-slate-200);
+  --neutral-300: var(--dig-slate-300);
+  --neutral-400: var(--dig-slate-400);
+  --neutral-500: var(--dig-slate-500);
+  --neutral-600: var(--dig-slate-600);
+  --neutral-700: var(--dig-slate-700);
+  --neutral-800: var(--dig-slate-800);
+  --neutral-900: var(--dig-slate-900);
+  --neutral-950: var(--dig-slate-950);
+}
+
+/* Blue Dark، تمِ تیرهٔ پیش‌فرض.
+   هم‌ویژگیِ :root بالاست (هر دو ۰,۱,۰)، پس ترتیبِ منبع تعیین می‌کند و این
+   بلوک باید بعد از آن بماند. .dark[data-dark-theme="gray"] پایین‌تر
+   ویژگیِ بالاتری دارد و همچنان برنده است، پس Gray Dark عوض نمی‌شود. */
+.dark {
+  --neutral-50: var(--dig-mist-50);
+  --neutral-100: var(--dig-mist-100);
+  --neutral-200: var(--dig-mist-200);
+  --neutral-300: var(--dig-mist-300);
+  --neutral-400: var(--dig-mist-400);
+  --neutral-500: var(--dig-mist-500);
+  --neutral-600: var(--dig-mist-600);
+  --neutral-700: var(--dig-mist-700);
+  --neutral-800: var(--dig-mist-800);
+  --neutral-900: var(--dig-mist-900);
+  --neutral-950: var(--dig-mist-950);
+}
+
+/* -------------------------------------------------------------------- *
+ * لایهٔ ۳، توکن‌های معنایی (تم روشن)
+ *
+ * نام‌ها قراردادِ پایدار دیگ‌اند تا هر کامپوننت یا بلوکی که اضافه
+ * می‌شود بدون تغییر کار کند. دو نکتهٔ مهم در همین قرارداد:
+ *
+ *  • --accent رنگ برند نیست؛ سطحِ hover خنثی است. رنگی‌کردنش باعث می‌شود
+ *    هر هاور در برنامه رنگ برند بگیرد.
+ *  • --secondary هم خاکستری است (واریانت secondary دکمه از آن می‌خورد).
+ *    برای همین رنگ برند دوم توکن مستقل خودش را دارد: --brand-secondary
+ *
+ * هر جفت زمینه/متن اینجا اندازه‌گیری شده و WCAG AA را رد می‌کند؛ ضعیف‌ترین
+ * جفت در تم روشن destructive با ۴.۷۶ است.
+ * -------------------------------------------------------------------- */
+:root {
+  --radius: calc(0.625rem * var(--font-scale));
+
+  --background: var(--dig-white);
+  --foreground: var(--dig-slate-900);
+
+  --card: var(--dig-white);
+  --card-foreground: var(--dig-slate-900);
+
+  --popover: var(--dig-white);
+  --popover-foreground: var(--dig-slate-900);
+
+  --primary: var(--brand-600);
+  --primary-foreground: var(--dig-white);
+
+  --secondary: var(--dig-slate-100);
+  --secondary-foreground: var(--dig-slate-900);
+
+  --muted: var(--dig-slate-100);
+  --muted-foreground: var(--dig-slate-600);
+  /* یک پله روشن‌تر از muted (خاکستری‌آبیِ خیلی ملایم): برای سطحِ کناری، پنلِ
+     دوم یا زمینهٔ بخش، وقتی muted برای عناصرِ داخلش (تب، هاور، انتخاب) لازم است
+     و دو سطح نباید یکی دیده شوند. */
+  --subtle: var(--dig-slate-50);
+  /* سطحِ وارونه برای کارت و بخشِ تأکیدی (هیروی تیره، کارتِ موجودی، سربرگِ فاکتور).
+     در روشن سرمه‌ایِ تیره (نه مشکی، کاربر بکگراندِ مشکی را رد کرده)؛ در تاریک باید از پس‌زمینه روشن‌تر شود، وگرنه
+     کارتِ مشکی روی زمینهٔ تیره سوراخ دیده می‌شود. */
+  --inverse: var(--dig-slate-900);
+  --inverse-raised: var(--dig-slate-800);
+  --inverse-border: var(--dig-slate-700);
+  /* placeholder دو پله روشن‌تر از متن راهنما، تا با مقدارِ واقعی یا
+     توضیحِ زیرِ فیلد اشتباه نشود. انتخابِ آگاهانه: کنتراست ۲.۶ روی سفید،
+     زیرِ AA (۴.۵)؛ پس اطلاعاتِ لازم را هرگز فقط در placeholder نگذارید. */
+  /* slate-500: متنِ راهنمای فیلد روی سفید ۴٫۷۶:۱ (slate-400 فقط ۲٫۶۳ بود)؛ هنوز روشن‌تر از muted-foreground (slate-600) تا با مقدار اشتباه نشود. */
+  --placeholder: var(--dig-slate-500);
+
+  --accent: var(--dig-slate-100);
+  --accent-foreground: var(--dig-slate-900);
+
+  --brand-secondary: var(--brand-secondary-600);
+  --brand-secondary-foreground: var(--dig-white);
+
+  /* رنگ‌های وضعیت. سبز و کهربایی در آن Shade که متن سفید می‌پذیرد مات و
+     گِلی می‌شوند؛ به‌جایش Shade زندهٔ ۵۰۰ با متن تیره می‌نشیند و همان‌جا
+     کنتراست از ۴.۵ بیشتر است (۶.۷۱ و ۶.۹۹). قرمز برعکس است و در ۶۰۰ با
+     متن سفید کار می‌کند. */
+  --destructive: var(--dig-red-600);
+  --destructive-foreground: var(--dig-white);
+  /* green-600: متنِ سبز روی سفید ۴٫۷۵:۱ (green-500 فقط ۳٫۲۵ بود و برای متنِ معمولی رد می‌شد)؛ روی زمینهٔ سبز متن سفید، باز ۴٫۷۵:۱. */
+  --success: var(--dig-green-600);
+  --success-foreground: var(--dig-white);
+  --warning: var(--dig-amber-500);
+  --warning-foreground: var(--dig-amber-950);
+  --info: var(--dig-blue-600);
+  --info-foreground: var(--dig-white);
+
+  /* رنگ‌های دسته‌بندی (categorical): بی‌معنای وضعیت — برای برچسب‌زدن
+     موضوعی مثل نام پلن/دسته/تگ، جایی که فقط باید از هم قابل‌تفکیک باشند،
+     نه success/warning/destructive معنا بدهند. */
+  --violet: var(--dig-violet-600);
+  --violet-foreground: var(--dig-white);
+  --indigo: var(--dig-indigo-600);
+  --indigo-foreground: var(--dig-white);
+  --cyan: var(--dig-cyan-600);
+  --cyan-foreground: var(--dig-white);
+  --orange: var(--dig-orange-600);
+  --orange-foreground: var(--dig-white);
+  --pink: var(--dig-pink-600);
+  --pink-foreground: var(--dig-white);
+
+  /* نسخهٔ کم‌رنگ هر وضعیت: زمینهٔ ملایم برای Alert و Badge، و متنی که
+     روی آن، و روی زمینهٔ صفحه، خوانا بماند. */
+  --primary-subtle: var(--brand-50);
+  --primary-subtle-foreground: var(--brand-700);
+  --destructive-subtle: var(--dig-red-50);
+  --destructive-subtle-foreground: var(--dig-red-700);
+  --success-subtle: var(--dig-green-50);
+  --success-subtle-foreground: var(--dig-green-700);
+  --warning-subtle: var(--dig-amber-50);
+  --warning-subtle-foreground: var(--dig-amber-700);
+  --info-subtle: var(--dig-blue-50);
+  --info-subtle-foreground: var(--dig-blue-700);
+  --violet-subtle: var(--dig-violet-50);
+  --violet-subtle-foreground: var(--dig-violet-700);
+  --indigo-subtle: var(--dig-indigo-50);
+  --indigo-subtle-foreground: var(--dig-indigo-700);
+  --cyan-subtle: var(--dig-cyan-50);
+  --cyan-subtle-foreground: var(--dig-cyan-700);
+  --orange-subtle: var(--dig-orange-50);
+  --orange-subtle-foreground: var(--dig-orange-700);
+  --pink-subtle: var(--dig-pink-50);
+  --pink-subtle-foreground: var(--dig-pink-700);
+
+  /* نسخهٔ ۲ ظاهر: مرزها روشن‌تر؛ جداییِ سطح‌ها بیشتر با سایهٔ نرم است تا خطِ تیره. */
+  --border: var(--dig-slate-200);
+  --border-subtle: var(--dig-slate-100);
+  --input: var(--dig-slate-300);
+  --ring: var(--brand-secondary-600);
+
+  /* پالت دسته‌ای (categorical): هشت رنگ برای سری‌های نمودار و رنگ دسته‌ها
+     (برچسب، تگ، ColorSwatchPicker). سری اول از برند می‌آید، پس با تعویض برند
+     همراه می‌شود. ۲ تا ۸ رنگ‌مایهٔ (C و H) همان رمپ‌های dig را دارند ولی
+     روشنایی‌شان جدا تنظیم شده تا هر جفتی از آن‌ها (نه فقط کنار هم) برای
+     کوررنگی (protan/deutan) تفکیک‌پذیر بماند، چون در انتخابگر رنگ همه با هم
+     دیده می‌شوند؛ و روی سطح کنتراست ۳:۱ داشته باشند. صورتی به‌جای نارنجی
+     آمده چون نارنجی کنار کهربایی و قرمز برای کوررنگ‌ها یکی می‌شد. ترتیب ثابت است؛
+     رنگ را به موجودیت بدهید نه به رتبه. به‌جای توکن warning/destructive هم
+     استفاده نکنید، این‌ها فقط برای هویت دسته‌اند. */
+  --chart-1: var(--brand-secondary-500);
+  --chart-2: oklch(63% 0.108 215.221); /* cyan */
+  --chart-3: oklch(48% 0.11 158.19); /* green */
+  --chart-4: oklch(66% 0.143 70.08); /* amber */
+  --chart-5: oklch(53% 0.212 25.331); /* red */
+  --chart-6: oklch(64% 0.21 292.717); /* violet */
+  --chart-7: oklch(68% 0.236 354.308); /* pink */
+  --chart-8: oklch(50% 0.204 259.815); /* blue */
+
+  /* سفید روی محتوای muted؛ نوار و صفحه از هم جدا خوانده می‌شوند. */
+  --sidebar: var(--dig-white);
+  --sidebar-foreground: var(--dig-slate-900);
+  --sidebar-primary: var(--brand-600);
+  --sidebar-primary-foreground: var(--dig-white);
+  --sidebar-accent: var(--dig-slate-100);
+  --sidebar-accent-foreground: var(--dig-slate-900);
+  --sidebar-border: var(--dig-slate-300);
+  --sidebar-ring: var(--brand-600);
+
+  /* ------------------------------------------------------------------ *
+   * سایه، چهار پلهٔ معنایی بر اساس ارتفاع، نه اندازه
+   *
+   * مثل فاصله‌گذاری، سایه هم یک عدد نیست؛ چهار نقش است و هر کدام معنای
+   * خودش را دارد. کسی که popover را با shadow-lg تیره می‌کند فردا مودال
+   * را هم با همان کلاس تیره می‌کند، چون هر دو «اتفاقاً بزرگ» بودند. اسم
+   * بردن جلوی این را می‌گیرد.
+   *
+   *   control  حالت استراحتِ دکمه، اینپوت، آیتم لیست — تقریباً نامحسوس
+   *   card     کارت و تایلی که کمی از پس‌زمینه بلند شده
+   *   panel    popover، dropdown-menu، select، date-picker، tooltip
+   *   overlay  dialog، sheet، drawer، alert-dialog — بالاترین ارتفاع
+   *
+   * هر پله دو سایه دارد (نزدیک + دور) تا لبه هم تیز بماند هم پخش. تیرگی رنگ تیم تیره را جدا تعریف کرده‌ایم؛
+   * سیاهِ کم‌رنگِ تم روشن روی پس‌زمینهٔ نزدیک‌به‌سیاه دیده نمی‌شود.
+   * ------------------------------------------------------------------ */
+  /* سایه‌های لایه‌ای و نرم با تهِ رنگِ slate، نه سیاهِ خالص. */
+  --shadow-control: 0 1px 2px 0 rgb(15 23 42 / 0.05);
+  /* کارت سایه ندارد، فقط مرزِ روشن؛ سایه مالِ لایه‌های شناور است (panel، overlay). */
+  --shadow-card: 0 0 #0000;
+  --shadow-panel: 0 2px 4px -1px rgb(15 23 42 / 0.05), 0 12px 24px -8px rgb(15 23 42 / 0.12);
+  --shadow-overlay: 0 4px 8px -2px rgb(15 23 42 / 0.06), 0 24px 48px -12px rgb(15 23 42 / 0.22);
+
+  /* ------------------------------------------------------------------ *
+   * دو پلهٔ اضافه برای سطوح مارکتینگ/محتوا، نه ارتفاع UI اپلیکیشن
+   *
+   * چهار پلهٔ بالا برای عناصر تعاملی اپ‌اند (دکمه تا مودال). یک کارت
+   * تبلیغاتی یا پیش‌نمایش بزرگ محصول در لندینگ‌پیج به شعاعِ بلور خیلی
+   * بزرگ‌تر و کدرترِ همان رنگ نیاز دارد تا «شناور روی صفحه» به‌نظر برسد،
+   * نه «بلندتر از کارت کناری‌اش». این‌ها آن سطح‌اند، نه جایگزین چهارتای
+   * بالا.
+   *
+   *   float   هاورِ کارت مارکتینگ/محتوا (نه تایل داده‌ای)
+   *   hero    پنل‌های بزرگ (پیش‌نمایش محصول، ویجت هیرو، بنر CTA)
+   * ------------------------------------------------------------------ */
+  --shadow-float: 0 24px 50px -24px rgb(15 23 43 / 0.2);
+  --shadow-hero: 0 50px 100px -30px rgb(15 23 43 / 0.35);
+}
+
+/* -------------------------------------------------------------------- *
+ * لایهٔ ۳، توکن‌های معنایی (تم تیره)
+ *
+ * قاعدهٔ وارونه: در تم تیره رنگ‌های توپُر روشن‌تر می‌شوند (Shade ۴۰۰) و متن
+ * روی آن‌ها تیره می‌شود (Shade ۹۵۰ همان رمپ). ضعیف‌ترین جفت اینجا
+ * primary با ۵.۱۴ است.
+ * -------------------------------------------------------------------- */
+.dark {
+  --background: var(--neutral-950);
+  --foreground: var(--neutral-100);
+
+  --card: var(--neutral-900);
+  --card-foreground: var(--neutral-100);
+
+  --popover: var(--neutral-900);
+  --popover-foreground: var(--neutral-100);
+
+  --primary: var(--brand-400);
+  --primary-foreground: var(--brand-950);
+
+  --secondary: var(--neutral-800);
+  --secondary-foreground: var(--neutral-100);
+
+  --muted: var(--neutral-800);
+  --muted-foreground: var(--neutral-400);
+  --subtle: var(--neutral-900);
+  --inverse: var(--neutral-800);
+  --inverse-raised: var(--neutral-700);
+  --inverse-border: var(--neutral-600);
+  --placeholder: var(--neutral-400);
+
+  --accent: var(--neutral-800);
+  --accent-foreground: var(--neutral-100);
+
+  --brand-secondary: var(--brand-secondary-400);
+  --brand-secondary-foreground: var(--brand-secondary-950);
+
+  --destructive: var(--dig-red-400);
+  --destructive-foreground: var(--dig-red-950);
+  --success: var(--dig-green-400);
+  --success-foreground: var(--dig-green-950);
+  --warning: var(--dig-amber-400);
+  --warning-foreground: var(--dig-amber-950);
+  --info: var(--dig-blue-400);
+  --info-foreground: var(--dig-blue-950);
+
+  --violet: var(--dig-violet-400);
+  --violet-foreground: var(--dig-violet-950);
+  --indigo: var(--dig-indigo-400);
+  --indigo-foreground: var(--dig-indigo-950);
+  --cyan: var(--dig-cyan-400);
+  --cyan-foreground: var(--dig-cyan-950);
+  --orange: var(--dig-orange-400);
+  --orange-foreground: var(--dig-orange-950);
+  --pink: var(--dig-pink-400);
+  --pink-foreground: var(--dig-pink-950);
+
+  /* Shade ۹۵۰ روی پس‌زمینهٔ صفحه (که خودش هم نزدیک همان تیرگی است) تقریباً
+     محو می‌شود؛ Shade ۹۰۰ همان فاصلهٔ کنتراستِ زمینه/متنِ روشن را حفظ
+     می‌کند ولی به‌عنوان سطحِ رنگی از پس‌زمینه جدا دیده می‌شود. */
+  /* سطحِ «انتخاب‌شده» در تاریک از روشن‌ترین Shadeِ برند ساخته می‌شود نه از ۹۰۰:
+     برندِ پیش‌فرض گرافیت است و Shade ۹۰۰ آن مشکیِ خالص، که کارتِ انتخاب‌شده را
+     تیره‌تر از کارت‌های دیگر (سوراخ) نشان می‌داد. با رنگِ برند هم تهِ رنگ می‌گیرد. */
+  --primary-subtle: color-mix(in oklab, var(--brand-400) 18%, var(--neutral-900));
+  --primary-subtle-foreground: var(--brand-200);
+  --destructive-subtle: var(--dig-red-900);
+  --destructive-subtle-foreground: var(--dig-red-200);
+  --success-subtle: var(--dig-green-900);
+  --success-subtle-foreground: var(--dig-green-200);
+  --warning-subtle: var(--dig-amber-900);
+  --warning-subtle-foreground: var(--dig-amber-200);
+  --info-subtle: var(--dig-blue-900);
+  --info-subtle-foreground: var(--dig-blue-200);
+  --violet-subtle: var(--dig-violet-900);
+  --violet-subtle-foreground: var(--dig-violet-200);
+  --indigo-subtle: var(--dig-indigo-900);
+  --indigo-subtle-foreground: var(--dig-indigo-200);
+  --cyan-subtle: var(--dig-cyan-900);
+  --cyan-subtle-foreground: var(--dig-cyan-200);
+  --orange-subtle: var(--dig-orange-900);
+  --orange-subtle-foreground: var(--dig-orange-200);
+  --pink-subtle: var(--dig-pink-900);
+  --pink-subtle-foreground: var(--dig-pink-200);
+
+  --border: var(--neutral-800);
+  --border-subtle: var(--neutral-800);
+  --input: var(--neutral-800);
+  --ring: var(--brand-secondary-400);
+
+  /* تیره: مقادیر جدا انتخاب شده‌اند، نه برعکسِ روشن. روی هر سه سطح تیره
+     (Neutral، Blue Dark، Gray Dark) اعتبارسنجی شده‌اند. */
+  --chart-1: var(--brand-secondary-400);
+  --chart-2: oklch(62% 0.108 215.221); /* cyan */
+  --chart-3: oklch(50% 0.115 158.19); /* green */
+  --chart-4: oklch(63% 0.133 70.08); /* amber */
+  --chart-5: oklch(53% 0.212 25.331); /* red */
+  --chart-6: oklch(66% 0.195 292.717); /* violet */
+  --chart-7: oklch(66% 0.241 354.308); /* pink */
+  --chart-8: oklch(51% 0.204 259.815); /* blue */
+
+  --sidebar: var(--neutral-900);
+  --sidebar-foreground: var(--neutral-100);
+  --sidebar-primary: var(--brand-400);
+  --sidebar-primary-foreground: var(--brand-950);
+  --sidebar-accent: var(--neutral-800);
+  --sidebar-accent-foreground: var(--neutral-100);
+  --sidebar-border: var(--neutral-800);
+  --sidebar-ring: var(--brand-500);
+
+  /* سیاهِ کم‌رنگِ تم روشن روی زمینهٔ slate-950 عملاً محو است، پس تیرگی
+     بالا رفته تا لبهٔ سطح از پس‌زمینه جدا بماند. */
+  --shadow-control: 0 1px 2px 0 rgb(0 0 0 / 0.24);
+  --shadow-card: 0 0 #0000;
+  --shadow-panel: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+  --shadow-overlay: 0 10px 15px -3px rgb(0 0 0 / 0.48), 0 4px 6px -4px rgb(0 0 0 / 0.48);
+  --shadow-float: 0 24px 50px -24px rgb(0 0 0 / 0.5);
+  --shadow-hero: 0 50px 100px -30px rgb(0 0 0 / 0.65);
+}
+
+/* -------------------------------------------------------------------- *
+ * پرچمِ انتخابیِ تم تیره، Blue Dark در برابر Gray Dark
+ *
+ * .dark پیش‌فرض (Blue Dark) از --dig-slate-* می‌آید که کمی به سمت آبی‌
+ * سرمه‌ای می‌زند. دولوپری که خاکستریِ خنثی‌تر می‌خواهد، همان عنصری که
+ * next-themes کلاس dark را رویش می‌گذارد (معمولاً <html>) را با
+ * data-dark-theme="gray" علامت می‌زند:
+ *
+ *   <html class="dark" data-dark-theme="gray">
+ *
+ * فقط لایهٔ آلیاسِ --neutral-* عوض می‌شود؛ چون هر توکن معنایی در .dark
+ * (پس‌زمینه، کارت، border و...) از همین آلیاس می‌خواند، هیچ‌جای دیگری
+ * دست‌کاری نمی‌شود. کنتراست‌ها هم‌زاد و بودِ رمپ slate‌اند (اندازه‌گیری‌
+ * شده: هر دو رمپ روی همین Shadeها با هم کمتر از ۰.۳ اختلاف نسبت کنتراست
+ * دارند).
+ * -------------------------------------------------------------------- */
+.dark[data-dark-theme="gray"] {
+  --neutral-50: var(--dig-ash-50);
+  --neutral-100: var(--dig-ash-100);
+  --neutral-200: var(--dig-ash-200);
+  --neutral-300: var(--dig-ash-300);
+  --neutral-400: var(--dig-ash-400);
+  --neutral-500: var(--dig-ash-500);
+  --neutral-600: var(--dig-ash-600);
+  --neutral-700: var(--dig-ash-700);
+  --neutral-800: var(--dig-ash-800);
+  --neutral-900: var(--dig-ash-900);
+  --neutral-950: var(--dig-ash-950);
+}
+
+/* -------------------------------------------------------------------- *
+ * پرچمِ انتخابیِ فونت، ایران سنس (پیش‌فرض) در برابر وزیر یا ایران یکان
+ *
+ * سه لایهٔ فونت را ببینید (بالاتر، «لنگر فونت»). این سوییچرِ توکارِ دیگ
+ * است، نه راهنمای «پروژه چطور فونت خودش را بگذارد» — همان مکانیزم را با
+ * data-font روی <html> پیاده می‌کند تا کاربر از رابط کاربری (فونت‌توگل)
+ * بین سه فونتِ آماده جابه‌جا شود. src/lib/fonts.ts و src/lib/font-store.ts
+ * منبع حقیقتِ نوع و ذخیره‌سازیِ انتخاب‌اند؛ اینجا فقط لنگر عوض می‌شود.
+ * -------------------------------------------------------------------- */
+
+/* -------------------------------------------------------------------- *
+ * ترازِ نمایش، سه لایه به‌جای طیف پیوسته
+ *
+ * برخلاف سایه که چهار پله دارد، اینجا فقط سه لایه‌ایم و عمداً «popover»
+ * و «modal» عدد جدا نمی‌گیرند. دلیلش یک باگ واقعی است: اگر Select عددِ
+ * کوچک‌تری از Dialog داشته باشد، وقتی Select از داخل یک Dialog باز شود
+ * دقیقاً پشتِ همان Dialog قایم می‌شود، چون z-index یک استکینگ‌کانتکست
+ * جدید می‌سازد و دیگر ترتیب DOM تصمیم نمی‌گیرد. راه‌حلِ درست این نیست
+ * که عدد Select را دستی بالاتر ببریم؛ راه‌حل این است که هر چیزی که
+ * می‌تواند از دلِ چیز دیگری باز شود (popover، dropdown، dialog، sheet،
+ * tooltip) در یک لایهٔ مشترک بماند و تساویِ z-index را ترتیبِ DOM (یعنی
+ * کدام portal دیرتر مونت شده) حل کند. توست تنها لایه‌ای است که باید
+ * همیشه بالای همه بماند، حتی بالای یک Dialog باز، پس تنها آن یک عدد
+ * جداگانه و بزرگ‌تر دارد.
+ *
+ *   sticky   هدر چسبانِ جدول، نوار ابزار چسبان — بالای محتوا، زیر همه‌چیزِ شناور
+ *   overlay  هر چیز شناور: backdrop، dialog، sheet، drawer، popover،
+ *            dropdown-menu، select، combobox، context-menu، tooltip
+ *   toast    بالاترین لایه؛ باید حتی روی یک modal باز هم دیده شود
+ * -------------------------------------------------------------------- */
+:root {
+  --z-sticky: 10;
+  --z-overlay: 50;
+  --z-toast: 100;
+}
+
+/* -------------------------------------------------------------------- *
+ * حاشیهٔ ظریف، نیم‌پیکسل
+ *
+ * مقیاسِ حاشیهٔ Tailwind (۰، پیش‌فرض ۱px، ۲) برای سطح و ورودی کافی است،
+ * ولی روی عنصرهای ریز و متراکم (Chip، Tag) همان ۱px هم سنگین دیده
+ * می‌شود؛ لبه از خودِ رنگِ پرشدگی بلندتر می‌زند. ۰.۵px روی نمایشگرهای
+ * ≥2x (رتینا و بیشترِ موبایل‌ها) واقعاً نیم‌پیکسل رندر می‌شود و لبه‌ای
+ * هم‌وزنِ محتوا می‌دهد؛ روی نمایشگرهای ۱x مرورگر به نزدیک‌ترین پیکسل
+ * گرد می‌کند و همان ۱px قبلی را می‌بینید، نه شکستگی یا حذف حاشیه.
+ * -------------------------------------------------------------------- */
+:root {
+  --border-width-fine: 0.5px;
+}
+
+/* -------------------------------------------------------------------- *
+ * فونت، همان چیدمان سه‌لایهٔ رنگ، این بار برای تایپوگرافی
+ *
+ * لایهٔ ۱ (--font-anchor) انتخابِ پروژه است، لایهٔ ۲ (--font-sans) نقشِ
+ * فونت در رابط کاربری. پروژه‌ای که می‌خواهد ایران‌سنس یا هر فونت دیگری
+ * بگذارد، فقط لنگر را عوض می‌کند، نه توکن معنایی را، نه fallbackها را:
+ *
+ *   const iranSans = localFont({ variable: "--font-iransans", src: [...] })
+ *   :root { --font-anchor: var(--font-iransans), "IRANSansX"; }
+ *
+ * قبلاً نام فونتِ خودِ دیگ داخل توکن معنایی پخته شده بود، پس هر پروژه
+ * مجبور بود کل خط را بازنویسی کند و fallbackها را دستی تکرار کند.
+ * -------------------------------------------------------------------- */
+:root {
+  /* لنگر فونت، تنها چیزی که یک پروژه برای تعویض فونت عوض می‌کند.
+     این مقدار فقط نامِ خانوادهٔ فونت است، بدون هیچ متغیرِ next/font: هر
+     پروژه‌ای که فونت را با هر روشی (next/font، @font-face، CDN) لود کرده
+     باشد با همین کار می‌کند، و اگر هیچ فونتی نداشته باشد به --font-fallback
+     می‌افتد. سایتِ مستندات خودش پایین‌تر این را با نسخهٔ next/font بازتعریف
+     می‌کند. */
+  --font-anchor: "IRANSansX", "IRANYekanFN", "Vazirmatn";
+  --font-anchor-mono: ui-monospace;
+
+  /* زنجیرهٔ جایگزین، مشترک بین همهٔ پروژه‌ها. */
+  --font-fallback: ui-sans-serif, system-ui, sans-serif;
+
+  /* ------------------------------------------------------------------ *
+   * ضریب اندازه، تنها پیچِ تنظیمِ فاصلهٔ دید
+   *
+   * موبایل و دسکتاپ هر دو از فاصلهٔ بازو خوانده می‌شوند، پس ضریبشان ۱
+   * است و تفاوتشان را خودِ clamp با عرض viewport می‌گیرد. تلویزیون فرق
+   * دارد: از سه متری دیده می‌شود و همان ۱۳px عملاً ناخواناست، پس کلِ
+   * مقیاس بزرگ می‌شود نه فقط تیترها.
+   *
+   * پروژه‌ها می‌توانند دستی هم عوضش کنند، مثلاً کیوسکِ ایستاده یا
+   * حالتِ «متن بزرگ» برای کاربر کم‌بینا:  :root { --font-scale: 1.25 }
+   * ------------------------------------------------------------------ */
+  --font-scale: 1;
+}
+
+/* تلویزیون و کیوسک، عمداً با عرض صفحه فعال نمی‌شود.
+ *
+ * وسوسه‌کننده است که بگوییم «عرض ۱۹۲۰ یعنی تلویزیون»، ولی ۱۹۲۰ رایج‌ترین
+ * مانیتور دسکتاپ است. با آن قاعده، کاربرِ دسکتاپِ پهن متنِ اندازهٔ تلویزیون
+ * می‌گرفت. عرض چیزی دربارهٔ فاصلهٔ دید نمی‌گوید.
+ *
+ * پس این یک پیچِ صریح است: اپلیکیشنِ تلویزیون یا کیوسک، یا حالتِ «متن بزرگ»
+ * برای کاربر کم‌بینا، خودش آن را می‌چرخاند:
+ *
+ *     :root { --font-scale: 1.35 }   → تلویزیون، فاصلهٔ سه متری
+ *     :root { --font-scale: 1.25 }   → کیوسک ایستاده یا متن بزرگ
+ */
+
+/* کاربری که در سیستم‌عاملش «کاهش حرکت» را زده معمولاً تنظیمات دسترسی‌پذیری
+   دیگری هم دارد؛ اینجا کاری نمی‌کنیم، فقط یادآوری که --font-scale نقطهٔ
+   اتصالِ آمادهٔ چنین تنظیماتی است. */
+
+@theme inline {
+  --font-sans: var(--font-anchor), var(--font-fallback);
+  --font-mono: var(--font-anchor-mono), monospace;
+
+  /* ------------------------------------------------------------------ *
+   * مقیاس تایپوگرافی، فارسی‌محور
+   *
+   * مقیاس پیش‌فرض Tailwind برای متن لاتین تنظیم شده. حروف فارسی در همان
+   * اندازهٔ اسمی، نوری کوچک‌تر دیده می‌شوند و کشیدگی‌ها فاصلهٔ سطر بیشتری
+   * می‌خواهند. دو تفاوت با Tailwind:
+   *
+   *   --text-2xs  تازه است (۱۱px)، ریزنویسیِ جدول و متادیتا
+   *   --text-sm   از ۱۴px به ۱۳px آمده، بدنهٔ واقعیِ رابط‌های فارسی
+   *
+   * ارتفاع خط پله‌های base تا 6xl هم اینجا بازتعریف شده‌اند (فقط اندازهٔ
+   * فونت‌ها دست‌نخورده، همان اعداد پیش‌فرض Tailwind‌اند). دلیلش همان
+   * دلیل بالاست: کشیدگیِ حروف فارسی به فاصلهٔ سطرِ بیشتری از نسخهٔ لاتین
+   * نیاز دارد، وگرنه خصوصاً در تیترهای چندخطی خط‌ها روی هم فشرده به نظر
+   * می‌رسند (مثل عنوانِ دوخطیِ صفحهٔ اول).
+   * ------------------------------------------------------------------ */
+  --text-2xs: calc(0.6875rem * var(--font-scale));
+  --text-2xs--line-height: calc(1 / 0.6875);
+  --text-xs: calc(0.75rem * var(--font-scale));
+  --text-xs--line-height: calc(1.125 / 0.75);
+  --text-sm: calc(0.8125rem * var(--font-scale));
+  --text-sm--line-height: calc(1.375 / 0.8125);
+  --text-base--line-height: 1.6;
+  --text-lg--line-height: 1.65;
+  --text-xl--line-height: 1.5;
+  --text-2xl--line-height: 1.45;
+  --text-3xl--line-height: 1.35;
+  --text-4xl--line-height: 1.3;
+  --text-5xl--line-height: 1.25;
+  --text-6xl--line-height: 1.2;
+
+  /* ------------------------------------------------------------------ *
+   * نقش‌ها، چیزی که در کد می‌نویسید
+   *
+   * پله‌های بالا خام‌اند؛ این‌ها می‌گویند «این متن چه کاره است». به‌جای
+   * اینکه هر توسعه‌دهنده حدس بزند لیبل ۱۲ است یا ۱۳، می‌نویسد
+   * text-label. اگر فردا مقیاس عوض شود، همه‌جا با هم عوض می‌شود.
+   *
+   * هر نقش با clamp بین موبایل و دسکتاپ سیّال است و در ضریبِ فاصلهٔ دید
+   * ضرب می‌شود. عددهای کوچکِ رابط (لیبل و ریزنویسی) عمداً سیّال نیستند:
+   * در جدولِ فشرده، بزرگ‌شدنشان با عرض صفحه چیدمان را به‌هم می‌ریزد.
+   * ------------------------------------------------------------------ */
+  --text-caption: calc(0.6875rem * var(--font-scale));
+  --text-caption--line-height: 1.6;
+  --text-label: calc(0.75rem * var(--font-scale));
+  --text-label--line-height: 1.5;
+  --text-description: calc(clamp(0.75rem, 0.72rem + 0.12vw, 0.8125rem) * var(--font-scale));
+  --text-description--line-height: 1.75;
+  --text-body: calc(clamp(0.8125rem, 0.79rem + 0.12vw, 0.875rem) * var(--font-scale));
+  --text-body--line-height: 1.75;
+  --text-subheading: calc(clamp(0.9375rem, 0.9rem + 0.2vw, 1rem) * var(--font-scale));
+  --text-subheading--line-height: 1.5;
+  --text-heading: calc(clamp(1rem, 0.94rem + 0.3vw, 1.125rem) * var(--font-scale));
+  --text-heading--line-height: 1.45;
+  --text-title: calc(clamp(1.25rem, 1.14rem + 0.55vw, 1.5rem) * var(--font-scale));
+  --text-title--line-height: 1.35;
+  --text-display: calc(clamp(1.75rem, 1.4rem + 1.75vw, 2.5rem) * var(--font-scale));
+  /* ۱.۲ برای عنوانِ دوخطی با حروف کشیده‌دارِ فارسی (مثل «فارسی») بیش از حد
+     جمع بود؛ ۱.۳ چند پیکسل هوای بیشتر بین خط‌ها می‌دهد. */
+  --text-display--line-height: 1.3;
+
+  /* تیترها در فارسی با فاصلهٔ حروفِ کمی جمع‌تر بهتر می‌نشینند. */
+  --tracking-heading: -0.01em;
+
+  /* ------------------------------------------------------------------ *
+   * فاصله‌گذاری
+   *
+   * واحد پایهٔ Tailwind است؛ همهٔ p-* و m-* و gap-* و w-* از همین ضرب
+   * می‌شوند. چون در ضریبِ فاصلهٔ دید ضرب شده، روی تلویزیون کل چیدمان با
+   * متن هماهنگ بزرگ می‌شود، نه اینکه متن بزرگ شود و پدینگ‌ها همان
+   * بمانند و همه‌چیز خفه شود.
+   * ------------------------------------------------------------------ */
+  --spacing: calc(0.25rem * var(--font-scale));
+
+  /* ------------------------------------------------------------------ *
+   * نقش‌های فاصله، سه محور
+   *
+   * فاصله در رابط کاربری یک چیز نیست، سه چیز است و هر کدام منطق خودش را
+   * دارد. نام‌بردنشان جدا از هم، جلوی این را می‌گیرد که کسی پدینگِ کارت را
+   * برای فاصلهٔ دو دکمه به کار ببرد چون «هر دو ۱۲ بودند».
+   *
+   *   inset: پدینگِ درونِ یک کانتینر
+   *   stack: فاصلهٔ عمودیِ چیزهای روی هم
+   *   inline: فاصلهٔ افقیِ چیزهای کنار هم
+   * ------------------------------------------------------------------ */
+
+  /* قاعدهٔ اعداد: پایه ۴ است، ریتم ۸.
+   *
+   * هر مقدارِ ۱۶ به بالا مضرب ۸ است. زیر ۱۶ نیم‌پله‌های ۴ و ۱۲ هم مجازند،
+   * چون در رابط‌های فشرده (جدول بانکی، فرم چندستونی) پرش ۸ به ۱۶ درشت
+   * است و «آیکون تا متن» با «دکمه تا دکمه» یکی می‌شود. شبکهٔ ۸ ریتمِ روی
+   * پایهٔ ۴ است، نه جایگزینش.
+   */
+
+  /* inset: از کوچک‌ترین کانتینر تا لبهٔ صفحه */
+  --spacing-control: calc(0.5rem * var(--font-scale));
+  --spacing-field: calc(0.75rem * var(--font-scale));
+  --spacing-card: calc(1.5rem * var(--font-scale));
+  --spacing-panel: calc(2rem * var(--font-scale));
+  --spacing-gutter: calc(clamp(1rem, 0.5rem + 2vw, 2rem) * var(--font-scale));
+
+  /* stack، عمودی */
+  --spacing-stack-tight: calc(0.25rem * var(--font-scale));
+  --spacing-stack: calc(0.5rem * var(--font-scale));
+  --spacing-stack-loose: calc(1rem * var(--font-scale));
+  --spacing-section: calc(1.5rem * var(--font-scale));
+
+  /* inline، افقی */
+  --spacing-inline-tight: calc(0.25rem * var(--font-scale));
+  --spacing-inline: calc(0.5rem * var(--font-scale));
+  --spacing-inline-loose: calc(0.75rem * var(--font-scale));
+
+  /* ------------------------------------------------------------------ *
+   * هدف لمسی
+   *
+   * روی موبایل، اندازهٔ دیداریِ یک آیکون ربطی به ناحیهٔ قابل‌لمسش ندارد.
+   * آیکونِ ۱۶ پیکسلی می‌تواند داخل دکمه‌ای بنشیند که ۴۴ پیکسل است و باید
+   * باشد. دو عدد لازم است، نه یکی: اندازهٔ هدف، و فاصلهٔ بین دو هدف.
+   *
+   *   WCAG 2.2 §2.5.8   ۲۴×۲۴ کمینهٔ AA
+   *   WCAG 2.2 §2.5.5   ۴۴×۴۴ سطح AAA
+   *   دیگ، اندازهٔ راحت  ۴۸×۴۸ با کمینه ۸ فاصله
+   *
+   * بدون فاصله، دو دکمهٔ ۴۴ پیکسلیِ چسبیده هم لمس اشتباه می‌دهند، چون
+   * انگشت مرکز دقیق را نمی‌زند.
+   * ------------------------------------------------------------------ */
+  --size-touch: 2.75rem;
+  --size-touch-lg: 3rem;
+  --spacing-touch: 0.5rem;
+
+  /* ------------------------------------------------------------------ *
+   * عرض‌های نام‌دار
+   *
+   * اینها را هر پروژه دستی اختراع می‌کند (max-w-[620px] و max-w-[1240px])
+   * و بعد در دو صفحه دو عدد متفاوت می‌شود.
+   * ------------------------------------------------------------------ */
+  --container-prose: 65ch;
+  --container-form: 38.75rem;
+  --container-page: 77.5rem;
+
+  /* گردی گوشه‌ها هم با مقیاس بزرگ می‌شود وگرنه روی تلویزیون تیز به نظر
+     می‌رسد؛ پله‌های مشتق از --radius خودشان دنبالش می‌آیند. */
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+  --color-inverse: var(--inverse);
+  --color-inverse-raised: var(--inverse-raised);
+  --color-inverse-border: var(--inverse-border);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-placeholder: var(--placeholder);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-brand-secondary: var(--brand-secondary);
+  --color-brand-secondary-foreground: var(--brand-secondary-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-violet: var(--violet);
+  --color-violet-foreground: var(--violet-foreground);
+  --color-indigo: var(--indigo);
+  --color-indigo-foreground: var(--indigo-foreground);
+  --color-cyan: var(--cyan);
+  --color-cyan-foreground: var(--cyan-foreground);
+  --color-orange: var(--orange);
+  --color-orange-foreground: var(--orange-foreground);
+  --color-pink: var(--pink);
+  --color-pink-foreground: var(--pink-foreground);
+
+  --color-primary-subtle: var(--primary-subtle);
+  --color-primary-subtle-foreground: var(--primary-subtle-foreground);
+  --color-destructive-subtle: var(--destructive-subtle);
+  --color-destructive-subtle-foreground: var(--destructive-subtle-foreground);
+  --color-success-subtle: var(--success-subtle);
+  --color-success-subtle-foreground: var(--success-subtle-foreground);
+  --color-warning-subtle: var(--warning-subtle);
+  --color-warning-subtle-foreground: var(--warning-subtle-foreground);
+  --color-info-subtle: var(--info-subtle);
+  --color-info-subtle-foreground: var(--info-subtle-foreground);
+  --color-violet-subtle: var(--violet-subtle);
+  --color-violet-subtle-foreground: var(--violet-subtle-foreground);
+  --color-indigo-subtle: var(--indigo-subtle);
+  --color-indigo-subtle-foreground: var(--indigo-subtle-foreground);
+  --color-cyan-subtle: var(--cyan-subtle);
+  --color-cyan-subtle-foreground: var(--cyan-subtle-foreground);
+  --color-orange-subtle: var(--orange-subtle);
+  --color-orange-subtle-foreground: var(--orange-subtle-foreground);
+  --color-pink-subtle: var(--pink-subtle);
+  --color-pink-subtle-foreground: var(--pink-subtle-foreground);
+
+  --color-border: var(--border);
+  --color-border-subtle: var(--border-subtle);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-chart-6: var(--chart-6);
+  --color-chart-7: var(--chart-7);
+  --color-chart-8: var(--chart-8);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* رمپ برند به‌صورت یوتیلیتی هم در دسترس است: bg-brand-500، text-brand-700 */
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200);
+  --color-brand-300: var(--brand-300);
+  --color-brand-400: var(--brand-400);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
+  --color-brand-800: var(--brand-800);
+  --color-brand-900: var(--brand-900);
+  --color-brand-950: var(--brand-950);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* چهار پلهٔ سایه به‌عنوان یوتیلیتی: shadow-control، shadow-card،
+     shadow-panel، shadow-overlay — به‌اضافهٔ دو پلهٔ مارکتینگ: shadow-float،
+     shadow-hero (نگاه کنید به توضیح بالای تعریفشان در لایهٔ ۳). */
+  --shadow-control: var(--shadow-control);
+  --shadow-card: var(--shadow-card);
+  --shadow-panel: var(--shadow-panel);
+  --shadow-overlay: var(--shadow-overlay);
+  --shadow-float: var(--shadow-float);
+  --shadow-hero: var(--shadow-hero);
+
+  /* سه لایهٔ نمایش به‌عنوان یوتیلیتی: z-sticky، z-overlay، z-toast */
+  --z-sticky: var(--z-sticky);
+  --z-overlay: var(--z-overlay);
+  --z-toast: var(--z-toast);
+
+  --animate-skeleton-shimmer: skeleton-shimmer 1.8s ease-in-out infinite;
+
+  @keyframes skeleton-shimmer {
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  /* Marquee: مسیر انیمیشن روی خودِ ردیفِ تکرارشونده می‌نشیند، نه روی
+     کانتینر؛ چون --duration/--gap باید هم اندازه‌ی محتوا را جبران کنند و
+     هم به‌ازای هر نمونهٔ Marquee قابل بازنویسی باشند (استایل این‌لاین). */
+  --animate-marquee: marquee var(--duration, 40s) linear infinite;
+  --animate-marquee-vertical: marquee-vertical var(--duration, 40s) linear infinite;
+
+  @keyframes marquee {
+    to {
+      transform: translateX(calc(-100% - var(--gap, 1rem)));
+    }
+  }
+
+  @keyframes marquee-vertical {
+    to {
+      transform: translateY(calc(-100% - var(--gap, 1rem)));
+    }
+  }
+
+  /* Accordion: کلاس‌های animate-accordion-down/up در accordion.tsx به این
+     دو کیفریم ارجاع می‌دهند، ولی جایی تعریف نشده بودند — نتیجه‌اش پرشِ
+     ارتفاع بین ۰ و auto بدون هیچ انیمیشنی بود، نه صرفاً یک ترنزیشن ناهموار.
+     forwards هم لازم است: وگرنه لحظه‌ای که انیمیشنِ بستن تمام می‌شود ولی
+     قبل از حذفِ واقعیِ عنصر توسط ری‌اکت، ارتفاع یک فریم به حالتِ کامل
+     برمی‌گردد (همان باگِ Collapsible پایین‌تر). */
+  --animate-accordion-down: accordion-down 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  --animate-accordion-up: accordion-up 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--accordion-content-height);
+    }
+  }
+
+  @keyframes accordion-up {
+    from {
+      height: var(--accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+
+  /* Collapsible: همان مشکلِ accordion بالا، برای animate-collapsible-down/up
+     در collapsible.tsx. forwards لازم است: بدونش، لحظه‌ای که انیمیشنِ
+     بستن تمام می‌شود ولی قبل از اینکه ری‌اکت (با رویدادِ animationend)
+     واقعاً عنصر را از DOM حذف کند، مرورگر ارتفاع را به حالتِ طبیعیِ
+     بدونِ‌انیمیشن (auto = ارتفاعِ کامل) برمی‌گرداند — یک فریمِ محتوای
+     کامل که ناگهان دوباره «بلینک» می‌زند، درست قبل از پنهان‌شدنِ واقعی. */
+  --animate-collapsible-down: collapsible-down 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  --animate-collapsible-up: collapsible-up 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+
+  @keyframes collapsible-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--collapsible-content-height);
+    }
+  }
+
+  @keyframes collapsible-up {
+    from {
+      height: var(--collapsible-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "ss01" 1, "ss02" 1;
+    /* سایتِ مستندات antialiased را روی html دارد ولی تمِ تحویلی نداشت؛ روی
+       مک، اپِ مصرف‌کننده با رندرِ زیرپیکسلی متن را یک وزن پررنگ‌تر نشان می‌داد
+       و توضیح‌های ۴۰۰ «مدیوم» دیده می‌شدند. حالا همه‌جا یک‌جور رندر می‌شود. */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+
+/* ------------------------------------------------------------------ *
+ * اسکلت: شیمر تکی و شیمر هماهنگِ گروه
+ *
+ * هر Skeleton با animation="shimmer" یک باند نور از روی خودش رد می‌کند.
+ * وقتی چند تا از این‌ها داخل یک SkeletonGroup باشند، :has() آن را
+ * تشخیص می‌دهد، شیمرِ تک‌تکِ فرزندان (::after زیرشان) را خاموش می‌کند و
+ * یک باند نور واحد از روی کل گروه رد می‌شود، نه یک شیمر جدا روی هر خانه.
+ * ------------------------------------------------------------------ */
+@layer components {
+  [data-slot="skeleton"][data-animation="shimmer"]::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    animation: var(--animate-skeleton-shimmer);
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      color-mix(in oklab, var(--color-foreground) 12%, transparent) 50%,
+      transparent 100%
+    );
+  }
+
+  [data-slot="skeleton-group"]:has([data-slot="skeleton"][data-animation="shimmer"])::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    pointer-events: none;
+    transform: translateX(-100%);
+    mix-blend-mode: overlay;
+    animation: var(--animate-skeleton-shimmer);
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      color-mix(in oklab, white 55%, transparent) 50%,
+      transparent 100%
+    );
+  }
+
+  [data-slot="skeleton-group"] [data-slot="skeleton"][data-animation="shimmer"]::after {
+    content: none;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * سایهٔ اسکرولِ جدول
+ *
+ * وقتی جدول از عرض ظرفش بیرون می‌زند، به‌جای اسکرول‌بارِ مخفی و بی‌سروصدا،
+ * دو نوارِ گرادیانتِ نازک روی لبه‌هایی که هنوز محتوای پنهان دارند نشان
+ * می‌دهیم. خودِ Table (table.tsx) با یک اسکرول‌لیسنر تشخیص می‌دهد کدام
+ * لبه محتوای پنهان دارد و data-overflow-start/data-overflow-end را روی
+ * table-container می‌گذارد؛ اینجا فقط opacity همان دو نوار را بر همین
+ * اساس صفر/یک می‌کند.
+ *
+ * این‌جا (نه background روی خودِ table-container) چون container هیچ
+ * radius/border ندارد و جدولِ داخلش (className مصرف‌کننده مثل
+ * rounded-lg/border) مستقل رند می‌شود؛ اگر پس‌زمینهٔ توپر را مستقیم روی
+ * container می‌گذاشتیم، یک مستطیلِ تیزگوشه پشتِ گوشه‌های گردِ جدول دیده
+ * می‌شد. نوارها هم عمداً یک ظرافت (--table-radius) از بالا/پایین فاصله
+ * می‌گیرند تا داخل همان گوشهٔ گرد جدول نروند؛ این متغیر را خودِ Table در
+ * table.tsx از روی شعاعِ واقعیِ رندرشدهٔ <table> می‌خواند و به‌صورت
+ * inline روی همین container می‌گذارد (نیازی به تنظیم دستی نیست، چون یک
+ * CSS custom property که مصرف‌کننده روی <table> بدهد به این نوارهای
+ * خواهر/برادر سرایت نمی‌کند). رنگ نوار با --table-shadow-bg قابل
+ * بازنویسی است، برای جدولی که روی زمینه‌ای غیر از --color-background
+ * می‌نشیند (مثلاً داخل Card: className="[--table-shadow-bg:var(--color-card)]").
+ * ------------------------------------------------------------------ */
+@layer components {
+  [data-slot="table-container"] {
+    --table-shadow-bg: var(--color-background);
+    --table-radius: 0px;
+  }
+
+  /* نشانهٔ «محتوای بیشتر» در لبهٔ اسکرول: خطِ توپُرِ ۲ پیکسلی، نه گرادیانِ نیمه‌شفاف که روی
+     متنِ ستون‌ها می‌نشست و آن را محو نشان می‌داد (کاربر، قانونِ بی‌شفافیت). */
+  [data-slot="table-edge-fade"] {
+    position: absolute;
+    top: var(--table-radius);
+    bottom: var(--table-radius);
+    width: 2px;
+    pointer-events: none;
+    z-index: 1;
+    display: none;
+    background: color-mix(in oklab, var(--foreground) 22%, var(--background));
+  }
+
+  [data-slot="table-edge-fade"][data-side="start"] {
+    inset-inline-start: 0;
+  }
+
+  [data-slot="table-edge-fade"][data-side="end"] {
+    inset-inline-end: 0;
+  }
+
+  [data-slot="table-container"][data-overflow-start] [data-slot="table-edge-fade"][data-side="start"],
+  [data-slot="table-container"][data-overflow-end] [data-slot="table-edge-fade"][data-side="end"] {
+    display: block;
+  }
+}
+
+/* Table stackOnMobile: زیرِ md هر سطر یک کارتِ جمع‌وجور؛ تیتر تمام‌عرض، باقیِ سلول‌ها در دو ستونِ
+   «برچسبِ کوچک بالای مقدار»، و سلولِ اقدام‌ها تمام‌عرض در پایان. بی‌اسکرولِ افقی. */
+@media (max-width: 47.99rem) {
+  [data-slot="table"][data-stack] {
+    min-width: 0 !important;
+    display: block;
+  }
+  [data-slot="table"][data-stack] thead {
+    display: none;
+  }
+  [data-slot="table"][data-stack] tbody {
+    display: block;
+  }
+  [data-slot="table"][data-stack] tbody > tr {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem 1rem;
+    padding: 1rem;
+  }
+  [data-slot="table"][data-stack] tbody > tr > td {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.125rem;
+    padding: 0 !important;
+    white-space: normal;
+    text-align: start;
+    position: static;
+    border: 0;
+    box-shadow: none;
+    min-width: 0;
+  }
+  [data-slot="table"][data-stack] tbody > tr > td[colspan] {
+    grid-column: 1 / -1;
+  }
+  [data-slot="table"][data-stack] tbody > tr > td[data-label]:not([data-label=""])::before {
+    content: attr(data-label);
+    color: var(--muted-foreground);
+    font-size: 0.75rem;
+    font-weight: 400;
+  }
+  /* اولین سلول تیترِ کارت است: تمام‌عرض، بی‌برچسب و پررنگ. */
+  [data-slot="table"][data-stack] tbody > tr > td:first-child {
+    grid-column: 1 / -1;
+    font-weight: 700;
+    font-size: 1rem;
+  }
+  [data-slot="table"][data-stack] tbody > tr > td:first-child::before {
+    display: none;
+  }
+  /* سلولِ اقدام (فقط دکمه): تمام‌عرض در پایانِ کارت، هم‌ترازِ لبهٔ پایان. */
+  [data-slot="table"][data-stack] tbody > tr > td:last-child:has(button, a[href]):not(:first-child) {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+  [data-slot="table"][data-stack] tbody > tr > td:last-child:has(button, a[href]):not(:first-child)::before {
+    display: none;
+  }
+  [data-slot="table"][data-stack] tbody > tr > td:empty {
+    display: none;
+  }
+  /* سطرِ انتخاب‌پذیر: تیک و سلولِ دوم (تیتر) در یک خانهٔ ردیفِ اول روی هم؛ تیک در شروع، تیتر با فاصله. */
+  [data-slot="table"][data-stack] tbody > tr > td:first-child:has([role="checkbox"]) {
+    grid-row: 1;
+    grid-column: 1 / -1;
+    width: auto;
+    z-index: 1;
+    justify-self: start;
+    padding-top: 0.125rem !important;
+  }
+  [data-slot="table"][data-stack] tbody > tr:has(> td:first-child [role="checkbox"]) > td:nth-child(2) {
+    grid-row: 1;
+    grid-column: 1 / -1;
+    padding-inline-start: 2.25rem !important;
+    font-weight: 700;
+    font-size: 1rem;
+  }
+  [data-slot="table"][data-stack] tbody > tr:has(> td:first-child [role="checkbox"]) > td:nth-child(2)::before {
+    display: none;
+  }
+}

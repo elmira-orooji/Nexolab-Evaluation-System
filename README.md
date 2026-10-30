@@ -1,4 +1,4 @@
-# NexoLab
+# Nexolab
 
 NexoLab is a Persian-first evaluation workspace for Retrieval-Augmented Generation (RAG) systems. It runs a test suite against a connected RAG API, stores answers, sources, citations, latency, errors, and configuration, and supports automatic analysis and human review.
 

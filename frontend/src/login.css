@@ -4,11 +4,10 @@
 .nexolab-login__main { position:relative; display:flex; align-items:center; justify-content:center; min-width:0; min-height:0; max-width:none; margin:0; padding:3rem 3.5rem 2rem; background:var(--panel); border-inline-end:1px solid var(--border); }
 .dark .nexolab-login__main { background:#0a142b; border-color:#1c2944; }
 .nexolab-login__toolbar { position:absolute; inset-block-start:1.25rem; inset-inline-end:1.25rem; display:flex; align-items:center; gap:.125rem; direction:ltr; }
-.nexolab-login__language { display:inline-flex; align-items:center; gap:.375rem; }
 .nexolab-login__form-wrap { width:100%; max-width:27.5rem; }
-.nexolab-login__logo { display:block; width:13rem; height:auto; margin:0 auto 2rem; }
+.nexolab-login__logo { display:block; width:20rem; height:auto; margin:0 auto 2rem;  transform: translateX(-7px) ; }
 .nexolab-login__heading { text-align:center; }
-.nexolab-login__heading h1 { margin:0; font-size:1.25rem; line-height:1.5; font-weight:500; letter-spacing:normal; }
+.nexolab-login__heading h1 { margin:0; font-size:1rem; line-height:1.5; font-weight:500; letter-spacing:normal; }
 .nexolab-login__heading p { margin:.5rem 0 0; color:var(--muted-foreground); font-size:.875rem; line-height:1.8; }
 .nexolab-login__form { display:grid; gap:1.5rem; margin-block-start:3rem; padding:0; }
 .nexolab-login__field { gap:.5rem; }
@@ -22,21 +21,21 @@
 .nexolab-login__remember { display:flex; align-items:center; gap:.625rem; font-size:.95rem; color:var(--muted-foreground); cursor:pointer; }
 .nexolab-login [data-slot="checkbox"] { width:1.375rem; height:1.375rem; padding:0; border-radius:.375rem; }
 .dark .nexolab-login [data-slot="checkbox"]:not([data-state="checked"]):not([data-state="indeterminate"]) { background-color:var(--neutral-800); border-color:var(--neutral-500); }
-.nexolab-login .nexolab-login__submit { justify-self:center; width:12rem; min-height:3.375rem; margin-block-start:.25rem; font-size:1.25rem !important; font-weight:400 !important; }
-.nexolab-login .nexolab-login__submit-label { font-size:20px !important; font-weight:400 !important; line-height:1.2; }
+.nexolab-login .nexolab-login__submit { justify-self:center; width:10rem; min-height:3.375rem; margin-block-start:.25rem; font-size:1.25rem !important; font-weight:400 !important; }
+.nexolab-login .nexolab-login__submit-label { font-size:20px !important; font-weight:300 !important; line-height:1.2; }
 @media(max-width:48rem) {
   .nexolab-login { grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,18dvh) minmax(0,1fr); }
   .nexolab-login__visual { min-height:0; }
   .nexolab-login__main { min-height:0; padding:2.5rem 1.5rem 1rem; }
   .nexolab-login__toolbar { inset-block-start:.5rem; inset-inline-end:.5rem; }
-  .nexolab-login__logo { width:10rem; margin-block-end:1.25rem; }
+  .nexolab-login__logo { width:15rem; margin-block-end:1.25rem; }
   .nexolab-login__form { margin-block-start:2.25rem; gap:1.25rem; }
   .nexolab-login__submit { width:min(12rem,100%); }
   .nexolab-login input { font-size:1rem !important; }
 }
 @media(max-height:46rem) {
   .nexolab-login__main { padding:2.5rem 2rem 1rem; }
-  .nexolab-login__logo { width:10rem; margin-block-end:1rem; }
+  .nexolab-login__logo { width:12rem; margin-block-end:2rem; }
   .nexolab-login__form { margin-block-start:1.5rem; gap:1rem; }
 }
 @media(max-width:48rem) and (max-height:42rem) {
@@ -47,4 +46,15 @@
   .nexolab-login__main { padding:1rem 2rem; }
   .nexolab-login__heading p { display:none; }
   .nexolab-login__form { gap:.625rem; margin-block-start:.75rem; }
+}
+.nexolab-login__logo--dark {
+  display: none;
+}
+
+html.dark .nexolab-login__logo--light {
+  display: none;
+}
+
+html.dark .nexolab-login__logo--dark {
+  display: block;
 }
