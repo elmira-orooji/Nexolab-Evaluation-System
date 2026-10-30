@@ -1,5 +1,9 @@
 # Nexolab
 
+[![Nexolab product demo preview](docs/media/Nexolab-preview.gif)](https://github.com/elmira-orooji/Nexolab-Evaluation-System/raw/refs/heads/main/docs/media/Nexolab-promo.mp4)
+
+[Watch the full video](https://github.com/elmira-orooji/Nexolab-Evaluation-System/raw/refs/heads/main/docs/media/Nexolab-promo.mp4)
+
 NexoLab is a Persian-first evaluation workspace for Retrieval-Augmented Generation (RAG) systems. It runs a test suite against a connected RAG API, stores answers, sources, citations, latency, errors, and configuration, and supports automatic analysis and human review.
 
 The built-in fixture adapter only checks the execution and reporting workflow. It returns reference answers and does not measure a RAG system's quality.
