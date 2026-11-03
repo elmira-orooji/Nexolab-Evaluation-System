@@ -451,4 +451,5 @@ export default {
   'آیا مطمئن هستید که می‌خواهید از حساب خود خارج شوید؟': 'Are you sure you want to sign out of your account?',
   'ماندن در حساب': 'Stay signed in',
   'می‌خواهید از حساب خود خارج شوید؟ برای بازگشت باید دوباره وارد شوید.': 'Ready to sign out? You’ll need to sign in again to return.',
+  'متوقف‌شده': 'Stopped',
 };
