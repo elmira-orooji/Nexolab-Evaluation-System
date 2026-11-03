@@ -21,7 +21,7 @@
 .logout-confirmation .dialog-header h2 { font-size: 1.125rem; line-height: 1.7; }
 .logout-confirmation .dialog-close { align-self: flex-start; }
 .logout-confirmation .dialog-content { padding: 1rem 1.5rem 1.5rem; }
-.logout-confirmation__description { margin: 0; color: var(--muted); font-size: .875rem; line-height: 1.9; text-align: start; }
+.logout-confirmation__description { margin: 0; color: var(--muted-foreground); font-size: .875rem; line-height: 1.9; text-align: start; }
 .logout-confirmation .dialog-footer { padding: 0 1.5rem 1.5rem; border: 0; background: transparent; }
 .logout-confirmation__actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; width: 100%; }
 .logout-confirmation__actions button { width: 100%; font-weight: 500; box-shadow: none; }
