@@ -86,12 +86,12 @@ class WebTests(unittest.TestCase):
     def test_suite_display_name_persists_without_changing_identifier(self):
         snapshot = json.loads(self.request(f"/api/suites/{SUITE.stem}")[1])
         snapshot["name"] = "آزمون فارسی Nexora"
-        self.request(f"/api/suites/{SUITE.stem}", snapshot, "PUT")
-        saved = json.loads(self.request(f"/api/suites/{SUITE.stem}")[1])
+        updated = json.loads(self.request(f"/api/suites/{SUITE.stem}", snapshot, "PUT")[1])
+        saved = json.loads(self.request(f"/api/suites/{updated['suite_key']}")[1])
         self.assertEqual(saved["name"], snapshot["name"])
         self.assertEqual(saved["id"], snapshot["id"])
         catalog = json.loads(self.request("/api/suites")[1])
-        self.assertEqual(next(item for item in catalog if item["suite_key"] == SUITE.stem)["name"], snapshot["name"])
+        self.assertEqual(next(item for item in catalog if item["suite_key"] == updated["suite_key"])["name"], snapshot["name"])
         for invalid in ("   ", "x" * 121, 123):
             snapshot["name"] = invalid
             result = json.loads(self.request("/api/suites/validate", snapshot, "POST")[1])
