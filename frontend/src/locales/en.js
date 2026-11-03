@@ -452,4 +452,8 @@ export default {
   'ماندن در حساب': 'Stay signed in',
   'می‌خواهید از حساب خود خارج شوید؟ برای بازگشت باید دوباره وارد شوید.': 'Ready to sign out? You’ll need to sign in again to return.',
   'متوقف‌شده': 'Stopped',
+  'زبان و جهت نمایش': 'Language & direction',
+  'جهت رابط کاربری با زبان انتخاب‌شده هماهنگ می‌شود.': 'The interface direction follows your selected language.',
+  'چپ به راست': 'Left to right',
+  'راست به چپ': 'Right to left',
 };
