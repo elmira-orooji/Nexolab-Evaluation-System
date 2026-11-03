@@ -64,7 +64,7 @@ def make_server(service, suite, adapter_name, ui_directory, port=8013):
                     current = service.suite_snapshot()
                     return self.reply(200, {"suite": current["suite"] if current else suite,
                                             "suite_key": current["suite_key"] if current else None,
-                                            "adapter": adapter_name})
+                                            "adapter": service.connection_status()["adapter"] if service.connection_status()["adapter"] != "unknown" else adapter_name})
                 if path == "/api/suites":
                     return self.reply(200, service.list_suites())
                 if path == "/api/suites/template":

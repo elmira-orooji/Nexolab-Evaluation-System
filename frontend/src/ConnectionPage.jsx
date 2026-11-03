@@ -47,7 +47,7 @@ export default function ConnectionPage({adapter,dark,onThemeChange,onAdapterChan
     finally { setSavingConnection(false); }
   };
   const [language, chooseLanguage] = useLanguage();
-  const fixture = adapter === 'fixture';
+  const fixture = connection.adapter === 'fixture';
   return <ControlSizeProvider size="default"><div className="connection-workspace dig-surface mx-auto w-full text-foreground">
     <header className="connection-workspace__header space-y-2"><span className="connection-workspace__eyebrow"><Settings2 size={16} aria-hidden="true"/>{language==='fa'?'محیط و حساب کاربری':'Workspace preferences'}</span><h1 className="text-heading font-normal">{t("اتصال و تنظیمات")}</h1><p className="text-description text-muted-foreground">{t("ظاهر محیط را انتخاب کنید و روش اجرای آزمون‌ها را ببینید.")}</p></header>
     <ProfilePhoto avatarUrl={avatarUrl} onChange={onAvatarChange}/>

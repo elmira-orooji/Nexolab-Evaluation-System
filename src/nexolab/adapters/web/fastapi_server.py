@@ -252,7 +252,7 @@ def create_app(service, suite, adapter_name, ui_directory, port, auth_store: Aut
         current = service.suite_snapshot()
         return {"suite": current["suite"] if current else suite,
                 "suite_key": current["suite_key"] if current else None,
-                "adapter": adapter_name}
+                "adapter": service.connection_status()["adapter"] if service.connection_status()["adapter"] != "unknown" else adapter_name}
 
     @app.get("/api/suites")
     def list_suites():
