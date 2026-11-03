@@ -52,6 +52,7 @@ class JsonSuiteRepository:
             items.append({
                 "suite_key": suite_key,
                 "id": snapshot.get("id") if isinstance(snapshot, dict) else None,
+                "name": snapshot.get("name", "") if isinstance(snapshot, dict) else "",
                 "version": snapshot.get("version") if isinstance(snapshot, dict) else None,
                 "description": snapshot.get("description", "") if isinstance(snapshot, dict) else "",
                 "case_count": len(snapshot.get("cases", [])) if isinstance(snapshot, dict) and isinstance(snapshot.get("cases"), list) else 0,

@@ -10,6 +10,7 @@ import Dashboard from './Dashboard.jsx';
 import AdvancedAnalysisPage from './AdvancedAnalysisPage.jsx';
 import './header.css';
 import { Button } from '@/components/ui/button';
+import { TextField } from '@/components/ui/text-field';
 import {Languages} from 'lucide-react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { api, downloadUrl } from './api.js';
@@ -62,6 +63,7 @@ export default function App({onLogout}) {
   const setMessage = (text, scope = view, kind = 'success') => setMessageState(text ? { text, scope, kind } : null);
   const [comparison, setComparison] = useState(null), [baseline, setBaseline] = useState(''), [candidate, setCandidate] = useState(''), [comparing, setComparing] = useState(false);
   const [suiteDiagnostics, setSuiteDiagnostics] = useState(null), [editorOpen, setEditorOpen] = useState(false), [editorKey, setEditorKey] = useState(null), [editorTitle, setEditorTitle] = useState(''), [reviewDraftReset, setReviewDraftReset] = useState(0);
+  const [editorName, setEditorName] = useState('');
   const [suiteJson, setSuiteJson] = useState(''), [editorDiagnostics, setEditorDiagnostics] = useState(null), [editorValid, setEditorValid] = useState(false);
   const [startingRun, setStartingRun] = useState(false), [detail, setDetail] = useState(null), [confirmClear, setConfirmClear] = useState(null);
   const [globalQuery, setGlobalQuery] = useState(''), [globalSearchOpen, setGlobalSearchOpen] = useState(false), [collapsed, setCollapsed] = useState(false), [mobileMenu, setMobileMenu] = useState(false);
@@ -150,20 +152,21 @@ export default function App({onLogout}) {
       const snapshot = create ? await api('/api/suites/template') : await api(`/api/suites/${encodeURIComponent(suiteKey)}`);
       if (create) snapshot.id = `suite-${Date.now()}`;
       setEditorKey(create ? null : suiteKey); setEditorTitle(create ? t("ساخت مجموعهٔ آزمون") : t("ویرایش مجموعهٔ {0}", [snapshot.id]));
+      setEditorName(snapshot.name || snapshot.id || '');
       setSuiteJson(JSON.stringify(snapshot, null, 2)); setEditorDiagnostics(null); setEditorValid(false); setEditorOpen(true);
     } catch (error) { setMessage(error.message, view, 'error'); }
   };
   const validateEditor = async () => {
     setEditorValid(false);
-    try { const snapshot = JSON.parse(suiteJson); const result = await api('/api/suites/validate', { method: 'POST', body: snapshot }); setEditorDiagnostics(result); setEditorValid(result.valid); return result; }
+    try { const snapshot = { ...JSON.parse(suiteJson), name: editorName.trim() }; const result = await api('/api/suites/validate', { method: 'POST', body: snapshot }); setEditorDiagnostics(result); setEditorValid(result.valid); return result; }
     catch (error) { const result = { valid: false, errors: [{ path: '$', message: error instanceof SyntaxError ? t("ساختار JSON قابل‌خواندن نیست.") : error.message }], warnings: [] }; setEditorDiagnostics(result); return result; }
   };
   const saveSuite = async () => {
     const result = await validateEditor(); if (!result?.valid) return;
     try {
-      const snapshot = JSON.parse(suiteJson);
+      const snapshot = { ...JSON.parse(suiteJson), name: editorName.trim() };
       const saved = editorKey ? await api(`/api/suites/${encodeURIComponent(editorKey)}`, { method: 'PUT', body: snapshot }) : await api('/api/suites', { method: 'POST', body: snapshot });
-      setEditorOpen(false); await activateSuite(saved.suite_key); setMessage(t("مجموعهٔ {0} ذخیره و انتخاب شد.", [snapshot.id]), 'dashboard');
+      setEditorOpen(false); await activateSuite(saved.suite_key); setMessage(t("مجموعهٔ {0} ذخیره و انتخاب شد.", [snapshot.name || snapshot.id]), 'dashboard');
     } catch (error) { setEditorDiagnostics({ valid: false, errors: [{ path: '$', message: error.message }], warnings: [] }); }
   };
   const saveReview = async (caseId, review) => {
@@ -227,7 +230,7 @@ export default function App({onLogout}) {
 <section className="view-section" hidden={view !== 'guide'}><InlineMessage message={message?.scope === 'guide' ? message : null} onClose={() => setMessageState(null)} /><GuidePage criteria={reviewCriteria()}/></section>
 <section className="view-section" hidden={view !== 'connection'}><InlineMessage message={message?.scope === 'connection' ? message : null} onClose={() => setMessageState(null)} /><ConnectionPage adapter={adapter} dark={dark} onThemeChange={setDark} onAdapterChange={setAdapter} avatarUrl={avatarUrl} onAvatarChange={setAvatarUrl}/></section>        <div className="react-connection-state" hidden={!loading}>{suite ? t("در حال دریافت اطلاعات اجراها…") : t("در حال اتصال به سرور محلی…")}</div>
       </div></main>
-    <Modal open={editorOpen} onClose={() => setEditorOpen(false)} title={editorTitle} subtitle={t("قالب JSON نسخهٔ ۱ را ویرایش و پیش از ذخیره اعتبارسنجی کن.")} icon="dashboard" className="suite-editor-dialog" footer={<><button className="secondary" onClick={() => setEditorOpen(false)}>{t("بستن")}</button><button className="secondary" onClick={() => void validateEditor()}>{t("اعتبارسنجی")}</button><button className="primary" disabled={!editorValid} onClick={() => void saveSuite()}>{t("ذخیرهٔ مجموعه")}</button></>}><label className="editor-label" htmlFor="suite-json-editor">{t("محتوای مجموعه")}</label><textarea id="suite-json-editor" className="suite-json-editor" rows="18" dir="ltr" spellCheck="false" value={suiteJson} onChange={(event) => { setSuiteJson(event.target.value); setEditorValid(false); setEditorDiagnostics({ valid: false, errors: [{ path: '$', message: t("محتوا تغییر کرده است؛ برای بررسی دوباره اعتبارسنجی را اجرا کن.") }], warnings: [] }); }} /><Diagnostics result={editorDiagnostics} /></Modal>
+    <Modal open={editorOpen} onClose={() => setEditorOpen(false)} title={editorTitle} subtitle={t("قالب JSON نسخهٔ ۱ را ویرایش و پیش از ذخیره اعتبارسنجی کن.")} icon="dashboard" className="suite-editor-dialog" footer={<><button className="secondary" onClick={() => setEditorOpen(false)}>{t("بستن")}</button><button className="secondary" onClick={() => void validateEditor()}>{t("اعتبارسنجی")}</button><button className="primary" disabled={!editorValid} onClick={() => void saveSuite()}>{t("ذخیرهٔ مجموعه")}</button></>}><div className="dig-surface mb-4"><TextField label={t("نام آزمون")} description={t("نامی که در فهرست مجموعه‌ها نمایش داده می‌شود.")} required maxLength={120} value={editorName} onValueChange={(value) => { setEditorName(value); try { setSuiteJson(JSON.stringify({ ...JSON.parse(suiteJson), name: value }, null, 2)); } catch { /* Preserve incomplete JSON until validation. */ } setEditorValid(false); }} /></div><label className="editor-label" htmlFor="suite-json-editor">{t("محتوای مجموعه")}</label><textarea id="suite-json-editor" className="suite-json-editor" rows="18" dir="ltr" spellCheck="false" value={suiteJson} onChange={(event) => { setSuiteJson(event.target.value); try { const parsed = JSON.parse(event.target.value); if (typeof parsed.name === "string") setEditorName(parsed.name); } catch { /* Keep the name while JSON is incomplete. */ } setEditorValid(false); setEditorDiagnostics({ valid: false, errors: [{ path: '$', message: t("محتوا تغییر کرده است؛ برای بررسی دوباره اعتبارسنجی را اجرا کن.") }], warnings: [] }); }} /><Diagnostics result={editorDiagnostics} /></Modal>
     <Modal open={Boolean(confirmClear)} onClose={() => setConfirmClear(null)} title={t("پاک‌کردن ارزیابی")} subtitle={t("نظر ثبت‌شده برای پرسش {0} حذف شود؟", [confirmClear || ''])} icon="info" footer={<><button className="secondary" onClick={() => setConfirmClear(null)}>{t("انصراف")}</button><button className="primary danger-action" onClick={() => void confirmClearReview()}>{t("پاک‌کردن ارزیابی")}</button></>} />
     <Modal open={Boolean(detail)} onClose={() => setDetail(null)} title={detail?.title} subtitle={detail?.subtitle} icon="search"><div className="detail-dialog-content">{detail?.text}</div></Modal>
   </div>;

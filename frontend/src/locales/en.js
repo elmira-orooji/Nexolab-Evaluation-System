@@ -445,4 +445,6 @@ export default {
   'اطلاعات این پرسش در اسناد مرجع وجود ندارد.': 'No information about this question is available in the reference documents.',
   '٪': '%',
   '، ': ', ',
+  'نام آزمون': 'Test name',
+  'نامی که در فهرست مجموعه‌ها نمایش داده می‌شود.': 'The name displayed in the test suite list.',
 };

@@ -51,6 +51,9 @@ def inspect_suite(suite) -> dict:
         add(warnings, "missing_version", "version", "نسخهٔ مجموعه ثبت نشده است؛ پیشنهاد می‌شود از قالب X.Y.Z استفاده شود.")
     elif not isinstance(version, str) or not SUITE_VERSION.fullmatch(version):
         add(errors, "invalid_version", "version", "نسخه باید با قالب X.Y.Z مانند 1.0.0 نوشته شود.")
+    name = suite.get("name")
+    if name is not None and (not isinstance(name, str) or not name.strip() or len(name) > 120):
+        add(errors, "invalid_name", "name", "نام آزمون باید بین ۱ تا ۱۲۰ نویسه باشد.")
     description = suite.get("description")
     if description is not None and (not isinstance(description, str) or len(description) > 2000):
         add(errors, "invalid_description", "description", "توضیح مجموعه باید رشته و حداکثر ۲۰۰۰ نویسه باشد.")

@@ -83,6 +83,21 @@ class WebTests(unittest.TestCase):
         self.assertEqual(len(result["report"]["results"]), 1)
         self.assertTrue(result["report"]["provenance"]["cancelled"])
 
+    def test_suite_display_name_persists_without_changing_identifier(self):
+        snapshot = json.loads(self.request(f"/api/suites/{SUITE.stem}")[1])
+        snapshot["name"] = "آزمون فارسی Nexora"
+        self.request(f"/api/suites/{SUITE.stem}", snapshot, "PUT")
+        saved = json.loads(self.request(f"/api/suites/{SUITE.stem}")[1])
+        self.assertEqual(saved["name"], snapshot["name"])
+        self.assertEqual(saved["id"], snapshot["id"])
+        catalog = json.loads(self.request("/api/suites")[1])
+        self.assertEqual(next(item for item in catalog if item["suite_key"] == SUITE.stem)["name"], snapshot["name"])
+        for invalid in ("   ", "x" * 121, 123):
+            snapshot["name"] = invalid
+            result = json.loads(self.request("/api/suites/validate", snapshot, "POST")[1])
+            self.assertFalse(result["valid"])
+            self.assertTrue(any(error["path"] == "name" for error in result["errors"]))
+
     def test_execute_review_download_and_reload(self):
         status, body = self.request("/api/runs", {}, "POST")
         self.assertEqual(status, 202)
