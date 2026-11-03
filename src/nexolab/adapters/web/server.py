@@ -135,6 +135,10 @@ def make_server(service, suite, adapter_name, ui_directory, port=8013):
             if not self.allowed(mutation=True):
                 return
             try:
+                if self.path.startswith("/api/runs/") and self.path.endswith("/cancel"):
+                    if self.body() != {}:
+                        raise ValueError("Invalid cancellation")
+                    return self.reply(200, service.cancel(self.path.split("/")[3]))
                 if self.path == "/api/connection/test":
                     if self.body() != {}:
                         raise ValueError("Test uses saved configuration")

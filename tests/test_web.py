@@ -58,6 +58,31 @@ class WebTests(unittest.TestCase):
             time.sleep(.01)
         self.fail("Run did not finish")
 
+    def test_cancel_preserves_current_answer_and_stops_remaining_cases(self):
+        from nexolab.adapters.rag.fixture import FixtureAdapter
+        entered, release = threading.Event(), threading.Event()
+        original = FixtureAdapter.answer
+
+        def blocked(adapter, case, request):
+            entered.set()
+            release.wait(5)
+            return original(adapter, case, request)
+
+        with patch.object(FixtureAdapter, "answer", blocked):
+            _, body = self.request("/api/runs", {}, "POST")
+            run_id = json.loads(body)["run_id"]
+            self.assertTrue(entered.wait(2))
+            try:
+                status, body = self.request(f"/api/runs/{run_id}/cancel", {}, "POST")
+                self.assertEqual(status, 200)
+                self.assertEqual(json.loads(body)["state"], "stopping")
+            finally:
+                release.set()
+            result = self.wait_run(run_id)
+        self.assertEqual(result["state"], "cancelled")
+        self.assertEqual(len(result["report"]["results"]), 1)
+        self.assertTrue(result["report"]["provenance"]["cancelled"])
+
     def test_execute_review_download_and_reload(self):
         status, body = self.request("/api/runs", {}, "POST")
         self.assertEqual(status, 202)

@@ -35,6 +35,7 @@ class EvaluationService:
         self.lock = threading.RLock()
         self.active_id = None
         self.states = {}
+        self.cancel_events = {}
 
     def connection_status(self):
         with self.lock:
@@ -116,8 +117,19 @@ class EvaluationService:
             run_id = prepared.evaluation.run_id
             self.active_id = run_id
             self.states[run_id] = "running"
+            event = threading.Event()
+            self.cancel_events[run_id] = event
+            prepared.runner.cancel_requested = event.is_set
             threading.Thread(target=self._execute, args=(prepared,), daemon=True).start()
             return run_id
+
+    def cancel(self, run_id):
+        with self.lock:
+            event = self.cancel_events.get(run_id)
+            if event is None:
+                raise ValueError("Run is not active")
+            event.set()
+            return {"state": "stopping", "run_id": run_id}
 
     def list_suites(self):
         if self.suite_repository is None:
@@ -170,13 +182,14 @@ class EvaluationService:
         run_id = prepared.evaluation.run_id
         try:
             prepared.execute()
-            state = "completed"
+            state = "cancelled" if prepared.evaluation.provenance.get("cancelled") else "completed"
         except Exception:
             # Never expose exception strings: transport/configuration details can contain secrets.
             state = "failed"
         with self.lock:
             self.states[run_id] = state
             self.active_id = None
+            self.cancel_events.pop(run_id, None)
 
     def read(self, run_id):
         with self.lock:
@@ -187,7 +200,7 @@ class EvaluationService:
                     or not isinstance(report.get("settings"), dict)
                     or not isinstance(report.get("suite"), dict)):
                 raise ValueError("Invalid report")
-            default = "completed" if report.get("finished_at") and (directory / "report.csv").exists() else "interrupted"
+            default = "cancelled" if report.get("provenance", {}).get("cancelled") else "completed" if report.get("finished_at") and (directory / "report.csv").exists() else "interrupted"
             reviews, review_history = self._review_state(directory)
             return {"state": self.states.get(run_id, default), "report": report,
                     "reviews": reviews, "review_history": review_history}

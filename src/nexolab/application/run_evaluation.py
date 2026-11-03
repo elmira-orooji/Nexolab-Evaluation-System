@@ -23,10 +23,14 @@ class EvaluationRunner:
         self.now = now
         self.timer = timer
         self.evaluator = evaluator
+        self.cancel_requested = lambda: False
 
     def execute(self, run: EvaluationRun) -> EvaluationRun:
         self.store.save(run)
         for case in run.suite.cases:
+            if self.cancel_requested():
+                run.provenance["cancelled"] = True
+                break
             request = {**run.settings.get("request", {}), **case.request, "question": case.question}
             started_at = self.now()
             start = self.timer()

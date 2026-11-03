@@ -270,6 +270,13 @@ def create_app(service, suite, adapter_name, ui_directory, port, auth_store: Aut
             raise FileNotFoundError()
         return service.read_suite(unquote(suite_key))
 
+    @app.post("/api/runs/{run_id}/cancel")
+    def cancel_run(run_id: str):
+        try:
+            return service.cancel(run_id)
+        except ValueError:
+            raise HTTPException(409, "run_not_active") from None
+
     @app.get("/api/runs")
     def list_runs():
         return service.list_runs()
