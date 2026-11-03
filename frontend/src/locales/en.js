@@ -449,4 +449,6 @@ export default {
   'نامی که در فهرست مجموعه‌ها نمایش داده می‌شود.': 'The name displayed in the test suite list.',
   'بله، خارج می‌شوم': 'Yes, sign out',
   'آیا مطمئن هستید که می‌خواهید از حساب خود خارج شوید؟': 'Are you sure you want to sign out of your account?',
+  'ماندن در حساب': 'Stay signed in',
+  'می‌خواهید از حساب خود خارج شوید؟ برای بازگشت باید دوباره وارد شوید.': 'Ready to sign out? You’ll need to sign in again to return.',
 };

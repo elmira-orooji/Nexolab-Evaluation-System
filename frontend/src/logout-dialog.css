@@ -1,0 +1,27 @@
+.react-dialog.logout-confirmation {
+  width: min(27.5rem, calc(100vw - 2rem));
+  border-radius: var(--radius-xl);
+  background: var(--panel);
+}
+.logout-confirmation .dialog-header {
+  align-items: center;
+  padding: 1.5rem 1.5rem 0;
+  gap: .875rem;
+  border: 0;
+}
+.logout-confirmation .dialog-icon {
+  width: 3rem;
+  height: 3rem;
+  flex-basis: 3rem;
+  border: 0;
+  background: var(--soft);
+  color: var(--brand);
+}
+.logout-confirmation .dialog-icon svg { width: 1.375rem; height: 1.375rem; }
+.logout-confirmation .dialog-header h2 { font-size: 1.125rem; line-height: 1.7; }
+.logout-confirmation .dialog-close { align-self: flex-start; }
+.logout-confirmation .dialog-content { padding: 1rem 1.5rem 1.5rem; }
+.logout-confirmation__description { margin: 0; color: var(--muted); font-size: .875rem; line-height: 1.9; text-align: start; }
+.logout-confirmation .dialog-footer { padding: 0 1.5rem 1.5rem; border: 0; background: transparent; }
+.logout-confirmation__actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; width: 100%; }
+.logout-confirmation__actions button { width: 100%; font-weight: 500; box-shadow: none; }
