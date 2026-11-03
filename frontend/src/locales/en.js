@@ -447,4 +447,6 @@ export default {
   '، ': ', ',
   'نام آزمون': 'Test name',
   'نامی که در فهرست مجموعه‌ها نمایش داده می‌شود.': 'The name displayed in the test suite list.',
+  'بله، خارج می‌شوم': 'Yes, sign out',
+  'آیا مطمئن هستید که می‌خواهید از حساب خود خارج شوید؟': 'Are you sure you want to sign out of your account?',
 };
