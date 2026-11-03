@@ -18,6 +18,8 @@ function ThemePreview({dark}) {
 }
 export default function ConnectionPage({adapter,dark,onThemeChange,onAdapterChange,avatarUrl,onAvatarChange}) {
   const [connection, setConnection] = useState({ adapter, base_url: '', token_configured: false });
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState(null);
   const [baseUrl, setBaseUrl] = useState('');
   const [apiToken, setApiToken] = useState('');
   const [savingConnection, setSavingConnection] = useState(false);
@@ -36,7 +38,7 @@ export default function ConnectionPage({adapter,dark,onThemeChange,onAdapterChan
   const saveConnection = async (event) => {
     event.preventDefault();
     if (savingConnection) return;
-    setSavingConnection(true); setConnectionError(''); setConnectionMessage('');
+    setTestResult(null); setSavingConnection(true); setConnectionError(''); setConnectionMessage('');
     try {
       const value = await api('/api/connection', { method: 'PUT', body: { adapter: 'nexora', base_url: baseUrl.trim(), api_token: apiToken } });
       setConnection(value); setApiToken(''); onAdapterChange?.(value.adapter);
@@ -73,7 +75,18 @@ export default function ConnectionPage({adapter,dark,onThemeChange,onAdapterChan
     </section>    <section aria-labelledby="settings-connection-title" className="space-y-5 rounded-xl border border-border bg-card p-5">
       <Heading id="settings-connection-title" icon={Plug} title={t("اتصال آزمون‌ها")} description={t("روش دریافت پاسخ بر اساس تنظیمات فعلی سرور")}/>
       <div className="flex flex-wrap items-start justify-between gap-4 rounded-lg bg-subtle p-4"><div className="min-w-0 space-y-2"><h3 className="m-0 text-label font-normal">{fixture ? t("اجرای آزمایشی") : t("سرویس Nexora")}</h3><p className="text-description text-muted-foreground">{fixture ? t("پاسخ‌های ساختگی برای آزمایش ابزار استفاده می‌شوند.") : t("پرسش‌ها برای دریافت پاسخ و منابع به Nexora ارسال می‌شوند.")}</p></div><span className="rounded-md bg-primary-subtle px-2 py-1 text-caption text-primary-subtle-foreground">{t("روش انتخاب‌شده در سرور")}</span></div>
-      <p className="text-caption text-muted-foreground">{fixture ? t("این حالت برای سنجش کیفیت پاسخ‌های Nexora مناسب نیست.") : t("این اطلاعات روش اتصال را نشان می‌دهد؛ موفقیت ارتباط در زمان اجرای آزمون مشخص می‌شود.")}</p>
+      <div className="space-y-3">
+        <Button type="button" loading={testing} disabled={testing || savingConnection || fixture || !connection.token_configured || baseUrl.trim() !== connection.base_url || Boolean(apiToken)} onClick={async () => {
+          setTesting(true); setTestResult(null);
+          try { setTestResult(await api('/api/connection/test', {method:'POST',body:{}})); }
+          catch { setTestResult({ok:false,reason:'unreachable'}); }
+          finally { setTesting(false); }
+        }}>{language==='fa'?'تست اتصال':'Test connection'}</Button>
+        <p className="text-caption text-muted-foreground">{language==='fa'?'ابتدا تنظیمات را ذخیره کنید. این تست دسترسی به سرویس و اعتبار نشست را بررسی می‌کند و پاسخ مدل تولید نمی‌کند.':'Save settings first. This checks service access and session authentication without generating an answer.'}</p>
+        <p role="status" className={testResult && !testResult.ok ? 'text-caption text-destructive' : 'text-caption text-muted-foreground'}>
+          {testing ? (language==='fa'?'در حال بررسی اتصال…':'Checking connection…') : testResult ? testResult.ok ? (language==='fa'?'اتصال موفق است؛ احراز هویت تأیید شد.':'Connected successfully. Authentication verified.') + ` (${testResult.latency_ms} ms)` : testResult.reason==='unauthorized' ? (language==='fa'?'اتصال ناموفق: کلید نامعتبر یا نشست منقضی شده است.':'Connection failed: invalid key or expired session.') : (language==='fa'?'اتصال ناموفق است. آدرس و اجرای بک‌اند را بررسی کنید.':'Connection failed. Check the address and backend availability.') : (language==='fa'?'اتصال هنوز بررسی نشده است.':'Connection not tested yet.')}
+        </p>
+      </div>
     </section>
     <div className="flex w-full items-center justify-center gap-2 p-1 text-center text-caption text-muted-foreground"><Info className="size-4 shrink-0" aria-hidden="true"/><p className="m-0">{t("توکن اتصال در این صفحه نمایش داده نمی‌شود.")}</p></div>
   </div></ControlSizeProvider>;

@@ -243,6 +243,10 @@ def create_app(service, suite, adapter_name, ui_directory, port, auth_store: Aut
             return service.update_connection(body.adapter, body.base_url, body.api_token)
         except ValueError:
             raise HTTPException(400, "invalid_connection") from None
+    @app.post("/api/connection/test")
+    def test_connection():
+        return service.test_connection()
+
     @app.get("/api/info")
     def info():
         current = service.suite_snapshot()

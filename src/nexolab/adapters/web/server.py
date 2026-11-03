@@ -135,6 +135,10 @@ def make_server(service, suite, adapter_name, ui_directory, port=8013):
             if not self.allowed(mutation=True):
                 return
             try:
+                if self.path == "/api/connection/test":
+                    if self.body() != {}:
+                        raise ValueError("Test uses saved configuration")
+                    return self.reply(200, service.test_connection())
                 if self.path == "/api/suites/validate":
                     return self.reply(200, service.validate_suite(self.body(2_000_000)))
                 if self.path == "/api/suites/select":

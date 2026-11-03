@@ -70,6 +70,31 @@ class EvaluationService:
             self.connection["settings"] = settings
             self.connection["token"] = token if adapter == "nexora" else current_token
             return self.connection_status()
+    def test_connection(self):
+        from urllib.request import Request, build_opener
+        from urllib.error import HTTPError, URLError
+        from ..rag.nexora import NoRedirect
+        from time import perf_counter
+        with self.lock:
+            if not self.connection or self.connection["settings"].get("adapter") != "nexora":
+                return {"ok": False, "reason": "not_configured"}
+            url = self.connection["settings"].get("base_url", "")
+            token = self.connection.get("token", "")
+        started = perf_counter()
+        try:
+            request = Request(url + "/api/v1/auth/me", headers={"Authorization": "Bearer " + token, "Accept": "application/json"})
+            with build_opener(NoRedirect()).open(request, timeout=10) as response:
+                data = json.loads(response.read(65536))
+                if response.status != 200 or not isinstance(data, dict) or not data.get("username"):
+                    return {"ok": False, "reason": "invalid_response"}
+            return {"ok": True, "reason": "connected", "latency_ms": round((perf_counter()-started)*1000)}
+        except HTTPError as exc:
+            return {"ok": False, "reason": "unauthorized" if exc.code in (401,403) else "http_error", "status_code": exc.code}
+        except (URLError, OSError, TimeoutError):
+            return {"ok": False, "reason": "unreachable"}
+        except (ValueError, TypeError):
+            return {"ok": False, "reason": "invalid_response"}
+
     def directory(self, run_id):
         if not isinstance(run_id, str) or str(uuid.UUID(run_id)) != run_id:
             raise ValueError("Invalid run ID")
