@@ -79,12 +79,12 @@ export default function ConnectionPage({adapter,dark,onThemeChange,onAdapterChan
         <Button type="button" loading={testing} disabled={testing || savingConnection || fixture || !connection.token_configured || baseUrl.trim() !== connection.base_url || Boolean(apiToken)} onClick={async () => {
           setTesting(true); setTestResult(null);
           try { setTestResult(await api('/api/connection/test', {method:'POST',body:{}})); }
-          catch { setTestResult({ok:false,reason:'unreachable'}); }
+          catch (error) { setTestResult({ok:false,reason:'test_error',message:error.message}); }
           finally { setTesting(false); }
         }}>{language==='fa'?'تست اتصال':'Test connection'}</Button>
         <p className="text-caption text-muted-foreground">{language==='fa'?'ابتدا تنظیمات را ذخیره کنید. این تست دسترسی به سرویس و اعتبار نشست را بررسی می‌کند و پاسخ مدل تولید نمی‌کند.':'Save settings first. This checks service access and session authentication without generating an answer.'}</p>
         <p role="status" className={testResult && !testResult.ok ? 'text-caption text-destructive' : 'text-caption text-muted-foreground'}>
-          {testing ? (language==='fa'?'در حال بررسی اتصال…':'Checking connection…') : testResult ? testResult.ok ? (language==='fa'?'اتصال موفق است؛ احراز هویت تأیید شد.':'Connected successfully. Authentication verified.') + ` (${testResult.latency_ms} ms)` : testResult.reason==='unauthorized' ? (language==='fa'?'اتصال ناموفق: کلید نامعتبر یا نشست منقضی شده است.':'Connection failed: invalid key or expired session.') : (language==='fa'?'اتصال ناموفق است. آدرس و اجرای بک‌اند را بررسی کنید.':'Connection failed. Check the address and backend availability.') : (language==='fa'?'اتصال هنوز بررسی نشده است.':'Connection not tested yet.')}
+          {testing ? (language==='fa'?'در حال بررسی اتصال…':'Checking connection…') : testResult ? testResult.ok ? (language==='fa'?'اتصال موفق است؛ احراز هویت تأیید شد.':'Connected successfully. Authentication verified.') + ` (${testResult.latency_ms} ms)` : testResult.reason==='test_error' ? testResult.message : testResult.reason==='http_error' ? (language==='fa'?'سرویس کد خطا برگرداند: ':'Service returned HTTP ') + testResult.status_code : testResult.reason==='invalid_response' ? (language==='fa'?'پاسخ سرویس با API مورد انتظار سازگار نیست.':'Service response does not match the expected API.') : testResult.reason==='unauthorized' ? (language==='fa'?'اتصال ناموفق: کلید نامعتبر یا نشست منقضی شده است.':'Connection failed: invalid key or expired session.') : (language==='fa'?'اتصال ناموفق است. آدرس و اجرای بک‌اند را بررسی کنید.':'Connection failed. Check the address and backend availability.') : (language==='fa'?'اتصال هنوز بررسی نشده است.':'Connection not tested yet.')}
         </p>
       </div>
     </section>

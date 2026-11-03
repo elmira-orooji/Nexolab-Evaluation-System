@@ -34,6 +34,9 @@ export async function api(url, options = {}) {
     window.dispatchEvent(new CustomEvent('nexolab:auth-expired'));
   }
   if (!response.ok) {
+    if (response.status === 404 && url === '/api/connection/test') {
+      throw new Error(document.documentElement.lang.startsWith('fa') ? 'سرور Nexolab را متوقف و با نسخهٔ جدید دوباره اجرا کنید؛ مسیر تست اتصال در سرور فعلی وجود ندارد.' : 'Restart the Nexolab server with the updated version; this server has no connection test endpoint.');
+    }
     const details = [...(Array.isArray(data.errors) ? data.errors : []), ...(Array.isArray(data.warnings) ? data.warnings : [])]
       .map((item) => `${item.path}: ${item.message}`).join('\n');
     if (response.status === 404 && url.startsWith('/api/suites')) {
