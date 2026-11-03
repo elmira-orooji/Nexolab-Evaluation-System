@@ -11,7 +11,7 @@ import AdvancedAnalysisPage from './AdvancedAnalysisPage.jsx';
 import './header.css';
 import { Button } from '@/components/ui/button';
 import {Languages} from 'lucide-react';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { api, downloadUrl } from './api.js';
 import { Icon, Modal, InlineMessage } from './components.jsx';
 
@@ -54,6 +54,7 @@ export default function App({onLogout}) {
     return () => {active = false;};
   }, []);
   const [suite, setSuite] = useState(null), [suiteKey, setSuiteKey] = useState(''), [suiteCatalog, setSuiteCatalog] = useState([]);
+  const selectedRunRef = useRef('');
   const [stoppingRun, setStoppingRun] = useState(null);
   const [adapter, setAdapter] = useState('fixture'), [view, setView] = useState('dashboard'), [runs, setRuns] = useState([]);
   const [runId, setRunId] = useState(''), [runData, setRunData] = useState(null), [report, setReport] = useState(null), [reviews, setReviews] = useState({}), [reviewHistory, setReviewHistory] = useState({});
@@ -67,7 +68,7 @@ export default function App({onLogout}) {
   const [dark, setDark] = useState(() => { try { return localStorage.getItem('nexolab-theme') === 'dark'; } catch { return false; } });
   const currentSuite = report?.suite || suite;
   useEffect(() => { if (stoppingRun && !runs.some(item => item.run_id === stoppingRun && item.state === 'running')) setStoppingRun(null); }, [runs, stoppingRun]);
-  const activeRun = runs.find((item) => item.run_id === runId) || (runData ? { run_id: runId, state: runData.state, started_at: runData.report?.started_at, adapter: runData.report?.settings?.adapter } : null);
+  const activeRun = report?.run_id === runId ? { ...runs.find((item) => item.run_id === runId), run_id: runId, state: runData?.state, started_at: report.started_at, adapter: report.settings?.adapter } : null;
 
   useEffect(() => { document.documentElement.classList.toggle('dark', dark); try { localStorage.setItem('nexolab-theme', dark ? 'dark' : 'light'); } catch { /* storage can be disabled */ } }, [dark]);
   useEffect(() => {
@@ -94,7 +95,7 @@ export default function App({onLogout}) {
     let cancelled = false;
     const timer = window.setInterval(async () => {
       try {
-        const data = await api(`/api/runs/${runId}`); if (cancelled) return;
+        const data = await api(`/api/runs/${runId}`); if (cancelled || selectedRunRef.current !== runId) return;
         setRunData(data); setReport(data.report); setReviews(data.reviews || {}); setReviewHistory(data.review_history || {});
         if (data.state !== 'running') {
           const history = await api('/api/runs'); if (!cancelled) setRuns(history);
@@ -105,8 +106,10 @@ export default function App({onLogout}) {
   }, [runData?.state, runId]);
 
   const loadRun = async (id) => {
-    setRunId(id); setSelected(0); setSaving(false);
+    selectedRunRef.current = id;
+    setRunId(id); setRunData(null); setReport(null); setReviews({}); setReviewHistory({}); setSelected(0); setSaving(false);
     const data = await api(`/api/runs/${id}`);
+    if (selectedRunRef.current !== id) return;
     setRunData(data); setReport(data.report); setReviews(data.reviews || {}); setReviewHistory(data.review_history || {});
   };
   const refreshRuns = async () => {
@@ -132,6 +135,7 @@ export default function App({onLogout}) {
     setLoading(true);
     try {
       const data = await api('/api/suites/select', { method: 'POST', body: { suite_key: key } });
+      selectedRunRef.current = '';
       setSuiteKey(data.suite_key); setSuite(data.suite); setRunId(''); setRunData(null); setReport(null); setReviews({}); setReviewHistory({}); setSelected(0); setSuiteDiagnostics(null);
       setView(destination); await refreshRuns(); await reloadSuites(); setMessage(t("مجموعهٔ {0} برای اجرای بعدی انتخاب شد.", [data.suite.id]), destination);
     } catch (error) { setMessage(error.message, view, 'error'); } finally { setLoading(false); }
