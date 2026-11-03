@@ -57,6 +57,17 @@ export default function App({onLogout}) {
   }, []);
   const [suite, setSuite] = useState(null), [suiteKey, setSuiteKey] = useState(''), [suiteCatalog, setSuiteCatalog] = useState([]);
   const selectedRunRef = useRef('');
+  const headerSearchRef = useRef(null);
+  useEffect(() => {
+    const focusSearch = (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        headerSearchRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', focusSearch);
+    return () => window.removeEventListener('keydown', focusSearch);
+  }, []);
   const [stoppingRun, setStoppingRun] = useState(null);
   const [adapter, setAdapter] = useState('fixture'), [view, setView] = useState('dashboard'), [runs, setRuns] = useState([]);
   const [runId, setRunId] = useState(''), [runData, setRunData] = useState(null), [report, setReport] = useState(null), [reviews, setReviews] = useState({}), [reviewHistory, setReviewHistory] = useState({});
@@ -222,7 +233,7 @@ export default function App({onLogout}) {
     <main className="main-shell" dir={direction()}><header className="topbar" dir={direction()}>
   <button className="icon-button mobile-only topbar-menu" onClick={() => setMobileMenu(true)} aria-label={t("بازکردن منو")}><Icon name="menu" /></button>
   <div className="topbar-welcome" dir={direction()}><strong>{t("خوش آمدید!")}</strong><small>{t("پنل مدیریت ارزیابی")}</small></div>
-  <div className="topbar-search"><div className="global-search-wrap"><label className="global-searchbox"><Icon name="search" /><input type="search" dir={direction()} placeholder={t("جست‌وجوی پرسش یا اجرا")} autoComplete="off" value={globalQuery} aria-expanded={globalSearchOpen && Boolean(globalQuery)} onFocus={() => setGlobalSearchOpen(true)} onChange={(event) => { setGlobalQuery(event.target.value); setGlobalSearchOpen(true); }} onKeyDown={(event) => { if (event.key === 'Escape') setGlobalSearchOpen(false); }} /></label>{globalSearchOpen && globalQuery && <div className="global-search-results" role="listbox">{searchGroups.length ? searchGroups.map((group) => <section className="global-search-group" key={group.label} role="group" aria-label={group.label}><p className="global-search-heading">{group.label}</p>{group.items.map((item) => <button className="global-search-result" key={group.label + '-' + item.meta} role="option" onClick={() => { item.action(); setGlobalQuery(''); setGlobalSearchOpen(false); }}><span className="global-search-result-title">{item.title}</span><small>{item.meta}</small></button>)}</section>) : <p className="global-search-empty">{t("نتیجه‌ای برای این جست‌وجو پیدا نشد.")}</p>}</div>}</div></div>
+  <div className="topbar-search"><div className="global-search-wrap"><label className="global-searchbox"><Icon name="search" /><input ref={headerSearchRef} type="search" dir={direction()} aria-label={t("جست‌وجوی پرسش یا اجرا")} placeholder={t("جست‌وجوی پرسش یا اجرا")} autoComplete="off" value={globalQuery} aria-expanded={globalSearchOpen && Boolean(globalQuery)} onFocus={() => setGlobalSearchOpen(true)} onChange={(event) => { setGlobalQuery(event.target.value); setGlobalSearchOpen(true); }} onKeyDown={(event) => { if (event.key === 'Escape') setGlobalSearchOpen(false); }} /><kbd className="topbar-search-shortcut" dir="ltr" aria-hidden="true">Ctrl K</kbd></label>{globalSearchOpen && globalQuery && <div className="global-search-results" role="listbox">{searchGroups.length ? searchGroups.map((group) => <section className="global-search-group" key={group.label} role="group" aria-label={group.label}><p className="global-search-heading">{group.label}</p>{group.items.map((item) => <button className="global-search-result" key={group.label + '-' + item.meta} role="option" onClick={() => { item.action(); setGlobalQuery(''); setGlobalSearchOpen(false); }}><span className="global-search-result-title">{item.title}</span><small>{item.meta}</small></button>)}</section>) : <p className="global-search-empty">{t("نتیجه‌ای برای این جست‌وجو پیدا نشد.")}</p>}</div>}</div></div>
   <div className="topbar-actions"><button className="topbar-language" onClick={() => setLanguage(language === 'fa' ? 'en' : 'fa')} aria-label={language === 'fa' ? 'Switch to English' : 'تغییر زبان به فارسی'}><Languages size={17} aria-hidden="true"/><span lang={language === 'fa' ? 'en' : 'fa'}>{language === 'fa' ? 'EN' : 'فا'}</span></button><button className="topbar-icon topbar-notifications" disabled={!runs.length} onClick={() => runs[0] && void openRun(runs[0].run_id)} aria-label={t("آخرین اجرا")} title={runs[0] ? t("آخرین اجرا · ") + runLabel(runs[0]) : t("هنوز اجرایی ثبت نشده است")}><Icon name="bell" />{runs[0] && ['running', 'failed'].includes(runs[0].state) && <span className={'topbar-notification-dot' + (runs[0].state === 'failed' ? ' is-error' : '')} />}</button><button className="topbar-icon" onClick={() => setDark((value) => !value)} aria-label={dark ? t("تغییر به حالت روشن") : t("تغییر به حالت تیره")} title={dark ? t("حالت روشن") : t("حالت تیره")} aria-pressed={dark}><Icon name="theme" /></button></div>
   <button className="topbar-profile" onClick={() => showView('connection')} aria-label={t("تنظیمات حساب مدیر")} title={t("تنظیمات")}><span className="topbar-avatar">{avatarUrl ? <img src={avatarUrl} alt=""/> : t("م")}</span></button>
 </header>
