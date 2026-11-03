@@ -22,7 +22,7 @@ export default function RunSetup({ suite, suiteKey, suites, adapter, busy, runni
         <details className="run-setup-page__storage"><summary className="text-description text-muted-foreground">{t("چه اطلاعاتی ذخیره می‌شود؟")}</summary><p className="text-description text-muted-foreground">{t("پاسخ، منابع، زمان، خطاها و تنظیمات در گزارشی مستقل ذخیره می‌شوند. نسخهٔ مجموعه:")} <bdi>{suite?.version || t("ثبت‌نشده")}</bdi>.</p></details>
         {reason && <p role="status" className="run-setup-page__reason"><Info size={16} aria-hidden="true"/>{reason}</p>}
       </CardContent>
-      <CardFooter className="run-setup-page__footer"><Button fullWidth loading={busy} disabled={Boolean(reason)} onClick={onStart}><Play size={16} aria-hidden="true"/>{t("شروع آزمون")}</Button><Button variant="outline" fullWidth onClick={onBack}>{t("بازگشت به داشبورد")}</Button></CardFooter>
+      <CardFooter className="run-setup-page__footer grid min-w-0"><Button fullWidth loading={busy} disabled={Boolean(reason)} onClick={onStart}><Play size={16} aria-hidden="true"/>{t("شروع آزمون")}</Button><Button variant="outline" fullWidth onClick={onBack}>{t("بازگشت به داشبورد")}</Button></CardFooter>
     </Card>
   </div></ControlSizeProvider>;
 }
