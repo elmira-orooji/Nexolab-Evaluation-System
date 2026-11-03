@@ -68,7 +68,7 @@ export default function ConnectionPage({adapter,dark,onThemeChange,onAdapterChan
         <TextField id="rag-api-url" label={t("نشانی پایهٔ API")} description={t("برای نمونه: https://rag.example.com . مسیر /api/v1/rag/answer به نشانی افزوده می‌شود.")} value={baseUrl} onValueChange={setBaseUrl} dir="ltr" autoComplete="url" placeholder="https://"/>
         <TextField id="rag-api-token" label={t("کلید API")} description={connection.token_configured ? t("کلید قبلی ثبت شده است؛ برای جایگزینی، کلید جدید را وارد کنید. خالی گذاشتن، کلید فعلی را نگه می‌دارد.") : t("کلید فقط در حافظهٔ سرور تا زمان خاموش‌شدن آن نگه‌داری می‌شود.")} type="password" value={apiToken} onValueChange={setApiToken} dir="ltr" autoComplete="new-password" placeholder={connection.token_configured ? t("کلید API ثبت شده") : 'Bearer token'}/>
         <div className="flex flex-wrap items-center gap-3"><Button type="submit" loading={savingConnection} disabled={savingConnection || !baseUrl.trim()}>{t("ذخیرهٔ اتصال")}</Button><span className="text-caption text-muted-foreground">{connection.token_configured ? t("کلید ثبت شده است") : t("کلیدی ثبت نشده است")}</span></div>
-        {connectionMessage && <p role="status" className="m-0 text-caption text-muted-foreground">{connectionMessage}</p>}
+        {connectionMessage && <p role="status" className="m-0 text-caption text-success-subtle-foreground">{connectionMessage}</p>}
         {connectionError && <p role="alert" className="m-0 text-caption text-destructive">{connectionError}</p>}
       </form>
 
@@ -83,7 +83,7 @@ export default function ConnectionPage({adapter,dark,onThemeChange,onAdapterChan
           finally { setTesting(false); }
         }}>{language==='fa'?'تست اتصال':'Test connection'}</Button>
         <p className="text-caption text-muted-foreground">{language==='fa'?'ابتدا تنظیمات را ذخیره کنید. این تست دسترسی به سرویس و اعتبار نشست را بررسی می‌کند و پاسخ مدل تولید نمی‌کند.':'Save settings first. This checks service access and session authentication without generating an answer.'}</p>
-        <p role="status" className={testResult && !testResult.ok ? 'text-caption text-destructive' : 'text-caption text-muted-foreground'}>
+        <p role="status" className={testing || !testResult ? 'text-caption text-muted-foreground' : testResult.ok ? 'text-caption text-success-subtle-foreground' : 'text-caption text-destructive'}>
           {testing ? (language==='fa'?'در حال بررسی اتصال…':'Checking connection…') : testResult ? testResult.ok ? (language==='fa'?'اتصال موفق است؛ احراز هویت تأیید شد.':'Connected successfully. Authentication verified.') + ` (${testResult.latency_ms} ms)` : testResult.reason==='test_error' ? testResult.message : testResult.reason==='http_error' ? (language==='fa'?'سرویس کد خطا برگرداند: ':'Service returned HTTP ') + testResult.status_code : testResult.reason==='invalid_response' ? (language==='fa'?'پاسخ سرویس با API مورد انتظار سازگار نیست.':'Service response does not match the expected API.') : testResult.reason==='unauthorized' ? (language==='fa'?'اتصال ناموفق: کلید نامعتبر یا نشست منقضی شده است.':'Connection failed: invalid key or expired session.') : (language==='fa'?'اتصال ناموفق است. آدرس و اجرای بک‌اند را بررسی کنید.':'Connection failed. Check the address and backend availability.') : (language==='fa'?'اتصال هنوز بررسی نشده است.':'Connection not tested yet.')}
         </p>
       </div>
